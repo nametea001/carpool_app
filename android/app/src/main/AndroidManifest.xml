@@ -4,6 +4,8 @@
         android:label="car_pool_project"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyCQ9A6QV8C8JRZvRFhfnSxp-pdSqh4vUKw"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

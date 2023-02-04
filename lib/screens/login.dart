@@ -1,3 +1,4 @@
+import 'package:car_pool_project/screens/post.dart';
 import 'package:car_pool_project/services/config_system.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/global.dart' as globals;
@@ -275,31 +276,33 @@ class _LoginScreenState extends State<LoginScreen> {
                                     await User.checkLogin(username, password);
                                 // if success
                                 if (u != null) {
-                                  print("Go");
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PostScreen(
+                                              user: u,
+                                            )),
+                                  );
                                 } else {
                                   print("Login Fail");
                                   await showDialog(
                                     context: context,
                                     builder: (BuildContext context) =>
                                         AlertDialog(
-                                      title: const Text(
-                                        'Error',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                      content: const Text(
+                                      title: Text('Error'),
+                                      content: Text(
                                           'Incorrect username or password'),
                                       actions: <Widget>[
                                         TextButton(
+                                            child: Text('Close'),
                                             style: TextButton.styleFrom(
-                                              foregroundColor: Colors.white,
+                                              primary: Colors.white,
                                               backgroundColor: Colors.blueGrey,
                                             ),
                                             onPressed: () {
                                               Navigator.pop(context);
-                                            },
-                                            child: const Text(
-                                              'Close',
-                                            )),
+                                            }),
                                       ],
                                     ),
                                   );
