@@ -1,8 +1,7 @@
-import 'package:car_pool_project/screens/post.dart';
+import 'package:car_pool_project/screens/post_screen.dart';
 import 'package:car_pool_project/services/config_system.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/global.dart' as globals;
-
 import '../constants.dart';
 import '../models/user.dart';
 
@@ -25,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: Text('Ride Sharing v1.0.0'),
         backgroundColor: Colors.pink,
-        actions: <Widget>[
+        actions: [
           // config Ip
           IconButton(
               icon: Icon(Icons.settings),
@@ -293,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: Text('Error'),
                                       content: Text(
                                           'Incorrect username or password'),
-                                      actions: <Widget>[
+                                      actions: [
                                         TextButton(
                                             child: Text('Close'),
                                             style: TextButton.styleFrom(

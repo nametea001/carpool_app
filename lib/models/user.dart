@@ -10,6 +10,7 @@ class User {
   final String? lastName;
   final String? email;
   final String? userRoleName;
+  final String? img;
   User({
     this.userID,
     this.username,
@@ -18,11 +19,14 @@ class User {
     this.lastName,
     this.email,
     this.userRoleName,
+    this.img,
   });
 
   static Future<User?> checkLogin(String username, String password) async {
-    NetworkHelper networkHelper = NetworkHelper('login', {});
-    var json = await networkHelper.postData(jsonEncode(<String, String>{
+    NetworkHelper networkHelper = NetworkHelper('login', {
+      'device': "mobile",
+    });
+    var json = await networkHelper.postData(jsonEncode(<String, dynamic>{
       'username': username,
       'password': password,
     }));
@@ -37,6 +41,7 @@ class User {
         email: u["email"],
         userRoleID: u["user_role_id"],
         userRoleName: u["user_roles"]["user_role_name"],
+        img: u['img'],
       );
       return user;
     }
