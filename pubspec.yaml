@@ -40,6 +40,8 @@ dependencies:
   google_maps_webservice: ^0.0.19
   google_api_headers: ^1.5.0+1
   flutter_google_places: ^0.3.0
+  geocoding: ^2.0.5
+  form_field_validator: ^1.1.0
 
 dev_dependencies:
   flutter_test:

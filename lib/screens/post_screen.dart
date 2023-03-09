@@ -24,6 +24,7 @@ class _PostScreenState extends State<PostScreen> {
   User user = User();
   bool _isLoading = true;
   List<Post> posts = [];
+  bool _isLogout = false;
 
   @override
   void initState() {
@@ -126,109 +127,126 @@ class _PostScreenState extends State<PostScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Post"),
-          backgroundColor: Colors.pink,
-          actions: appBarBt(),
-        ),
-        // sidebar
-        drawer: Drawer(
-          child: ListView(children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.pink,
-              ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 50.0,
+    return WillPopScope(
+      onWillPop: () async {
+        return _isLogout;
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: const Text("Post"),
+            backgroundColor: Colors.pink,
+            // actions: appBarBt(),
+          ),
+          // sidebar
+          drawer: Drawer(
+            child: SingleChildScrollView(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  color: Colors.pink,
+                  padding: EdgeInsets.only(
+                    top: 24 + MediaQuery.of(context).padding.top,
+                    bottom: 24,
                   ),
-                  Row(
+                  child: Column(
                     children: [
+                      CircleAvatar(
+                        radius: 52,
+                        child: user.img != null
+                            ? ClipOval(
+                                child: Image.memory(
+                                  base64Decode(user.img!),
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : null,
+                      ),
+                      SizedBox(
+                        height: 12,
+                      ),
+                      Text(
+                        "${user.firstName} ${user.lastName}",
+                        style: TextStyle(fontSize: 28, color: Colors.white),
+                      ),
                       Text(
                         "${user.email}",
-                        style: TextStyle(color: Colors.white, fontSize: 25),
+                        style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ],
                   ),
-                  Row(
+                ),
+                Container(
+                  padding: EdgeInsets.all(24),
+                  child: Wrap(
+                    runSpacing: 16,
                     children: [
-                      Text(
-                        "${user.firstName}  ${user.lastName}",
-                        style: TextStyle(color: Colors.white, fontSize: 25),
+                      ListTile(
+                        leading: Icon(Icons.person),
+                        title: Text("Profile"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.history),
+                        title: Text("History"),
+                        onTap: () {},
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.info),
+                        title: Text("help"),
+                        onTap: () {},
+                      ),
+                      const Divider(
+                        color: Colors.black,
+                      ),
+                      ListTile(
+                        leading: Icon(Icons.logout),
+                        title: Text("Logout"),
+                        onTap: () {
+                          setState(() {
+                            _isLogout = true;
+                          });
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            // ListTile(
-            //   leading: CircleAvatar(
-            //       backgroundColor: Colors.red,
-            //       child: ClipOval(
-            //         child: Image.memory(
-            //           base64Decode(user.img!),
-            //         ),
-            //       )),
-            //   title: Text("My Profile"),
-            //   onTap: () => {},
-            // ),
-            ListTile(
-              leading: Icon(Icons.person),
-              title: Text("My Profile"),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.history),
-              title: Text("History"),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text("About"),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              title: Text("Logout"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-          ]),
-        ),
-        body: SafeArea(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            (_isLoading
-                ? listLoader()
-                : Container(
-                    child: Expanded(
-                        child: RefreshIndicator(
-                      onRefresh: () async {
-                        updateUI();
-                      },
-                      child: ListView(
-                        physics: BouncingScrollPhysics(),
-                        children: getListTile(),
-                      ),
+                ),
+              ],
+            )),
+          ),
+          body: SafeArea(
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              (_isLoading
+                  ? listLoader()
+                  : Container(
+                      child: Expanded(
+                          child: RefreshIndicator(
+                        onRefresh: () async {
+                          updateUI();
+                        },
+                        child: ListView(
+                          physics: BouncingScrollPhysics(),
+                          children: getListTile(),
+                        ),
+                      )),
                     )),
-                  )),
-          ],
-        )),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => PostDetailScreen()),
-            );
-          },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.pink,
-        ));
+            ],
+          )),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PostDetailScreen()),
+              );
+            },
+            child: Icon(Icons.add),
+            backgroundColor: Colors.pink,
+          )),
+    );
   }
 
   updateUI() async {
