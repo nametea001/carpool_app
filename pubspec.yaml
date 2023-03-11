@@ -42,6 +42,8 @@ dependencies:
   flutter_google_places: ^0.3.0
   geocoding: ^2.0.5
   form_field_validator: ^1.1.0
+  flutter_speed_dial: ^6.2.0
+  geolocator: ^9.0.2
 
 dev_dependencies:
   flutter_test:
