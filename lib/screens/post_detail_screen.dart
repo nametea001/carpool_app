@@ -20,6 +20,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   GlobalData globalData = new GlobalData();
 
   bool _myLocationEnable = false;
+  bool _showMarkerStartToEnd = false;
+
   String location = "Search Location";
   Position? userLocation;
   GoogleMapController? mapController;
@@ -83,6 +85,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 initialCameraPosition: _kGooglePlex,
                 mapType: MapType.normal, //map type
                 onMapCreated: _onMapCreated,
+                markers: _showMarkerStartToEnd
+                    ? {
+                        Marker(
+                          draggable: false,
+                          markerId: MarkerId("marker1"),
+                          position: LatLng(17.291925, 104.112884),
+                        ),
+                        Marker(
+                          draggable: false,
+                          markerId: MarkerId("marker2"),
+                          position: LatLng(17.291925, 105.112884),
+                        ),
+                      }
+                    : {},
               ),
 
               //search autoconplete input
@@ -180,17 +196,51 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           IconButton(
                               onPressed: () async {
                                 setState(() {
+                                  _showMarkerStartToEnd = false;
                                   _myLocationEnable = true;
                                 });
                                 Position? l = await _getLocation();
                                 if (l != null) {
                                   mapController?.animateCamera(
-                                      CameraUpdate.newLatLngZoom(
-                                          LatLng(l.latitude, l.longitude), 14));
+                                    CameraUpdate.newLatLngZoom(
+                                        LatLng(l.latitude, l.longitude), 14),
+                                  );
                                 }
                               },
                               icon: Icon(
                                 Icons.my_location,
+                                size: 30,
+                              )),
+                          // Text(
+                          //   "Lot",
+                          //   style: TextStyle(
+                          //     fontSize: 12.0,
+                          //     fontWeight: FontWeight.bold,
+                          //     color: Colors.black,
+                          //   ),
+                          // ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: Colors.white, width: 1),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: InkWell(
+                      onTap: () {},
+                      child: Column(
+                        children: [
+                          IconButton(
+                              onPressed: () async {
+                                setState(() {
+                                  _showMarkerStartToEnd = true;
+                                  _myLocationEnable = false;
+                                });
+                              },
+                              icon: Icon(
+                                Icons.pin_drop,
                                 size: 30,
                               )),
                           // Text(

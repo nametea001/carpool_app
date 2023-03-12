@@ -3,6 +3,7 @@ import 'package:car_pool_project/services/config_system.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 import '../constants.dart';
 import '../models/user.dart';
 
@@ -27,6 +28,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool _isFocusConfirmPassword = false;
   bool _isShowConfirmPassword = false;
+
+  bool _isSignIn = false;
 
   @override
   Widget build(BuildContext context) {
@@ -251,70 +254,80 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               //  login button
-                              Container(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.pink,
-                                    ),
-                                    onPressed: () async {
-                                      // check login
-                                      User? u = await User.checkLogin(
-                                          username, password);
-                                      // if success
-                                      if (u != null) {
-                                        // ignore: use_build_context_synchronously
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => PostScreen(
-                                                    user: u,
-                                                  )),
-                                        );
-                                        // Navigator.pushReplacement(
-                                        //     context,
-                                        //     MaterialPageRoute(
-                                        //       builder: (context) => PostScreen(
-                                        //         user: u,
-                                        //       ),
-                                        //     ));
-                                      } else {
-                                        print("Login Fail");
-                                        await showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) =>
-                                              AlertDialog(
-                                            title: Text('Error'),
-                                            content: Text(
-                                                'Incorrect username or password'),
-                                            actions: [
-                                              TextButton(
-                                                  child: Text('Close'),
-                                                  style: TextButton.styleFrom(
-                                                    primary: Colors.white,
-                                                    backgroundColor:
-                                                        Colors.blueGrey,
-                                                  ),
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  }),
-                                            ],
+                              _isSignIn
+                                  ? _loadingSingin()
+                                  : Container(
+                                      width: double.infinity,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.pink,
+                                        ),
+                                        onPressed: () async {
+                                          setState(() {
+                                            _isSignIn = true;
+                                          });
+                                          // check login
+                                          User? u = await User.checkLogin(
+                                              username, password);
+                                          setState(() {
+                                            _isSignIn = false;
+                                          });
+                                          // if success
+                                          if (u != null) {
+                                            // ignore: use_build_context_synchronously
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      PostScreen(
+                                                        user: u,
+                                                      )),
+                                            );
+                                            // Navigator.pushReplacement(
+                                            //     context,
+                                            //     MaterialPageRoute(
+                                            //       builder: (context) => PostScreen(
+                                            //         user: u,
+                                            //       ),
+                                            //     ));
+                                          } else {
+                                            print("Login Fail");
+                                            await showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) =>
+                                                  AlertDialog(
+                                                title: Text('Error'),
+                                                content: Text(
+                                                    'Incorrect username or password'),
+                                                actions: [
+                                                  TextButton(
+                                                      child: Text('Close'),
+                                                      style:
+                                                          TextButton.styleFrom(
+                                                        primary: Colors.white,
+                                                        backgroundColor:
+                                                            Colors.blueGrey,
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                      }),
+                                                ],
+                                              ),
+                                            );
+                                          }
+                                        },
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 18),
+                                          child: Text(
+                                            "Sign in",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.w800),
                                           ),
-                                        );
-                                      }
-                                    },
-                                    child: const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 18),
-                                      child: Text(
-                                        "Sign in",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w800),
-                                      ),
-                                    ),
-                                  ))
+                                        ),
+                                      )),
                             ],
                           )),
                         ),
@@ -543,5 +556,36 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Colors.grey,
       );
     }
+  }
+
+  Widget _loadingSingin() {
+    return SkeletonLoader(
+      builder: Container(
+          decoration: BoxDecoration(
+            border: Border.all(width: 3, color: Colors.white),
+          ),
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pink,
+            ),
+            onPressed: null,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 18),
+              child: Text(
+                "Please wait",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800),
+              ),
+            ),
+          )),
+      items: 1,
+      period: Duration(seconds: 2),
+      highlightColor: Colors.pink,
+      // baseColor: Colors.pink,
+      direction: SkeletonDirection.ltr,
+    );
   }
 }
