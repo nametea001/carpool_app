@@ -16,19 +16,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final formKey = GlobalKey<FormState>();
+  final formKey1 = GlobalKey<FormState>();
+  final formKey2 = GlobalKey<FormState>();
   String ip = '';
   String username = "";
   String password = "";
   String confirmPassword = "";
   String email = "";
+  User userSignUp = User();
 
   bool _isFocusPassword = false;
   bool _isShowPassword = false;
 
   bool _isFocusConfirmPassword = false;
   bool _isShowConfirmPassword = false;
-
   bool _isSignIn = false;
 
   @override
@@ -184,159 +185,169 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     Container(
-                      height: MediaQuery.of(context).size.height - 200,
+                      height: MediaQuery.of(context).size.height - 100,
                       // padding: EdgeInsets.only(top: 30),
                       child: TabBarView(children: [
                         // tab login
                         Container(
                           padding: const EdgeInsets.all(20),
                           child: Form(
+                              key: formKey1,
                               child: Column(
-                            children: [
-                              TextFormField(
-                                onChanged: (value) {
-                                  username = value;
-                                },
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                    labelText: "Username",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.person,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                              SizedBox(
-                                height: 20.0,
-                              ),
-                              TextFormField(
-                                obscureText: true,
-                                onChanged: (value) {
-                                  password = value;
-                                },
-                                decoration: InputDecoration(
-                                    labelText: "Password",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.vpn_key,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                              // forget pass bt
-                              Container(
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.fromLTRB(179.7, 0, 0, 0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      TextButton(
-                                          onPressed: () {},
-                                          child: Text(
-                                            "Forget your password ?",
-                                            style: TextStyle(
-                                                color: Colors.red.shade900,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                fontStyle: FontStyle.italic),
-                                          ))
-                                    ],
+                                children: [
+                                  TextFormField(
+                                    onChanged: (value) {
+                                      username = value;
+                                    },
+                                    autofocus: true,
+                                    decoration: InputDecoration(
+                                        labelText: "Username",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.person,
+                                          color: Colors.pink,
+                                        )),
                                   ),
-                                ),
-                              ),
-                              //  login button
-                              _isSignIn
-                                  ? _loadingSingin()
-                                  : Container(
-                                      width: double.infinity,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.pink,
+                                  SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  TextFormField(
+                                    obscureText: true,
+                                    onChanged: (value) {
+                                      password = value;
+                                    },
+                                    decoration: InputDecoration(
+                                        labelText: "Password",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
                                         ),
-                                        onPressed: () async {
-                                          setState(() {
-                                            _isSignIn = true;
-                                          });
-                                          // check login
-                                          User? u = await User.checkLogin(
-                                              username, password);
-                                          setState(() {
-                                            _isSignIn = false;
-                                          });
-                                          // if success
-                                          if (u != null) {
-                                            // ignore: use_build_context_synchronously
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      PostScreen(
-                                                        user: u,
-                                                      )),
-                                            );
-                                            // Navigator.pushReplacement(
-                                            //     context,
-                                            //     MaterialPageRoute(
-                                            //       builder: (context) => PostScreen(
-                                            //         user: u,
-                                            //       ),
-                                            //     ));
-                                          } else {
-                                            print("Login Fail");
-                                            await showDialog(
-                                              context: context,
-                                              builder: (BuildContext context) =>
-                                                  AlertDialog(
-                                                title: Text('Error'),
-                                                content: Text(
-                                                    'Incorrect username or password'),
-                                                actions: [
-                                                  TextButton(
-                                                      child: Text('Close'),
-                                                      style:
-                                                          TextButton.styleFrom(
-                                                        primary: Colors.white,
-                                                        backgroundColor:
-                                                            Colors.blueGrey,
-                                                      ),
-                                                      onPressed: () {
-                                                        Navigator.pop(context);
-                                                      }),
-                                                ],
+                                        prefixIcon: const Icon(
+                                          Icons.vpn_key,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                  // forget pass bt
+                                  Container(
+                                    child: Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          179.7, 0, 0, 0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                              onPressed: () {},
+                                              child: Text(
+                                                "Forget your password ?",
+                                                style: TextStyle(
+                                                    color: Colors.red.shade900,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    fontStyle:
+                                                        FontStyle.italic),
+                                              ))
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  //  login button
+                                  _isSignIn
+                                      ? _loadingSingin()
+                                      : Container(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.pink,
+                                            ),
+                                            onPressed: () async {
+                                              setState(() {
+                                                _isSignIn = true;
+                                              });
+                                              // check login
+                                              User? u = await User.checkLogin(
+                                                  username, password);
+                                              setState(() {
+                                                _isSignIn = false;
+                                              });
+                                              // if success
+                                              if (u != null) {
+                                                // ignore: use_build_context_synchronously
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          PostScreen(
+                                                            user: u,
+                                                          )),
+                                                );
+                                                // Navigator.pushReplacement(
+                                                //     context,
+                                                //     MaterialPageRoute(
+                                                //       builder: (context) => PostScreen(
+                                                //         user: u,
+                                                //       ),
+                                                //     ));
+                                              } else {
+                                                print("Login Fail");
+                                                await showDialog(
+                                                  context: context,
+                                                  builder:
+                                                      (BuildContext context) =>
+                                                          AlertDialog(
+                                                    title: Text('Error'),
+                                                    content: Text(
+                                                        'Incorrect username or password'),
+                                                    actions: [
+                                                      TextButton(
+                                                          child: Text('Close'),
+                                                          style: TextButton
+                                                              .styleFrom(
+                                                            primary:
+                                                                Colors.white,
+                                                            backgroundColor:
+                                                                Colors.blueGrey,
+                                                          ),
+                                                          onPressed: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          }),
+                                                    ],
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 18),
+                                              child: Text(
+                                                "Sign in",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w800),
                                               ),
-                                            );
-                                          }
-                                        },
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              vertical: 18),
-                                          child: Text(
-                                            "Sign in",
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.w800),
-                                          ),
-                                        ),
-                                      )),
-                            ],
-                          )),
+                                            ),
+                                          )),
+                                ],
+                              )),
                         ),
 
                         // tap SignUp
                         Container(
                           padding: const EdgeInsets.all(20),
                           child: Form(
-                            key: formKey,
+                            key: formKey2,
                             child: Column(
                               children: [
                                 TextFormField(
@@ -346,7 +357,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   autofocus: true,
                                   validator: MultiValidator([
                                     RequiredValidator(
-                                        errorText: "Please Input Username.")
+                                        errorText: "Please Input Username")
                                   ]),
                                   decoration: InputDecoration(
                                       labelText: "Username",
@@ -430,7 +441,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     },
                                     validator: ((String? str) {
                                       if (str!.isEmpty) {
-                                        return "Please Input Password";
+                                        return "Please Input Confirm Password";
                                       }
                                       if (password != confirmPassword) {
                                         return "Password and Confirm Password is not match";
@@ -497,6 +508,56 @@ class _LoginScreenState extends State<LoginScreen> {
                                         color: Colors.pink,
                                       )),
                                 ),
+                                SizedBox(
+                                  height: 20.0,
+                                ),
+                                TextFormField(
+                                  onChanged: (value) {
+                                    username = value;
+                                  },
+                                  autofocus: true,
+                                  validator: MultiValidator([
+                                    RequiredValidator(
+                                        errorText: "Please Input First name.")
+                                  ]),
+                                  decoration: InputDecoration(
+                                      labelText: "First name",
+                                      filled: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        // borderSide: BorderSide.none,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.edit_note,
+                                        color: Colors.pink,
+                                      )),
+                                ),
+                                SizedBox(
+                                  height: 20.0,
+                                ),
+                                TextFormField(
+                                  onChanged: (value) {
+                                    username = value;
+                                  },
+                                  autofocus: true,
+                                  validator: MultiValidator([
+                                    RequiredValidator(
+                                        errorText: "Please Input Last name.")
+                                  ]),
+                                  decoration: InputDecoration(
+                                      labelText: "Last name",
+                                      filled: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        // borderSide: BorderSide.none,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.edit_note,
+                                        color: Colors.pink,
+                                      )),
+                                ),
                                 //  register button
                                 Container(
                                   padding: EdgeInsets.only(top: 30.0),
@@ -506,13 +567,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       backgroundColor: Colors.pink,
                                     ),
                                     onPressed: () async {
-                                      formKey.currentState!.validate();
+                                      // if (formKey2.currentState!.validate()) {}
+                                      // formKey2.currentState?.reset;
                                     },
                                     child: const Padding(
                                       padding:
                                           EdgeInsets.symmetric(vertical: 18),
                                       child: Text(
-                                        "Sign in",
+                                        "Sign up",
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontSize: 20,
@@ -535,16 +597,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
-  }
-
-  dynamic matchPassword(String str) {
-    if (str.isEmpty) {
-      return "Please Input Password";
-    }
-    if (password != confirmPassword) {
-      return "Password and Confirm Password is Incorrect";
-    }
-    return null;
   }
 
   Widget visibility(bool check) {
