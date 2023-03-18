@@ -1,13 +1,15 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_api_headers/google_api_headers.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
-import 'package:google_maps_webservice/places.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_api_headers/google_api_headers.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart';
+import 'package:intl/intl.dart';
+
 import '../gobal_function/data.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -18,13 +20,13 @@ class PostDetailScreen extends StatefulWidget {
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
   GlobalData globalData = new GlobalData();
+  bool _isScroll = true;
 
   bool _myLocationEnable = false;
   bool _showMarkerStartToEnd = false;
-
   String location = "Search Location";
   Position? userLocation;
-  GoogleMapController? mapController;
+  GoogleMapController? _mapController;
   // final Completer<GoogleMapController> _controller =
   //     Completer<GoogleMapController>();
   // LatLng startLocation = LatLng(17.291925, 104.112884);
@@ -59,232 +61,656 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    mapController = controller;
+    _mapController = controller;
   }
+
+  // selec back
+  bool _isBack = false;
+  String stateGoBack = "go";
+  // input
+  final formKey = GlobalKey<FormState>();
+  // focuscontroll
+  FocusNode _focusNodeDescription = FocusNode();
+  FocusNode _focusNodeSeat = FocusNode();
+  FocusNode _focusNodePrice = FocusNode();
+  FocusNode _focusNodeBrand = FocusNode();
+  FocusNode _focusNodemodel = FocusNode();
+  FocusNode _focusNodeVRegistration = FocusNode();
+  FocusNode _focusNodeColor = FocusNode();
+  // datetime control
+  TextEditingController dateTimeController = TextEditingController();
+  String stateDatetimeSelected = "";
+  DateTime? datetimeSelected;
+  TextEditingController dateTimeBackController = TextEditingController();
+  String stateDatetimeBackSelected = "";
+  DateTime? datetimeBackSelected;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Detail'),
-        backgroundColor: Colors.pink,
-        actions: [],
-      ),
-      body: SafeArea(
-          child: Column(
-        children: [
-          Container(
-            height: (MediaQuery.of(context).size.height / 2) - 90,
-            child: Stack(children: [
-              GoogleMap(
-                //Map widget from google_maps_flutter package
-                // zoomGesturesEnabled: false, //enable Zoom in, out on map
-                myLocationButtonEnabled: false,
-                myLocationEnabled: _myLocationEnable,
-                zoomControlsEnabled: true,
-                initialCameraPosition: _kGooglePlex,
-                mapType: MapType.normal, //map type
-                onMapCreated: _onMapCreated,
-                markers: _showMarkerStartToEnd
-                    ? {
-                        Marker(
-                          draggable: false,
-                          markerId: MarkerId("marker1"),
-                          position: LatLng(17.291925, 104.112884),
-                        ),
-                        Marker(
-                          draggable: false,
-                          markerId: MarkerId("marker2"),
-                          position: LatLng(17.291925, 105.112884),
-                        ),
-                      }
-                    : {},
-              ),
-
-              //search autoconplete input
-              Positioned(
-                  //search input bar
-                  top: 10,
-                  child: InkWell(
-                      onTap: () async {
-                        Prediction? place = await PlacesAutocomplete.show(
-                            context: context,
-                            apiKey: globalData.googleApiKey(),
-                            mode: Mode.overlay,
-                            types: [],
-                            strictbounds: false,
-                            components: [Component(Component.country, 'th')],
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                borderSide: BorderSide(
-                                  color: Colors.white,
-                                ),
+    return GestureDetector(
+      onTap: () {
+        _focusNodeDescription.unfocus();
+        _focusNodeSeat.unfocus();
+        _focusNodePrice.unfocus();
+        _focusNodeBrand.unfocus();
+        _focusNodemodel.unfocus();
+        _focusNodeVRegistration.unfocus();
+        _focusNodeColor.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Detail'),
+          backgroundColor: Colors.pink,
+          actions: [],
+        ),
+        body: SingleChildScrollView(
+            physics: _isScroll
+                ? AlwaysScrollableScrollPhysics()
+                : NeverScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                Container(
+                  // padding: EdgeInsets.only(left: 20, right: 20),
+                  height: (MediaQuery.of(context).size.height / 2) - 90,
+                  child: Stack(children: [
+                    GoogleMap(
+                      //Map widget from google_maps_flutter package
+                      // zoomGesturesEnabled: false, //enable Zoom in, out on map
+                      myLocationButtonEnabled: false,
+                      myLocationEnabled: _myLocationEnable,
+                      zoomControlsEnabled: true,
+                      initialCameraPosition: _kGooglePlex,
+                      mapType: MapType.normal, //map type
+                      onMapCreated: _onMapCreated,
+                      markers: _showMarkerStartToEnd
+                          ? {
+                              const Marker(
+                                draggable: false,
+                                markerId: MarkerId("marker1"),
+                                position: LatLng(17.291925, 104.112884),
                               ),
+                              const Marker(
+                                draggable: false,
+                                markerId: MarkerId("marker2"),
+                                position: LatLng(17.291925, 105.112884),
+                              ),
+                            }
+                          : {},
+                    ),
+
+                    //search autoconplete input
+                    Positioned(
+                        //search input bar
+                        top: 10,
+                        child: InkWell(
+                            onTap: () async {
+                              Prediction? place = await PlacesAutocomplete.show(
+                                  context: context,
+                                  apiKey: globalData.googleApiKey(),
+                                  mode: Mode.overlay,
+                                  types: [],
+                                  strictbounds: false,
+                                  components: [
+                                    Component(Component.country, 'th')
+                                  ],
+                                  decoration: InputDecoration(
+                                    hintText: 'Search',
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                      borderSide: const BorderSide(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  //google_map_webservice package
+                                  onError: (err) {
+                                    print(err);
+                                  });
+
+                              if (place != null) {
+                                setState(() {
+                                  location = place.description.toString();
+                                });
+
+                                //form google_maps_webservice package
+                                final plist = GoogleMapsPlaces(
+                                  apiKey: globalData.googleApiKey(),
+                                  apiHeaders: await const GoogleApiHeaders()
+                                      .getHeaders(),
+                                  //from google_api_headers package
+                                );
+                                String placeid = place.placeId ?? "0";
+                                final detail =
+                                    await plist.getDetailsByPlaceId(placeid);
+                                final geometry = detail.result.geometry!;
+                                final lat = geometry.location.lat;
+                                final lang = geometry.location.lng;
+                                var newlatlang = LatLng(lat, lang);
+
+                                //move map camera to selected place with animation
+                                _mapController?.animateCamera(
+                                    CameraUpdate.newCameraPosition(
+                                        CameraPosition(
+                                            target: newlatlang, zoom: 17)));
+                              } else {
+                                print(null);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Card(
+                                child: Container(
+                                    padding: const EdgeInsets.all(0),
+                                    width:
+                                        MediaQuery.of(context).size.width - 40,
+                                    child: ListTile(
+                                      title: Text(
+                                        location,
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
+                                      trailing: const Icon(Icons.search),
+                                      dense: true,
+                                    )),
+                              ),
+                            ))),
+                  ]),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    // button under map
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Card(
+                          shape: RoundedRectangleBorder(
+                            side:
+                                const BorderSide(color: Colors.white, width: 1),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: InkWell(
+                            onTap: () {},
+                            child: Column(
+                              children: [
+                                IconButton(
+                                    onPressed: () async {
+                                      setState(() {
+                                        _showMarkerStartToEnd = false;
+                                        _myLocationEnable = true;
+                                      });
+                                      Position? l = await _getLocation();
+                                      if (l != null) {
+                                        _mapController?.animateCamera(
+                                          CameraUpdate.newLatLngZoom(
+                                              LatLng(l.latitude, l.longitude),
+                                              14),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(
+                                      Icons.my_location,
+                                      size: 30,
+                                    )),
+                                // Text(
+                                //   "Lot",
+                                //   style: TextStyle(
+                                //     fontSize: 12.0,
+                                //     fontWeight: FontWeight.bold,
+                                //     color: Colors.black,
+                                //   ),
+                                // ),
+                              ],
                             ),
-                            //google_map_webservice package
-                            onError: (err) {
-                              print(err);
-                            });
-
-                        if (place != null) {
-                          setState(() {
-                            location = place.description.toString();
-                          });
-
-                          //form google_maps_webservice package
-                          final plist = GoogleMapsPlaces(
-                            apiKey: globalData.googleApiKey(),
-                            apiHeaders: await GoogleApiHeaders().getHeaders(),
-                            //from google_api_headers package
-                          );
-                          String placeid = place.placeId ?? "0";
-                          final detail =
-                              await plist.getDetailsByPlaceId(placeid);
-                          final geometry = detail.result.geometry!;
-                          final lat = geometry.location.lat;
-                          final lang = geometry.location.lng;
-                          var newlatlang = LatLng(lat, lang);
-
-                          //move map camera to selected place with animation
-                          mapController?.animateCamera(
-                              CameraUpdate.newCameraPosition(CameraPosition(
-                                  target: newlatlang, zoom: 17)));
-                        } else {
-                          print(null);
-                        }
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.all(15),
-                        child: Card(
-                          child: Container(
-                              padding: EdgeInsets.all(0),
-                              width: MediaQuery.of(context).size.width - 40,
-                              child: ListTile(
-                                title: Text(
-                                  location,
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                trailing: Icon(Icons.search),
-                                dense: true,
-                              )),
+                          ),
                         ),
-                      ))),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              // button under map
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.white, width: 1),
-                      borderRadius: BorderRadius.circular(50),
+                        Card(
+                          shape: RoundedRectangleBorder(
+                            side:
+                                const BorderSide(color: Colors.white, width: 1),
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                          child: InkWell(
+                            onTap: () {},
+                            child: Column(
+                              children: [
+                                IconButton(
+                                    onPressed: () async {
+                                      setState(() {
+                                        _showMarkerStartToEnd = true;
+                                        _myLocationEnable = false;
+                                      });
+                                    },
+                                    icon: const Icon(
+                                      Icons.pin_drop,
+                                      size: 30,
+                                    )),
+                                // Text(
+                                //   "Lot",
+                                //   style: TextStyle(
+                                //     fontSize: 12.0,
+                                //     fontWeight: FontWeight.bold,
+                                //     color: Colors.black,
+                                //   ),
+                                // ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: InkWell(
-                      onTap: () {},
-                      child: Column(
-                        children: [
-                          IconButton(
-                              onPressed: () async {
-                                setState(() {
-                                  _showMarkerStartToEnd = false;
-                                  _myLocationEnable = true;
-                                });
-                                Position? l = await _getLocation();
-                                if (l != null) {
-                                  mapController?.animateCamera(
-                                    CameraUpdate.newLatLngZoom(
-                                        LatLng(l.latitude, l.longitude), 14),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 25, left: 25),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 30,
+                              child: RadioListTile(
+                                  value: "go",
+                                  groupValue: stateGoBack,
+                                  onChanged: ((value) {
+                                    setState(() {
+                                      stateGoBack = value.toString();
+                                      _isBack = false;
+                                      dateTimeBackController.text = "";
+                                      datetimeBackSelected = null;
+                                      stateDatetimeBackSelected = "";
+                                    });
+                                  })),
+                            ),
+                            const Text("ไปอย่างเดียว"),
+                            SizedBox(
+                              width:
+                                  (MediaQuery.of(context).size.width / 2) - 140,
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: RadioListTile(
+                                  value: "back",
+                                  groupValue: stateGoBack,
+                                  onChanged: ((value) {
+                                    setState(() {
+                                      stateGoBack = value.toString();
+                                      _isBack = true;
+                                    });
+                                  })),
+                            ),
+                            const Text("ไปและกลับ"),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width - 50,
+                              child: TextFormField(
+                                showCursor: false,
+                                readOnly: true,
+                                focusNode: FocusNode(canRequestFocus: false),
+                                keyboardType: TextInputType.none,
+                                controller: dateTimeController,
+                                onTap: () {
+                                  FocusScope.of(context).unfocus();
+                                  DatePicker.showDateTimePicker(
+                                    context,
+                                    showTitleActions: true,
+                                    minTime: DateTime.now(),
+                                    currentTime: DateTime.now(),
+                                    locale: LocaleType.th,
+                                    onConfirm: (time) {
+                                      datetimeSelected = time;
+                                      int m = int.parse(DateFormat.M()
+                                          .format(datetimeSelected!));
+                                      String dw = DateFormat.E()
+                                          .format(datetimeSelected!);
+                                      stateDatetimeSelected =
+                                          "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                      dateTimeController.text =
+                                          stateDatetimeSelected;
+                                    },
                                   );
-                                }
-                              },
-                              icon: Icon(
-                                Icons.my_location,
-                                size: 30,
-                              )),
-                          // Text(
-                          //   "Lot",
-                          //   style: TextStyle(
-                          //     fontSize: 12.0,
-                          //     fontWeight: FontWeight.bold,
-                          //     color: Colors.black,
-                          //   ),
-                          // ),
-                        ],
-                      ),
+                                },
+                                decoration: InputDecoration(
+                                    labelText: "เวลาเดินทาง",
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      // borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.schedule,
+                                      color: Colors.pink,
+                                    )),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Visibility(
+                            visible: _isBack,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: MediaQuery.of(context).size.width - 50,
+                                  child: TextFormField(
+                                    showCursor: false,
+                                    readOnly: true,
+                                    focusNode:
+                                        FocusNode(canRequestFocus: false),
+                                    keyboardType: TextInputType.none,
+                                    controller: dateTimeBackController,
+                                    onTap: () {
+                                      FocusScope.of(context).unfocus();
+                                      DatePicker.showDateTimePicker(
+                                        context,
+                                        showTitleActions: true,
+                                        minTime:
+                                            datetimeSelected ?? DateTime.now(),
+                                        currentTime:
+                                            datetimeSelected ?? DateTime.now(),
+                                        locale: LocaleType.th,
+                                        onConfirm: (time) {
+                                          datetimeBackSelected = time;
+                                          int m = int.parse(DateFormat.M()
+                                              .format(datetimeBackSelected!));
+                                          String dw = DateFormat.E()
+                                              .format(datetimeBackSelected!);
+                                          stateDatetimeBackSelected =
+                                              "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                          dateTimeBackController.text =
+                                              stateDatetimeSelected;
+                                        },
+                                      );
+                                    },
+                                    decoration: InputDecoration(
+                                        labelText: "เวลาเดินทางกลับ",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.schedule,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            )),
+                        Visibility(
+                            visible: _isBack,
+                            child: const SizedBox(
+                              height: 10,
+                            )),
+                        // seat and price
+                        Row(
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodeSeat,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                        labelText: "จำนวนที่นั่ง",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.airline_seat_recline_normal,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodePrice,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                        labelText: "ราคาต่อที่นั่ง",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.payment,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // brand and model
+                        Row(
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodeBrand,
+                                    decoration: InputDecoration(
+                                        labelText: "ยี่ห้อ",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.car_crash,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodemodel,
+                                    decoration: InputDecoration(
+                                        labelText: "รุ่น",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.directions_car,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // brand and model
+                        Row(
+                          children: [
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodeVRegistration,
+                                    decoration: InputDecoration(
+                                        labelText: "ทะเบียน",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.font_download,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Column(
+                              children: [
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          30,
+                                  child: TextFormField(
+                                    focusNode: _focusNodeColor,
+                                    decoration: InputDecoration(
+                                        labelText: "สี",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.palette,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        // description
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width - 50,
+                              child: TextFormField(
+                                focusNode: _focusNodeDescription,
+                                maxLines: 3,
+                                decoration: InputDecoration(
+                                    labelText:
+                                        "รายระเอียดเพิ่มเติม เช่น ไปทำอะ จะจอดพักที่ไหน ขึ้นทางด่วนไหม",
+                                    filled: true,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      // borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Icon(
+                                      Icons.edit_note,
+                                      color: Colors.pink,
+                                    )),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                      ],
                     ),
                   ),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(color: Colors.white, width: 1),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: InkWell(
-                      onTap: () {},
-                      child: Column(
-                        children: [
-                          IconButton(
-                              onPressed: () async {
-                                setState(() {
-                                  _showMarkerStartToEnd = true;
-                                  _myLocationEnable = false;
-                                });
-                              },
-                              icon: Icon(
-                                Icons.pin_drop,
-                                size: 30,
-                              )),
-                          // Text(
-                          //   "Lot",
-                          //   style: TextStyle(
-                          //     fontSize: 12.0,
-                          //     fontWeight: FontWeight.bold,
-                          //     color: Colors.black,
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )
-        ],
-      )),
-      floatingActionButton: SpeedDial(
-        icon: Icons.expand_less,
-        activeIcon: Icons.expand_more,
-        backgroundColor: Colors.green,
-        activeBackgroundColor: Colors.red,
-        spacing: 12,
-        children: [
-          SpeedDialChild(
-            // backgroundColor: Colors.lime,
-            child: Icon(Icons.mail),
-            onTap: () {},
-          ),
-          SpeedDialChild(
-            // backgroundColor: Colors.lime,
-            child: Icon(Icons.add),
-            onTap: () {},
-          ),
-          SpeedDialChild(
-            // backgroundColor: Colors.lime,
-            child: Icon(Icons.abc),
-            onTap: () {},
-          ),
-        ],
+                ),
+              ],
+            )),
+        // floatingActionButton: SpeedDial(
+        //   icon: Icons.expand_less,
+        //   activeIcon: Icons.expand_more,
+        //   backgroundColor: Colors.green,
+        //   activeBackgroundColor: Colors.red,
+        //   spacing: 12,
+        //   children: [
+        //     SpeedDialChild(
+        //       // backgroundColor: Colors.lime,
+        //       child: Icon(Icons.mail),
+        //       onTap: () {},
+        //     ),
+        //     SpeedDialChild(
+        //       // backgroundColor: Colors.lime,
+        //       child: Icon(Icons.add),
+        //       onTap: () {},
+        //     ),
+        //     SpeedDialChild(
+        //       // backgroundColor: Colors.lime,
+        //       child: Icon(Icons.abc),
+        //       onTap: () {},
+        //     ),
+        //   ],
+        // ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _focusNodeDescription.dispose();
+    _focusNodeSeat.dispose();
+    _focusNodePrice.dispose();
+    _focusNodeBrand.dispose();
+    _focusNodemodel.dispose();
+    _focusNodeVRegistration.dispose();
+    _focusNodeColor.dispose();
   }
 }

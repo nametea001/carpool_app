@@ -88,12 +88,6 @@ class _PostScreenState extends State<PostScreen> {
       );
       list.add(l);
     }
-    for (int i = 0; i < 15; i++) {
-      var l = ListTile(
-        title: Text("ssssss"),
-      );
-      list.add(l);
-    }
 
     return list;
   }
