@@ -48,13 +48,16 @@ class User {
     return null;
   }
 
-  static Future<User?> signUp(String username, String password) async {
-    NetworkHelper networkHelper = NetworkHelper('login', {
+  static Future<User?> signUp(User user, String password) async {
+    NetworkHelper networkHelper = NetworkHelper('users/add_user', {
       'device': "mobile",
     });
     var json = await networkHelper.postData(jsonEncode(<String, dynamic>{
-      'username': username,
+      'username': user.username,
       'password': password,
+      'first_name': user.firstName,
+      'last_name': user.lastName,
+      'email': user.email,
     }));
 
     if (json != null && json['error'] == false) {
@@ -65,9 +68,6 @@ class User {
         firstName: u["first_name"],
         lastName: u["last_name"],
         email: u["email"],
-        userRoleID: u["user_role_id"],
-        userRoleName: u["user_roles"]["user_role_name"],
-        img: u['img'],
       );
       return user;
     }

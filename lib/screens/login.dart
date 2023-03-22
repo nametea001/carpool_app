@@ -22,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String username = "";
   String password = "";
   String confirmPassword = "";
-  String email = "";
   User userSignUp = User();
 
   bool _isFocusPassword = false;
@@ -31,6 +30,18 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isFocusConfirmPassword = false;
   bool _isShowConfirmPassword = false;
   bool _isSignIn = false;
+  bool _isSingUp = false;
+
+  @override
+  void initState() {
+    super.initState();
+    //loading posts
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -309,10 +320,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         'Incorrect username or password'),
                                                     actions: [
                                                       TextButton(
-                                                          child: Text('Close'),
                                                           style: TextButton
                                                               .styleFrom(
-                                                            primary:
+                                                            foregroundColor:
                                                                 Colors.white,
                                                             backgroundColor:
                                                                 Colors.blueGrey,
@@ -320,7 +330,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                           onPressed: () {
                                                             Navigator.pop(
                                                                 context);
-                                                          }),
+                                                          },
+                                                          child: Text('Close')),
                                                     ],
                                                   ),
                                                 );
@@ -351,8 +362,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               children: [
                                 TextFormField(
-                                  onChanged: (value) {
-                                    username = value;
+                                  onSaved: (newValue) {
+                                    userSignUp.username = newValue;
                                   },
                                   autofocus: true,
                                   validator: MultiValidator([
@@ -386,6 +397,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     obscureText: !_isShowPassword,
                                     onChanged: (value) {
                                       password = value;
+                                    },
+                                    onSaved: (newValue) {
+                                      password = newValue!;
                                     },
                                     validator: ((String? str) {
                                       if (str!.isEmpty) {
@@ -492,8 +506,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                         errorText: "Email is Incorrect !")
                                   ]),
                                   keyboardType: TextInputType.emailAddress,
-                                  onChanged: (value) {
-                                    email = value;
+                                  // onChanged: (value) {
+                                  //   email = value;
+                                  // },
+                                  onSaved: (newValue) {
+                                    userSignUp.email = newValue;
                                   },
                                   decoration: InputDecoration(
                                       labelText: "Email",
@@ -512,10 +529,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   height: 20.0,
                                 ),
                                 TextFormField(
-                                  onChanged: (value) {
-                                    username = value;
+                                  // onChanged: (value) {
+                                  //   username = value;
+                                  // },
+                                  onSaved: (newValue) {
+                                    userSignUp.firstName = newValue;
                                   },
-                                  autofocus: true,
                                   validator: MultiValidator([
                                     RequiredValidator(
                                         errorText: "Please Input First name.")
@@ -537,10 +556,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   height: 20.0,
                                 ),
                                 TextFormField(
-                                  onChanged: (value) {
-                                    username = value;
+                                  // onChanged: (value) {
+                                  //   username = value;
+                                  // },
+                                  onSaved: (newValue) {
+                                    userSignUp.lastName = newValue;
                                   },
-                                  autofocus: true,
                                   validator: MultiValidator([
                                     RequiredValidator(
                                         errorText: "Please Input Last name.")
@@ -559,30 +580,45 @@ class _LoginScreenState extends State<LoginScreen> {
                                       )),
                                 ),
                                 //  register button
-                                Container(
-                                  padding: EdgeInsets.only(top: 30.0),
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.pink,
-                                    ),
-                                    onPressed: () async {
-                                      // if (formKey2.currentState!.validate()) {}
-                                      // formKey2.currentState?.reset;
-                                    },
-                                    child: const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(vertical: 18),
-                                      child: Text(
-                                        "Sign up",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w800),
+                                _isSingUp
+                                    ? _loadingSingin()
+                                    : Container(
+                                        padding: EdgeInsets.only(top: 30.0),
+                                        width: double.infinity,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.pink,
+                                          ),
+                                          onPressed: () async {
+                                            if (formKey2.currentState!
+                                                    .validate() &&
+                                                password == confirmPassword) {
+                                              formKey2.currentState!.save();
+
+                                              setState(() {
+                                                _isSingUp = true;
+                                              });
+                                              Future<User?> u = User.signUp(
+                                                  userSignUp, password);
+                                              setState(() {
+                                                _isSingUp = false;
+                                              });
+                                            }
+                                            // formKey2.currentState?.reset;
+                                          },
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 18),
+                                            child: Text(
+                                              "Sign up",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w800),
+                                            ),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )
                               ],
                             ),
                           ),
