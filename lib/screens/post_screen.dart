@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/aumphure.dart';
@@ -46,17 +45,15 @@ class _PostScreenState extends State<PostScreen> {
 
   List<Province?> provinces = [];
   List<Aumphure?> aumphures = [];
-  List<String?> stateAumphures = [];
+  List<Province?> stateProvincesEnd = [];
+  List<Aumphure?> stateAumphures = [];
 
   int? provinceStartID = 0;
-  String? provinceStartName = "";
   int? aumphureStartID = 0;
-  String? aumphureStartName = "";
-
+  bool _isSelectedProvinceStart = false;
   int? provinceEndtID = 0;
-  String? provinceEndName = "";
   int? aumphureEndID = 0;
-  String? aumphureEndName = "";
+  bool _isSelectedProvinceEnd = false;
 
   @override
   void initState() {
@@ -75,8 +72,8 @@ class _PostScreenState extends State<PostScreen> {
     List<ListTile> list = [];
     for (var post in posts) {
       var l = ListTile(
-        contentPadding:
-            EdgeInsets.only(top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
+        contentPadding: const EdgeInsets.only(
+            top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
         leading: (post.img != null
             ? GestureDetector(
                 onTap: () {},
@@ -95,32 +92,32 @@ class _PostScreenState extends State<PostScreen> {
           children: [
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.pin_drop,
                   color: Colors.red,
                 ),
                 Text(
                   "${post.startAmphireName} ${post.startProvinceName}",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.golf_course,
                   color: Colors.green,
                 ),
                 Text(
                   "${post.endAmphireName} ${post.endProvinceName}",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ],
         ),
-        subtitle: Text("sub test"),
-        trailing: Text("test trail"),
+        subtitle: const Text("sub test"),
+        trailing: const Text("test trail"),
         onTap: () {},
       );
       list.add(l);
@@ -154,10 +151,20 @@ class _PostScreenState extends State<PostScreen> {
       // ),
       IconButton(
           onPressed: () async {
+            stateAumphures = [];
+            stateAumphures = [];
+            provinceStartID = 0;
+            provinceEndtID = 0;
+            aumphureStartID = 0;
+            aumphureEndID = 0;
+            setState(() {
+              _isSelectedProvinceStart = false;
+              _isSelectedProvinceEnd = false;
+            });
             await showDialog(
                 context: context,
                 builder: (BuildContext context) => AlertDialog(
-                      title: Text('Search'),
+                      title: const Text('Search'),
                       content: StatefulBuilder(builder:
                           (BuildContext context, StateSetter setState) {
                         return Column(
@@ -248,7 +255,7 @@ class _PostScreenState extends State<PostScreen> {
                                 )
                               ],
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
                             Visibility(
@@ -321,45 +328,42 @@ class _PostScreenState extends State<PostScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: DropdownSearch<String?>(
-                                    popupProps: PopupProps.menu(
+                                  child: DropdownSearch<Province?>(
+                                    popupProps: const PopupProps.menu(
                                       showSearchBox: true,
                                       // showSelectedItems: true,
                                       // disabledItemFn: (String s) {
                                       //   return s.startsWith('I');
                                       // },
                                     ),
-                                    items: provinces.map((province) {
-                                      return province?.nameTH;
-                                    }).toList(),
+                                    items: provinces,
+                                    itemAsString: (Province? p) =>
+                                        p!.nameTH.toString(),
                                     dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
+                                        const DropDownDecoratorProps(
                                       dropdownSearchDecoration: InputDecoration(
                                         labelText: "จังหวัดต้นทาง",
                                         // hintText: "country in menu mode",
                                       ),
                                     ),
-                                    selectedItem: provinceStartName,
-                                    onChanged: (val) {
-                                      provinces.forEach((province) {
-                                        if (province?.nameTH == val) {
-                                          provinceStartID = province?.id;
-                                          provinceStartName = province?.nameTH;
-                                          aumphureStartID = 0;
+                                    onChanged: (Province? p) {
+                                      stateAumphures.clear();
+                                      provinceStartID = p!.id;
+                                      aumphureStartID = 0;
+                                      Aumphure selectingAumphure = Aumphure(
+                                          id: 0,
+                                          provinceID: 0,
+                                          nameTH: "ทุกอำเภอ");
+                                      // print(selectingAumphure.nameTH);
+                                      setState(() {
+                                        stateAumphures.add(selectingAumphure);
+                                        _isSelectedProvinceEnd = true;
+                                      });
+                                      aumphures.forEach((a) {
+                                        if (a!.provinceID == p.id) {
                                           setState(() {
-                                            stateAumphures = [];
-                                            aumphureStartName = "";
+                                            stateAumphures.add(a);
                                           });
-                                          aumphures.forEach((aumphure) {
-                                            if (aumphure?.provinceID ==
-                                                provinceStartID) {
-                                              setState(() {
-                                                stateAumphures
-                                                    .add(aumphure?.nameTH);
-                                              });
-                                            }
-                                          });
-                                          return;
                                         }
                                       });
                                     },
@@ -367,33 +371,116 @@ class _PostScreenState extends State<PostScreen> {
                                 )
                               ],
                             ),
+                            Visibility(
+                              visible: _isSelectedProvinceStart,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownSearch<Aumphure?>(
+                                      popupProps: const PopupProps.menu(
+                                        showSearchBox: true,
+                                      ),
+                                      items: stateAumphures,
+                                      itemAsString: (Aumphure? a) =>
+                                          a!.nameTH.toString(),
+                                      dropdownDecoratorProps:
+                                          const DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            InputDecoration(
+                                          labelText: "อำเภอต้นทาง",
+                                        ),
+                                      ),
+                                      onChanged: (Aumphure? a) {
+                                        aumphureStartID = a?.id;
+                                      },
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
                             Row(
                               children: [
                                 Expanded(
-                                  child: DropdownSearch<String?>(
-                                    popupProps: PopupProps.menu(
+                                  child: DropdownSearch<Province?>(
+                                    popupProps: const PopupProps.menu(
                                       showSearchBox: true,
+
+                                      // showSelectedItems: true,
+                                      // disabledItemFn: (String s) {
+                                      //   return s.startsWith('I');
+                                      // },
                                     ),
-                                    items: stateAumphures,
+                                    items: stateProvincesEnd,
+                                    itemAsString: (Province? p) =>
+                                        p!.nameTH.toString(),
                                     dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
+                                        const DropDownDecoratorProps(
                                       dropdownSearchDecoration: InputDecoration(
-                                        labelText: "อำเภอต้นทาง",
+                                        labelText: "จังหวัดปลายทาง",
+                                        // hintText: "country in menu mode",
                                       ),
                                     ),
-                                    onChanged: (val) {
-                                      
+                                    onChanged: (Province? p) {
+                                      stateAumphures.clear();
+                                      if (p!.id != 0) {
+                                        provinceStartID = p.id;
+                                        aumphureStartID = 0;
+                                      }
+                                      Aumphure selectingAumphure = Aumphure(
+                                          id: 0,
+                                          provinceID: 0,
+                                          nameTH: "ทุกอำเภอ");
+                                      // print(selectingAumphure.nameTH);
+                                      setState(() {
+                                        _isSelectedProvinceEnd = true;
+                                        stateAumphures.add(selectingAumphure);
+                                      });
+                                      aumphures.forEach((a) {
+                                        if (a!.provinceID == p.id) {
+                                          setState(() {
+                                            stateAumphures.add(a);
+                                          });
+                                        }
+                                      });
                                     },
                                   ),
                                 )
                               ],
+                            ),
+                            Visibility(
+                              visible: _isSelectedProvinceEnd,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: DropdownSearch<Aumphure?>(
+                                      popupProps: const PopupProps.menu(
+                                        showSearchBox: true,
+                                      ),
+                                      items: stateAumphures,
+                                      itemAsString: (Aumphure? a) =>
+                                          a!.nameTH.toString(),
+                                      dropdownDecoratorProps:
+                                          const DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            InputDecoration(
+                                          labelText: "อำเภอปลายทาง",
+                                        ),
+                                      ),
+                                      // selectedItem: Aumphure(nameTH: "ทุกอำเภอ"),
+                                      onChanged: (Aumphure? a) {
+                                        aumphureStartID = a?.id;
+                                      },
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                           ],
                         );
                       }),
                       actions: [
                         TextButton(
-                          child: Text('Search'),
+                          child: const Text('Search'),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.green,
@@ -403,7 +490,7 @@ class _PostScreenState extends State<PostScreen> {
                           },
                         ),
                         TextButton(
-                            child: Text('Close'),
+                            child: const Text('Close'),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blueGrey,
@@ -414,7 +501,7 @@ class _PostScreenState extends State<PostScreen> {
                       ],
                     ));
           },
-          icon: Icon(Icons.search)),
+          icon: const Icon(Icons.search)),
     ];
     return bt;
   }
@@ -456,46 +543,48 @@ class _PostScreenState extends State<PostScreen> {
                               )
                             : null,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 12,
                       ),
                       Text(
                         "${user.firstName} ${user.lastName}",
-                        style: TextStyle(fontSize: 28, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 28, color: Colors.white),
                       ),
                       Text(
                         "${user.email}",
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
                   child: Wrap(
                     runSpacing: 16,
                     children: [
                       ListTile(
-                        leading: Icon(Icons.person),
-                        title: Text("Profile"),
+                        leading: const Icon(Icons.person),
+                        title: const Text("Profile"),
                         onTap: () {},
                       ),
                       ListTile(
-                        leading: Icon(Icons.history),
-                        title: Text("History"),
+                        leading: const Icon(Icons.history),
+                        title: const Text("History"),
                         onTap: () {},
                       ),
                       ListTile(
-                        leading: Icon(Icons.info),
-                        title: Text("help"),
+                        leading: const Icon(Icons.info),
+                        title: const Text("help"),
                         onTap: () {},
                       ),
                       const Divider(
                         color: Colors.black,
                       ),
                       ListTile(
-                        leading: Icon(Icons.logout),
-                        title: Text("Logout"),
+                        leading: const Icon(Icons.logout),
+                        title: const Text("Logout"),
                         onTap: () {
                           setState(() {
                             _isLogout = true;
@@ -523,7 +612,7 @@ class _PostScreenState extends State<PostScreen> {
                           updateUI();
                         },
                         child: ListView(
-                          physics: BouncingScrollPhysics(),
+                          physics: const BouncingScrollPhysics(),
                           children: getListTile(),
                         ),
                       )),
@@ -534,10 +623,11 @@ class _PostScreenState extends State<PostScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PostDetailScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const PostDetailScreen()),
               );
             },
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
             backgroundColor: Colors.pink,
           )),
     );
@@ -546,17 +636,15 @@ class _PostScreenState extends State<PostScreen> {
   getProvince() async {
     List<Province>? tempDataProvinces =
         await Province.getProvince(user.username!);
-    setState(() {
-      provinces = tempDataProvinces ?? [];
-    });
+    provinces = tempDataProvinces ?? [];
+    stateProvincesEnd.add(Province(id: 0, nameTH: "ทุกจังหวัด"));
+    stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
   }
 
   getAumphure() async {
     List<Aumphure>? tempDataAumphures =
         await Aumphure.getAumphure(user.username!);
-    setState(() {
-      aumphures = tempDataAumphures ?? [];
-    });
+    aumphures = tempDataAumphures ?? [];
   }
 
   updateUI() async {
@@ -580,14 +668,14 @@ class _PostScreenState extends State<PostScreen> {
         child: SingleChildScrollView(
           child: SkeletonLoader(
             builder: Container(
-              padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
               child: Row(
                 children: <Widget>[
-                  CircleAvatar(
+                  const CircleAvatar(
                     backgroundColor: Colors.white,
                     radius: 30,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       children: <Widget>[
@@ -596,7 +684,7 @@ class _PostScreenState extends State<PostScreen> {
                           height: 10,
                           color: Colors.white,
                         ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Container(
                           width: double.infinity,
                           height: 12,
@@ -609,7 +697,7 @@ class _PostScreenState extends State<PostScreen> {
               ),
             ),
             items: 10,
-            period: Duration(seconds: 2),
+            period: const Duration(seconds: 2),
             highlightColor: Colors.pink,
             direction: SkeletonDirection.ltr,
           ),
