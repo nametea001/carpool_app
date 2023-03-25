@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:car_pool_project/gobal_function/data.dart';
-import 'package:car_pool_project/models/aumphure.dart';
+import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/models/user.dart';
@@ -44,15 +44,15 @@ class _PostScreenState extends State<PostScreen> {
   DateTime? datetimeBackSelected;
 
   List<Province?> provinces = [];
-  List<Aumphure?> aumphures = [];
+  List<District?> districts = [];
   List<Province?> stateProvincesEnd = [];
-  List<Aumphure?> stateAumphures = [];
+  List<District?> stateDistricts = [];
 
   int? provinceStartID = 0;
-  int? aumphureStartID = 0;
+  int? districtStartID = 0;
   bool _isSelectedProvinceStart = false;
   int? provinceEndtID = 0;
-  int? aumphureEndID = 0;
+  int? districtEndID = 0;
   bool _isSelectedProvinceEnd = false;
 
   @override
@@ -63,7 +63,7 @@ class _PostScreenState extends State<PostScreen> {
       _isLoading = true;
     });
     getProvince();
-    getAumphure();
+    getDistrict();
     updateUI(); //loading posts
   }
 
@@ -151,12 +151,12 @@ class _PostScreenState extends State<PostScreen> {
       // ),
       IconButton(
           onPressed: () async {
-            stateAumphures = [];
-            stateAumphures = [];
+            stateDistricts = [];
+            stateDistricts = [];
             provinceStartID = 0;
             provinceEndtID = 0;
-            aumphureStartID = 0;
-            aumphureEndID = 0;
+            districtStartID = 0;
+            districtEndID = 0;
             setState(() {
               _isSelectedProvinceStart = false;
               _isSelectedProvinceEnd = false;
@@ -347,22 +347,22 @@ class _PostScreenState extends State<PostScreen> {
                                       ),
                                     ),
                                     onChanged: (Province? p) {
-                                      stateAumphures.clear();
+                                      stateDistricts.clear();
                                       provinceStartID = p!.id;
-                                      aumphureStartID = 0;
-                                      Aumphure selectingAumphure = Aumphure(
+                                      districtStartID = 0;
+                                      District selectingDistrict = District(
                                           id: 0,
                                           provinceID: 0,
                                           nameTH: "ทุกอำเภอ");
-                                      // print(selectingAumphure.nameTH);
+                                      // print(selectingDistrict.nameTH);
                                       setState(() {
-                                        stateAumphures.add(selectingAumphure);
+                                        stateDistricts.add(selectingDistrict);
                                         _isSelectedProvinceEnd = true;
                                       });
-                                      aumphures.forEach((a) {
+                                      districts.forEach((a) {
                                         if (a!.provinceID == p.id) {
                                           setState(() {
-                                            stateAumphures.add(a);
+                                            stateDistricts.add(a);
                                           });
                                         }
                                       });
@@ -376,12 +376,12 @@ class _PostScreenState extends State<PostScreen> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: DropdownSearch<Aumphure?>(
+                                    child: DropdownSearch<District?>(
                                       popupProps: const PopupProps.menu(
                                         showSearchBox: true,
                                       ),
-                                      items: stateAumphures,
-                                      itemAsString: (Aumphure? a) =>
+                                      items: stateDistricts,
+                                      itemAsString: (District? a) =>
                                           a!.nameTH.toString(),
                                       dropdownDecoratorProps:
                                           const DropDownDecoratorProps(
@@ -390,8 +390,8 @@ class _PostScreenState extends State<PostScreen> {
                                           labelText: "อำเภอต้นทาง",
                                         ),
                                       ),
-                                      onChanged: (Aumphure? a) {
-                                        aumphureStartID = a?.id;
+                                      onChanged: (District? a) {
+                                        districtStartID = a?.id;
                                       },
                                     ),
                                   )
@@ -421,24 +421,24 @@ class _PostScreenState extends State<PostScreen> {
                                       ),
                                     ),
                                     onChanged: (Province? p) {
-                                      stateAumphures.clear();
+                                      stateDistricts.clear();
                                       if (p!.id != 0) {
                                         provinceStartID = p.id;
-                                        aumphureStartID = 0;
+                                        districtStartID = 0;
                                       }
-                                      Aumphure selectingAumphure = Aumphure(
+                                      District selectingDistrict = District(
                                           id: 0,
                                           provinceID: 0,
                                           nameTH: "ทุกอำเภอ");
-                                      // print(selectingAumphure.nameTH);
+                                      // print(selectingDistrict.nameTH);
                                       setState(() {
                                         _isSelectedProvinceEnd = true;
-                                        stateAumphures.add(selectingAumphure);
+                                        stateDistricts.add(selectingDistrict);
                                       });
-                                      aumphures.forEach((a) {
+                                      districts.forEach((a) {
                                         if (a!.provinceID == p.id) {
                                           setState(() {
-                                            stateAumphures.add(a);
+                                            stateDistricts.add(a);
                                           });
                                         }
                                       });
@@ -452,12 +452,12 @@ class _PostScreenState extends State<PostScreen> {
                               child: Row(
                                 children: [
                                   Expanded(
-                                    child: DropdownSearch<Aumphure?>(
+                                    child: DropdownSearch<District?>(
                                       popupProps: const PopupProps.menu(
                                         showSearchBox: true,
                                       ),
-                                      items: stateAumphures,
-                                      itemAsString: (Aumphure? a) =>
+                                      items: stateDistricts,
+                                      itemAsString: (District? a) =>
                                           a!.nameTH.toString(),
                                       dropdownDecoratorProps:
                                           const DropDownDecoratorProps(
@@ -466,9 +466,9 @@ class _PostScreenState extends State<PostScreen> {
                                           labelText: "อำเภอปลายทาง",
                                         ),
                                       ),
-                                      // selectedItem: Aumphure(nameTH: "ทุกอำเภอ"),
-                                      onChanged: (Aumphure? a) {
-                                        aumphureStartID = a?.id;
+                                      // selectedItem: District(nameTH: "ทุกอำเภอ"),
+                                      onChanged: (District? a) {
+                                        districtStartID = a?.id;
                                       },
                                     ),
                                   )
@@ -641,10 +641,10 @@ class _PostScreenState extends State<PostScreen> {
     stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
   }
 
-  getAumphure() async {
-    List<Aumphure>? tempDataAumphures =
-        await Aumphure.getAumphure(user.username!);
-    aumphures = tempDataAumphures ?? [];
+  getDistrict() async {
+    List<District>? tempDataDistricts =
+        await District.getDistrict(user.username!);
+    districts = tempDataDistricts ?? [];
   }
 
   updateUI() async {
