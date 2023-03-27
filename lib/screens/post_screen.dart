@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
@@ -634,16 +635,18 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   getProvince() async {
+    final prefs = await SharedPreferences.getInstance();
     List<Province>? tempDataProvinces =
-        await Province.getProvince(user.username!);
+        await Province.getProvince(prefs.getString('jwt') ?? "");
     provinces = tempDataProvinces ?? [];
     stateProvincesEnd.add(Province(id: 0, nameTH: "ทุกจังหวัด"));
     stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
   }
 
   getDistrict() async {
+    final prefs = await SharedPreferences.getInstance();
     List<District>? tempDataDistricts =
-        await District.getDistrict(user.username!);
+        await District.getDistrict(prefs.getString('jwt') ?? "");
     districts = tempDataDistricts ?? [];
   }
 
@@ -651,7 +654,8 @@ class _PostScreenState extends State<PostScreen> {
     setState(() {
       _isLoading = true;
     });
-    List<Post>? tempData = await Post.getPost(user.username!);
+    final prefs = await SharedPreferences.getInstance();
+    List<Post>? tempData = await Post.getPost(prefs.getString('jwt') ?? "");
     setState(() {
       posts = tempData ?? [];
       _isLoading = false;

@@ -3,6 +3,7 @@ import 'package:car_pool_project/services/config_system.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import '../constants.dart';
 import '../models/user.dart';
@@ -154,7 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  actions: <Widget>[
+                  actions: [
                     TextButton(
                         child: Text('Close'),
                         style: TextButton.styleFrom(
@@ -287,11 +288,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                               // check login
                                               User? u = await User.checkLogin(
                                                   username, password);
+
                                               setState(() {
                                                 _isSignIn = false;
                                               });
                                               // if success
                                               if (u != null) {
+                                                final prefs =
+                                                    await SharedPreferences
+                                                        .getInstance();
+                                                await prefs.setString(
+                                                    'jwt', u.jwt.toString());
                                                 // ignore: use_build_context_synchronously
                                                 Navigator.push(
                                                   context,

@@ -16,13 +16,13 @@ class District {
   });
 
   static Future<List<District>?> getDistrict(
-    String username,
+    String token,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('districts', {
       'device': "mobile",
     });
     List<District> districts = [];
-    var json = await networkHelper.getData();
+    var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       for (Map t in json['districts']) {
         District district = District(

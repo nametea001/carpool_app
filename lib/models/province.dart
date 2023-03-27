@@ -15,13 +15,13 @@ class Province {
   });
 
   static Future<List<Province>?> getProvince(
-    String username,
+    String token,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('provinces', {
       'device': "mobile",
     });
     List<Province> provinces = [];
-    var json = await networkHelper.getData();
+    var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       for (Map t in json['provinces']) {
         Province province = Province(

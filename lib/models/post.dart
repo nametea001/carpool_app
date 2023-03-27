@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
+import 'package:intl/intl.dart';
 
 class Post {
   final int? id;
@@ -16,7 +17,7 @@ class Post {
   final String? img;
   final int? seat;
   final int? seatFull;
-  final int? price;
+  final double? price;
 
   Post({
     this.id,
@@ -35,13 +36,13 @@ class Post {
   });
 
   static Future<List<Post>?> getPost(
-    String username,
+    String token,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('posts', {
       'device': "mobile",
     });
     List<Post> posts = [];
-    var json = await networkHelper.getData();
+    var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       for (Map t in json['posts']) {
         Post post = Post(
@@ -56,7 +57,7 @@ class Post {
             endProvinceName: t['end_district']['provinces']['name_th'],
             seat: t['seat'],
             seatFull: t['seat_full'],
-            price: t['price'],
+            price: double.parse(t['price']),
             img: t['img']);
         posts.add(post);
       }
@@ -65,21 +66,21 @@ class Post {
     return null;
   }
 
-  static Future<List<Post>?> postPosts(User user) async {
-    NetworkHelper networkHelper = NetworkHelper('post', {
-      'user_id': user.userID,
-    });
-    List<Post> posts = [];
-    var json = await networkHelper.postData(jsonEncode(<String, dynamic>{
-      'user_id': user.userID,
-    }));
-    if (json != null && json['error'] == false) {
-      for (Map t in json['post']) {
-        Post post = Post();
-        posts.add(post);
-      }
-      return posts;
-    }
-    return null;
-  }
+  // static Future<List<Post>?> postPosts(User user) async {
+  //   NetworkHelper networkHelper = NetworkHelper('post', {
+  //     'user_id': user.userID,
+  //   });
+  //   List<Post> posts = [];
+  //   var json = await networkHelper.postData(jsonEncode(<String, dynamic>{
+  //     'user_id': user.userID,
+  //   }));
+  //   if (json != null && json['error'] == false) {
+  //     for (Map t in json['post']) {
+  //       Post post = Post();
+  //       posts.add(post);
+  //     }
+  //     return posts;
+  //   }
+  //   return null;
+  // }
 }

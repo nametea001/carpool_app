@@ -9,18 +9,18 @@ class NetworkHelper {
   final Map<String, dynamic> params;
   NetworkHelper(this.url, this.params);
 
-  Future getData() async {
+  Future getData(String token) async {
     try {
-      http.Response response = await http
-          .get(Uri.http(prefixUrl, apiPath + url, params))
-          .timeout(const Duration(seconds: 60));
+      http.Response response = await http.get(
+        Uri.http(prefixUrl, apiPath + url, params),
+        headers: {"auth-token": token},
+      ).timeout(const Duration(seconds: 60));
       if (response.statusCode == 200) {
         String data = response.body;
 
         return jsonDecode(data);
       } else {
         String data = response.body;
-
         return jsonDecode(data);
       }
     } catch (e) {
@@ -28,12 +28,12 @@ class NetworkHelper {
     }
   }
 
-  Future postData(String jsonData) async {
+  Future postData(String jsonData, token) async {
     try {
       http.Response response = await http
           .post(
             Uri.http(prefixUrl, apiPath + url, params),
-            headers: {"Content-Type": "application/json"},
+            headers: {"Content-Type": "application/json", "auth-token": token},
             body: jsonData,
           )
           .timeout(const Duration(seconds: 60));

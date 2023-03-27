@@ -512,6 +512,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.7.1"
+  prefs:
+    dependency: "direct main"
+    description:
+      name: prefs
+      sha256: "68db0b5922f3a20ba8ffba6111d7afc3522088dce1ffb51c75ea70965d665a1a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   process:
     dependency: transitive
     description:
