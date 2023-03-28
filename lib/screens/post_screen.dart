@@ -835,6 +835,84 @@ class _PostScreenState extends State<PostScreen> {
                       SizedBox(
                         height: 30,
                       ),
+                      IconButton(
+                          onPressed: () {
+                            showDialog(
+                                context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('Score'),
+                                      // insetPadding: EdgeInsets.zero,
+
+                                      content: StatefulBuilder(builder:
+                                          (BuildContext context,
+                                              StateSetter setState) {
+                                        // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                                        return Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextFormField(
+                                              decoration: InputDecoration(
+                                                  labelText: "คะแนน",
+                                                  filled: true,
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.0),
+                                                    // borderSide: BorderSide.none,
+                                                  ),
+                                                  prefixIcon: const Icon(
+                                                    Icons.score,
+                                                    color: Colors.pink,
+                                                  )),
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            TextFormField(
+                                              maxLines: 3,
+                                              decoration: InputDecoration(
+                                                  labelText: "รายละเอียด",
+                                                  filled: true,
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.0),
+                                                    // borderSide: BorderSide.none,
+                                                  ),
+                                                  prefixIcon: const Icon(
+                                                    Icons.details,
+                                                    color: Colors.pink,
+                                                  )),
+                                            ),
+                                          ],
+                                        );
+                                      }),
+                                      actions: [
+                                        TextButton(
+                                            child: const Text('Save'),
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.white,
+                                              backgroundColor: Colors.green,
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            }),
+                                        TextButton(
+                                            child: const Text('Close'),
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: Colors.white,
+                                              backgroundColor: Colors.blueGrey,
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                            }),
+                                      ],
+                                    ));
+                          },
+                          icon: Icon(Icons.edit)),
+                      SizedBox(
+                        height: 30,
+                      ),
                       Expanded(
                         child: ListView(
                           physics: const BouncingScrollPhysics(),
