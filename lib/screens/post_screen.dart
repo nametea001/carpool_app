@@ -1,14 +1,17 @@
 import 'dart:convert';
+import 'package:car_pool_project/gobal_function/color.dart';
 import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/models/user.dart';
+import 'package:car_pool_project/screens/chat_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/directions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:intl/intl.dart';
@@ -38,7 +41,6 @@ class _PostScreenState extends State<PostScreen> {
   bool _isBackSearch = false;
 
   TextEditingController dateTimeController = TextEditingController();
-  String stateDatetimeSelected = "";
   DateTime? datetimeSelected;
   TextEditingController dateTimeBackController = TextEditingController();
   String stateDatetimeBackSelected = "";
@@ -71,13 +73,18 @@ class _PostScreenState extends State<PostScreen> {
   // ListTile posts
   List<ListTile> getListTile() {
     List<ListTile> list = [];
+    var c = GetColor();
+    int i = 0;
     for (var post in posts) {
       var l = ListTile(
+        tileColor: c.colorListTile(i),
         contentPadding: const EdgeInsets.only(
             top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
         leading: (post.img != null
             ? GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  showDetailUserPost(post);
+                },
                 child: CircleAvatar(
                   maxRadius: 30,
                   child: ClipOval(
@@ -89,6 +96,7 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               )
             : null),
+        // tileColor: Colors.amberAccent,
         title: Column(
           children: [
             Row(
@@ -99,6 +107,7 @@ class _PostScreenState extends State<PostScreen> {
                 ),
                 Text(
                   "${post.startAmphireName} ${post.startProvinceName}",
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -111,16 +120,18 @@ class _PostScreenState extends State<PostScreen> {
                 ),
                 Text(
                   "${post.endAmphireName} ${post.endProvinceName}",
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
           ],
         ),
-        subtitle: const Text("sub test"),
-        trailing: const Text("test trail"),
+        subtitle: Text("ที่นั่ง ${post.seat}/${post.seatFull}"),
+        trailing: Text("${post.price}"),
         onTap: () {},
       );
+      i++;
       list.add(l);
     }
 
@@ -159,6 +170,8 @@ class _PostScreenState extends State<PostScreen> {
             districtStartID = 0;
             districtEndID = 0;
             setState(() {
+              dateTimeBackController.text = "";
+              dateTimeController.text = "";
               _isSelectedProvinceStart = false;
               _isSelectedProvinceEnd = false;
             });
@@ -229,14 +242,10 @@ class _PostScreenState extends State<PostScreen> {
                                         locale: LocaleType.th,
                                         onConfirm: (time) {
                                           datetimeSelected = time;
-                                          int m = int.parse(DateFormat.M()
-                                              .format(datetimeSelected!));
-                                          String dw = DateFormat.E()
-                                              .format(datetimeSelected!);
-                                          stateDatetimeSelected =
-                                              "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                          String dateTimeFormat =
+                                              dateTimeformat(datetimeSelected);
                                           dateTimeController.text =
-                                              stateDatetimeSelected;
+                                              dateTimeFormat;
                                         },
                                       );
                                     },
@@ -290,16 +299,11 @@ class _PostScreenState extends State<PostScreen> {
                                                 locale: LocaleType.th,
                                                 onConfirm: (time) {
                                                   datetimeBackSelected = time;
-                                                  int m = int.parse(
-                                                      DateFormat.M().format(
-                                                          datetimeBackSelected!));
-                                                  String dw = DateFormat.E()
-                                                      .format(
-                                                          datetimeBackSelected!);
-                                                  stateDatetimeBackSelected =
-                                                      "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                                  String dateTimeFormat =
+                                                      dateTimeformat(
+                                                          datetimeSelected);
                                                   dateTimeBackController.text =
-                                                      stateDatetimeSelected;
+                                                      dateTimeFormat;
                                                 },
                                               );
                                             },
@@ -358,7 +362,7 @@ class _PostScreenState extends State<PostScreen> {
                                       // print(selectingDistrict.nameTH);
                                       setState(() {
                                         stateDistricts.add(selectingDistrict);
-                                        _isSelectedProvinceEnd = true;
+                                        _isSelectedProvinceStart = true;
                                       });
                                       districts.forEach((a) {
                                         if (a!.provinceID == p.id) {
@@ -503,6 +507,15 @@ class _PostScreenState extends State<PostScreen> {
                     ));
           },
           icon: const Icon(Icons.search)),
+
+      IconButton(
+          onPressed: () async {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChatScreen()),
+            );
+          },
+          icon: const Icon(Icons.message)),
     ];
     return bt;
   }
@@ -634,7 +647,7 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
-  getProvince() async {
+  void getProvince() async {
     final prefs = await SharedPreferences.getInstance();
     List<Province>? tempDataProvinces =
         await Province.getProvince(prefs.getString('jwt') ?? "");
@@ -643,14 +656,14 @@ class _PostScreenState extends State<PostScreen> {
     stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
   }
 
-  getDistrict() async {
+  void getDistrict() async {
     final prefs = await SharedPreferences.getInstance();
     List<District>? tempDataDistricts =
         await District.getDistrict(prefs.getString('jwt') ?? "");
     districts = tempDataDistricts ?? [];
   }
 
-  updateUI() async {
+  void updateUI() async {
     setState(() {
       _isLoading = true;
     });
@@ -660,6 +673,189 @@ class _PostScreenState extends State<PostScreen> {
       posts = tempData ?? [];
       _isLoading = false;
     });
+  }
+
+  String dateTimeformat(DateTime? time) {
+    int mount = int.parse(DateFormat.M().format(time!));
+    String dayWeek = DateFormat.E().format(time);
+    // String dateTimeFormat =
+    //     "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${time.year}  ${DateFormat.Hm().format(time)}";
+    String dateTimeFormat =
+        "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${DateFormat.Hm().format(time)}";
+    return dateTimeFormat;
+  }
+
+  List<ListTile> getListTileReviews() {
+    List<ListTile> list = [];
+    var getColor = GetColor();
+    int i = 0;
+    for (var post in posts) {
+      var l = ListTile(
+        contentPadding:
+            const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
+        leading: (post.img != null
+            ? CircleAvatar(
+                maxRadius: 30,
+                child: ClipOval(
+                  child: Image.memory(
+                    base64Decode(post.img!),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              )
+            : null),
+        // tileColor: getColor.colorListTile(i),
+        title: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.person,
+                  color: Colors.green,
+                ),
+                Text(
+                  " ${user.firstName} ${user.lastName}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.golf_course,
+                  color: Colors.green,
+                ),
+                Text(
+                  " ${post.endAmphireName} ${post.endProvinceName}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.alarm_rounded,
+                  color: Colors.orange,
+                ),
+                Text(
+                  " " + dateTimeformat(DateTime.now()),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ],
+        ),
+        subtitle: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  " ⭐ ⭐  ⭐  ⭐ ",
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  "ดีมาก",
+                ),
+              ],
+            ),
+          ],
+        ),
+        // trailing: const Text("10"),
+        // onTap: () {},
+      );
+      i++;
+      list.add(l);
+    }
+
+    return list;
+  }
+
+  void showDetailUserPost(Post p) async {
+    // var
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Reviews'),
+              // insetPadding: EdgeInsets.zero,
+              insetPadding:
+                  EdgeInsets.only(left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Container(
+                  // color: Colors.white, // Dialog background
+                  width: MediaQuery.of(context).size.width, // Dialog width
+                  height:
+                      MediaQuery.of(context).size.height - 200, // Dialog height
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        // color: Colors.pink,
+                        // padding: EdgeInsets.only(
+                        //   top: 24 + MediaQuery.of(context).padding.top,
+                        //   bottom: 24,
+                        // ),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              radius: 52,
+                              child: user.img != null
+                                  ? ClipOval(
+                                      child: Image.memory(
+                                        base64Decode(user.img!),
+                                        fit: BoxFit.cover,
+                                      ),
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(
+                              height: 12,
+                            ),
+                            Text(
+                              "${user.firstName} ${user.lastName}",
+                              style: const TextStyle(
+                                  fontSize: 28, color: Colors.black),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: 30,
+                      ),
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          children: getListTileReviews(),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+    // await showGeneralDialog(
+    //   context: context,
+    //   pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
+    //       backgroundColor: Colors.black87,
+    //       body: Column(
+    //         children: [],
+    //       )),
+    // );
   }
 
   // skeleton_loader

@@ -1,3 +1,4 @@
+import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -108,7 +109,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? Text('Detail') : Text('Add')),
           backgroundColor: Colors.pink,
-          actions: [],
+          actions: [
+            IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+                  );
+                },
+                icon: Icon(Icons.arrow_forward)),
+          ],
         ),
         body: SingleChildScrollView(
             physics: _isScroll

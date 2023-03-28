@@ -18,6 +18,7 @@ class Post {
   final int? seat;
   final int? seatFull;
   final double? price;
+  final int? createdUserID;
 
   Post({
     this.id,
@@ -33,6 +34,7 @@ class Post {
     this.seat,
     this.seatFull,
     this.price,
+    this.createdUserID,
   });
 
   static Future<List<Post>?> getPost(
@@ -46,19 +48,22 @@ class Post {
     if (json != null && json['error'] == false) {
       for (Map t in json['posts']) {
         Post post = Post(
-            id: t['id'],
-            startDistrictID: t['start_district_id'],
-            startAmphireName: t['start_district']['name_th'],
-            startProvinceID: t['start_district']['provinces']['id'],
-            startProvinceName: t['start_district']['provinces']['name_th'],
-            endDistrictID: t['end_district_id'],
-            endAmphireName: t['end_district']['name_th'],
-            endProvinceID: t['end_district']['provinces']['id'],
-            endProvinceName: t['end_district']['provinces']['name_th'],
-            seat: t['seat'],
-            seatFull: t['seat_full'],
-            price: double.parse(t['price']),
-            img: t['img']);
+          id: t['id'],
+          startDistrictID: t['start_district_id'],
+          startAmphireName: t['start_district']['name_th'],
+          startProvinceID: t['start_district']['provinces']['id'],
+          startProvinceName: t['start_district']['provinces']['name_th'],
+          endDistrictID: t['end_district_id'],
+          endAmphireName: t['end_district']['name_th'],
+          endProvinceID: t['end_district']['provinces']['id'],
+          endProvinceName: t['end_district']['provinces']['name_th'],
+          seat: t['seat'],
+          seatFull: t['seat_full'],
+          price: double.parse(t['price']),
+          img: t['img'],
+          createdUserID: t['created_user_id'],
+        );
+
         posts.add(post);
       }
       return posts;

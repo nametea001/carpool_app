@@ -16,7 +16,7 @@ class ConfigSystem {
     //   setServer('192.168.1.2');
     //   return '192.168.1.2';
     // }
-    return '192.168.1.2:3000';
+    return '192.168.1.11:3000';
   }
 
   // static void setServer(String serverIP) async {
