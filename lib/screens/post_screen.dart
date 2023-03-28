@@ -129,7 +129,15 @@ class _PostScreenState extends State<PostScreen> {
         ),
         subtitle: Text("ที่นั่ง ${post.seat}/${post.seatFull}"),
         trailing: Text("${post.price}"),
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PostDetailScreen(
+                      isAdd: true,
+                    )),
+          );
+        },
       );
       i++;
       list.add(l);
@@ -691,6 +699,7 @@ class _PostScreenState extends State<PostScreen> {
     int i = 0;
     for (var post in posts) {
       var l = ListTile(
+        tileColor: getColor.colorListTile(i),
         contentPadding:
             const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
         leading: (post.img != null
@@ -714,7 +723,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.green,
                 ),
                 Text(
-                  " ${user.firstName} ${user.lastName}",
+                  " ${user.firstName} ${user.lastName} ${i}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],

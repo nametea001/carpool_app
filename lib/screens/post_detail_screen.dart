@@ -94,6 +94,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   DateTime? datetimeBackSelected;
 
   @override
+  void initState() {
+    super.initState();
+    _isAdd = widget.isAdd ?? false;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _focusNodeDescription.dispose();
+    _focusNodeSeat.dispose();
+    _focusNodePrice.dispose();
+    _focusNodeBrand.dispose();
+    _focusNodemodel.dispose();
+    _focusNodeVRegistration.dispose();
+    _focusNodeColor.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -343,42 +361,45 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: RadioListTile(
-                                  value: "go",
-                                  groupValue: stateGoBack,
-                                  onChanged: ((value) {
-                                    setState(() {
-                                      stateGoBack = value.toString();
-                                      _isBack = false;
-                                      dateTimeBackController.text = "";
-                                      datetimeBackSelected = null;
-                                      stateDatetimeBackSelected = "";
-                                    });
-                                  })),
-                            ),
-                            const Text("ไปอย่างเดียว"),
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 140,
-                            ),
-                            SizedBox(
-                              width: 30,
-                              child: RadioListTile(
-                                  value: "back",
-                                  groupValue: stateGoBack,
-                                  onChanged: ((value) {
-                                    setState(() {
-                                      stateGoBack = value.toString();
-                                      _isBack = true;
-                                    });
-                                  })),
-                            ),
-                            const Text("ไปและกลับ"),
-                          ],
+                        Visibility(
+                          visible: !_isAdd,
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 30,
+                                child: RadioListTile(
+                                    value: "go",
+                                    groupValue: stateGoBack,
+                                    onChanged: ((value) {
+                                      setState(() {
+                                        stateGoBack = value.toString();
+                                        _isBack = false;
+                                        dateTimeBackController.text = "";
+                                        datetimeBackSelected = null;
+                                        stateDatetimeBackSelected = "";
+                                      });
+                                    })),
+                              ),
+                              const Text("ไปอย่างเดียว"),
+                              SizedBox(
+                                width: (MediaQuery.of(context).size.width / 2) -
+                                    140,
+                              ),
+                              SizedBox(
+                                width: 30,
+                                child: RadioListTile(
+                                    value: "back",
+                                    groupValue: stateGoBack,
+                                    onChanged: ((value) {
+                                      setState(() {
+                                        stateGoBack = value.toString();
+                                        _isBack = true;
+                                      });
+                                    })),
+                              ),
+                              const Text("ไปและกลับ"),
+                            ],
+                          ),
                         ),
                         const SizedBox(
                           height: 10,
@@ -683,8 +704,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 focusNode: _focusNodeDescription,
                                 maxLines: 3,
                                 decoration: InputDecoration(
-                                    labelText:
-                                        "รายระเอียดเพิ่มเติม เช่น ไปทำอะ จะจอดพักที่ไหน ขึ้นทางด่วนไหม",
+                                    labelText: "รายระเอียดเพิ่มเติม",
                                     filled: true,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(10.0),
@@ -743,32 +763,49 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         //       child: Icon(Icons.add),
         //       onTap: () {},
         //     ),
-        //     SpeedDialChild(
-        //       // backgroundColor: Colors.lime,
-        //       child: Icon(Icons.abc),
-        //       onTap: () {},
-        //     ),
         //   ],
         // ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            await showDialog(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                      title: const Text('Join'),
+                      // insetPadding: EdgeInsets.zero,
+                      insetPadding: EdgeInsets.only(
+                          left: 20, right: 20, bottom: 30, top: 30),
+                      content: StatefulBuilder(builder:
+                          (BuildContext context, StateSetter setState) {
+                        // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                        return Text("คุณต้องการเข้ารวมการเดินทางนี้หรือไม่");
+                      }),
+                      actions: [
+                        TextButton(
+                            child: const Text('Join'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.green
+                              ,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }),
+                        TextButton(
+                            child: const Text('Close'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blueGrey,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            }),
+                      ],
+                    ));
+          },
+          child: const Icon(Icons.join_full),
+          backgroundColor: Colors.pink,
+        ),
       ),
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _isAdd = widget.isAdd ?? false;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _focusNodeDescription.dispose();
-    _focusNodeSeat.dispose();
-    _focusNodePrice.dispose();
-    _focusNodeBrand.dispose();
-    _focusNodemodel.dispose();
-    _focusNodeVRegistration.dispose();
-    _focusNodeColor.dispose();
   }
 }
