@@ -120,22 +120,46 @@ class _PostScreenState extends State<PostScreen> {
                 ),
                 Text(
                   "${post.endAmphireName} ${post.endProvinceName}",
-                  overflow: TextOverflow.ellipsis,
+                  // overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.alarm,
+                  color: Colors.orange,
+                ),
+                Text(dateTimeformat(post.dateTimeStart)),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.airline_seat_recline_normal,
+                  color: Colors.orange,
+                ),
+                Text(
+                  "${post.seat}/${post.seatFull}",
+                  // style: TextStyle(fontSize: 20),
                 ),
               ],
             ),
           ],
         ),
-        subtitle: Text("ที่นั่ง ${post.seat}/${post.seatFull}"),
+        // subtitle: Column(
+        //   children: [],
+        // ),
         trailing: Text("${post.price}"),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => PostDetailScreen(
-                      isAdd: true,
-                    )),
+              builder: (context) => PostDetailScreen(
+                isAdd: false,
+              ),
+            ),
           );
         },
       );
@@ -646,7 +670,9 @@ class _PostScreenState extends State<PostScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const PostDetailScreen()),
+                    builder: (context) => const PostDetailScreen(
+                          isAdd: true,
+                        )),
               );
             },
             child: const Icon(Icons.add),
@@ -695,11 +721,11 @@ class _PostScreenState extends State<PostScreen> {
 
   List<ListTile> getListTileReviews() {
     List<ListTile> list = [];
-    var getColor = GetColor();
+    // var getColor = GetColor();
     int i = 0;
     for (var post in posts) {
       var l = ListTile(
-        tileColor: getColor.colorListTile(i),
+        // tileColor: getColor.colorListTile(i),
         contentPadding:
             const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
         leading: (post.img != null
@@ -740,6 +766,10 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ],
             ),
+          ],
+        ),
+        subtitle: Column(
+          children: [
             Row(
               children: [
                 const Icon(
@@ -752,10 +782,6 @@ class _PostScreenState extends State<PostScreen> {
                 ),
               ],
             ),
-          ],
-        ),
-        subtitle: Column(
-          children: [
             Row(
               children: [
                 Text(

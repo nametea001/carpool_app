@@ -19,6 +19,8 @@ class Post {
   final int? seatFull;
   final double? price;
   final int? createdUserID;
+  final DateTime? dateTimeStart;
+  final DateTime? dateTimeBack;
 
   Post({
     this.id,
@@ -35,6 +37,8 @@ class Post {
     this.seatFull,
     this.price,
     this.createdUserID,
+    this.dateTimeStart,
+    this.dateTimeBack,
   });
 
   static Future<List<Post>?> getPost(
@@ -62,8 +66,13 @@ class Post {
           price: double.parse(t['price']),
           img: t['img'],
           createdUserID: t['created_user_id'],
+          dateTimeStart: t['date_time_start'] != null
+              ? DateTime.parse(t['date_time_start'])
+              : null,
+          dateTimeBack: t['date_time_back'] != null
+              ? DateTime.parse(t['date_time_back'])
+              : null,
         );
-
         posts.add(post);
       }
       return posts;
