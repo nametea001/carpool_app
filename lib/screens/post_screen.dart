@@ -136,9 +136,9 @@ class _PostScreenState extends State<PostScreen> {
             ),
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.airline_seat_recline_normal,
-                  color: Colors.orange,
+                  color: colorSeat(post.seat!, post.seatFull!),
                 ),
                 Text(
                   "${post.seat}/${post.seatFull}",
@@ -707,6 +707,14 @@ class _PostScreenState extends State<PostScreen> {
       posts = tempData ?? [];
       _isLoading = false;
     });
+  }
+
+  Color colorSeat(int seat, int seatFull) {
+    if (seat / seatFull == 1) {
+      return Colors.deepOrange;
+    } else {
+      return Colors.blue;
+    }
   }
 
   String dateTimeformat(DateTime? time) {

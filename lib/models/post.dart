@@ -21,6 +21,7 @@ class Post {
   final int? createdUserID;
   final DateTime? dateTimeStart;
   final DateTime? dateTimeBack;
+  final String? status;
 
   Post({
     this.id,
@@ -39,6 +40,7 @@ class Post {
     this.createdUserID,
     this.dateTimeStart,
     this.dateTimeBack,
+    this.status,
   });
 
   static Future<List<Post>?> getPost(
@@ -65,6 +67,7 @@ class Post {
           seatFull: t['seat_full'],
           price: double.parse(t['price']),
           img: t['img'],
+          status: t['status'],
           createdUserID: t['created_user_id'],
           dateTimeStart: t['date_time_start'] != null
               ? DateTime.parse(t['date_time_start'])
