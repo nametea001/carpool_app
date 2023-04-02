@@ -109,6 +109,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNodemodel.dispose();
     _focusNodeVRegistration.dispose();
     _focusNodeColor.dispose();
+    _mapController?.dispose();
   }
 
   @override

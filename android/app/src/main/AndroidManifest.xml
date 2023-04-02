@@ -2,12 +2,13 @@
     package="com.example.car_pool_project">
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
    <application
         android:label="Ride Sharing"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY"
-               android:value="AIzaSyCQ9A6QV8C8JRZvRFhfnSxp-pdSqh4vUKw"/>
+               android:value="AIzaSyD_uj2qt7adtPsSUEG8GAZT741WQuGpEnU"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
