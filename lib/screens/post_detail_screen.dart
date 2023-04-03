@@ -34,7 +34,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isAdd = false;
 
   bool _myLocationEnable = false;
-  bool _showMarkerStartToEnd = false;
+  bool _showMarkerStartToEnd = true;
   String location1 = "Search Start";
   String location2 = "Search End";
   bool _isShowMoreLine = false;
@@ -45,7 +45,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // LatLng startLocation = LatLng(17.291925, 104.112884);
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(17.291925, 104.112884),
-    zoom: 14,
+    zoom: 15,
   );
 
   bool _isShowmarker1 = false;
@@ -148,7 +148,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           children: [
             Container(
               // padding: EdgeInsets.only(left: 20, right: 20),
-              height: (MediaQuery.of(context).size.height / 2) - 90,
+              height: (MediaQuery.of(context).size.height / 2) - 30,
               child: Stack(children: [
                 GoogleMap(
                   //Map widget from google_maps_flutter package
@@ -166,7 +166,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   initialCameraPosition: _kGooglePlex,
                   mapType: MapType.normal, //map type
                   onMapCreated: _onMapCreated,
-                  markers: _showMarkerStartToEnd ? {} : {},
+                  markers: _showMarkerStartToEnd
+                      ? {
+                          Marker(
+                              draggable: false,
+                              markerId: MarkerId("marker1"),
+                              position: marker1),
+                          Marker(
+                              draggable: false,
+                              markerId: MarkerId("marker2"),
+                              position: marker2),
+                        }
+                      : {},
                 ),
 
                 //search autoconplete input
@@ -212,7 +223,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     });
                                     Position? l = await _getLocation();
                                     if (l != null) {
-                                      _mapController?.animateCamera(
+                                      await _mapController?.animateCamera(
                                         CameraUpdate.newLatLngZoom(
                                             LatLng(l.latitude, l.longitude),
                                             14),
@@ -858,7 +869,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           if (district.contains("District")) {
             district = district.split(" District")[0].split(", ")[1];
           } else if (district.contains("Amphoe")) {
-            district = district.split("Amphoe")[1].split(", ")[0];
+            district = district.split("Amphoe ")[1].split(", ")[0];
           } else {
             searchProvin = true;
             district = name;
@@ -894,8 +905,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             });
           }
           //move map camera to selected place with animation
-          _mapController?.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(target: newlatlang, zoom: 17)));
+
+          if (districtStartID != 0 && districtEndID != 0) {
+            await Future.delayed(const Duration(seconds: 2));
+            await updateCameraLocation(marker1, marker2, _mapController!);
+          } else {
+            _mapController?.animateCamera(CameraUpdate.newCameraPosition(
+                CameraPosition(target: newlatlang, zoom: 15)));
+          }
         } else {
           print(null);
         }
@@ -969,6 +986,46 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           )),
     ];
+  }
+
+  Future<void> updateCameraLocation(
+    LatLng source,
+    LatLng destination,
+    GoogleMapController mapController,
+  ) async {
+    if (mapController == null) return;
+
+    LatLngBounds bounds;
+
+    if (source.latitude > destination.latitude &&
+        source.longitude > destination.longitude) {
+      bounds = LatLngBounds(southwest: destination, northeast: source);
+    } else if (source.longitude > destination.longitude) {
+      bounds = LatLngBounds(
+          southwest: LatLng(source.latitude, destination.longitude),
+          northeast: LatLng(destination.latitude, source.longitude));
+    } else if (source.latitude > destination.latitude) {
+      bounds = LatLngBounds(
+          southwest: LatLng(destination.latitude, source.longitude),
+          northeast: LatLng(source.latitude, destination.longitude));
+    } else {
+      bounds = LatLngBounds(southwest: source, northeast: destination);
+    }
+
+    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 70);
+
+    return checkCameraLocation(cameraUpdate, mapController);
+  }
+
+  Future<void> checkCameraLocation(
+      CameraUpdate cameraUpdate, GoogleMapController mapController) async {
+    mapController.animateCamera(cameraUpdate);
+    LatLngBounds l1 = await mapController.getVisibleRegion();
+    LatLngBounds l2 = await mapController.getVisibleRegion();
+
+    if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
+      return checkCameraLocation(cameraUpdate, mapController);
+    }
   }
 
   void showDetailAdd() async {
