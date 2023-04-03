@@ -864,27 +864,33 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             district = name;
           }
           final prefs = await SharedPreferences.getInstance();
-
+          int? tempDistrictID = 0;
           if (searchProvin == false) {
             District? tempDistrict = await District.getDistrictByNameEN(
                 prefs.getString('jwt') ?? "", district);
 
             if (tempDistrict != null) {
-              districtStartID = tempDistrict.id;
+              tempDistrictID = tempDistrict.id;
             }
           } else {
-            
+            District? tempDistrict = await District.getDistrictByProvinceNameEN(
+                prefs.getString('jwt') ?? "", district);
+            if (tempDistrict != null) {
+              tempDistrictID = tempDistrict.id;
+            }
           }
 
           if (searchNumber == 1) {
             setState(() {
               location1 = place.description.toString();
               marker1 = newlatlang;
+              districtStartID = tempDistrictID;
             });
           } else if (searchNumber == 2) {
             setState(() {
               location2 = place.description.toString();
               marker2 = newlatlang;
+              districtEndID = tempDistrictID;
             });
           }
           //move map camera to selected place with animation

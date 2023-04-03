@@ -17,9 +17,7 @@ class Province {
   static Future<List<Province>?> getProvinces(
     String token,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('provinces', {
-      'device': "mobile",
-    });
+    NetworkHelper networkHelper = NetworkHelper('provinces', {});
     List<Province> provinces = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {

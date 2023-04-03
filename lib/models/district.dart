@@ -43,12 +43,11 @@ class District {
     String nameEN,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('districts/get_by_name', {
-      'device': "mobile",
       'name_en': nameEN,
     });
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
-      Map d = json['districts'];
+      Map d = json['district'];
       District district = District(
         id: d['id'],
         provinceID: d['province_id'],
@@ -63,20 +62,22 @@ class District {
 
   static Future<District?> getDistrictByProvinceNameEN(
     String token,
-    String provinceNameEN,
+    String nameEN,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('districts', {
-      'device': "mobile",
+    NetworkHelper networkHelper =
+        NetworkHelper('districts/get_by_province_name', {
+      'name_en': nameEN,
     });
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
-      Map t = json['districts'];
+      Map d = json['district'];
       District district = District(
-        id: t['id'],
-        provinceID: t['province_id'],
-        nameTH: t['name_th'],
-        nameEN: t['name_en'],
+        id: d['id'],
+        provinceID: d['province_id'],
+        nameTH: d['name_th'],
+        nameEN: d['name_en'],
       );
+
       return district;
     }
     return null;
