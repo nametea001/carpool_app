@@ -1,3 +1,5 @@
+import 'package:car_pool_project/models/district.dart';
+import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -12,11 +14,13 @@ import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../gobal_function/data.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
+
   const PostDetailScreen({
     super.key,
     this.isAdd,
@@ -28,11 +32,12 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   GlobalData globalData = new GlobalData();
   bool _isAdd = false;
-  bool _isScroll = true;
 
   bool _myLocationEnable = false;
   bool _showMarkerStartToEnd = false;
-  String location = "Search Location";
+  String location1 = "Search Start";
+  String location2 = "Search End";
+  bool _isShowMoreLine = false;
   Position? userLocation;
   GoogleMapController? _mapController;
   // final Completer<GoogleMapController> _controller =
@@ -42,6 +47,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     target: LatLng(17.291925, 104.112884),
     zoom: 14,
   );
+
+  bool _isShowmarker1 = false;
+  bool _isShowmarker2 = false;
+  LatLng marker1 = LatLng(17.291925, 104.112884);
+  LatLng marker2 = LatLng(17.291925, 104.112884);
 
   Future<Position?> _getLocation() async {
     bool serviceEnabled = false;
@@ -92,6 +102,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   TextEditingController dateTimeBackController = TextEditingController();
   String stateDatetimeBackSelected = "";
   DateTime? datetimeBackSelected;
+
+  int? districtStartID = 0;
+  int? districtEndID = 0;
 
   @override
   void initState() {
@@ -153,97 +166,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   initialCameraPosition: _kGooglePlex,
                   mapType: MapType.normal, //map type
                   onMapCreated: _onMapCreated,
-                  markers: _showMarkerStartToEnd
-                      ? {
-                          const Marker(
-                            draggable: false,
-                            markerId: MarkerId("marker1"),
-                            position: LatLng(17.291925, 104.112884),
-                          ),
-                          const Marker(
-                            draggable: false,
-                            markerId: MarkerId("marker2"),
-                            position: LatLng(17.291925, 105.112884),
-                          ),
-                        }
-                      : {},
+                  markers: _showMarkerStartToEnd ? {} : {},
                 ),
 
                 //search autoconplete input
                 Visibility(
                   visible: _isAdd,
-                  child: Positioned(
-                      //search input bar
-                      top: 10,
-                      child: InkWell(
-                          onTap: () async {
-                            Prediction? place = await PlacesAutocomplete.show(
-                                context: context,
-                                apiKey: globalData.googleApiKey(),
-                                mode: Mode.overlay,
-                                types: [],
-                                strictbounds: false,
-                                components: [
-                                  Component(Component.country, 'th')
-                                ],
-                                decoration: InputDecoration(
-                                  hintText: 'Search',
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                    borderSide: const BorderSide(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                                //google_map_webservice package
-                                onError: (err) {
-                                  print(err);
-                                });
-
-                            if (place != null) {
-                              setState(() {
-                                location = place.description.toString();
-                              });
-
-                              //form google_maps_webservice package
-                              final plist = GoogleMapsPlaces(
-                                apiKey: globalData.googleApiKey(),
-                                apiHeaders:
-                                    await const GoogleApiHeaders().getHeaders(),
-                                //from google_api_headers package
-                              );
-                              String placeid = place.placeId ?? "0";
-                              final detail =
-                                  await plist.getDetailsByPlaceId(placeid);
-                              final geometry = detail.result.geometry!;
-                              final lat = geometry.location.lat;
-                              final lang = geometry.location.lng;
-                              var newlatlang = LatLng(lat, lang);
-
-                              //move map camera to selected place with animation
-                              _mapController?.animateCamera(
-                                  CameraUpdate.newCameraPosition(CameraPosition(
-                                      target: newlatlang, zoom: 17)));
-                            } else {
-                              print(null);
-                            }
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(15),
-                            child: Card(
-                              child: Container(
-                                  padding: const EdgeInsets.all(0),
-                                  width: MediaQuery.of(context).size.width - 40,
-                                  child: ListTile(
-                                    title: Text(
-                                      location,
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                    trailing: const Icon(Icons.search),
-                                    dense: true,
-                                  )),
-                            ),
-                          ))),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: searchMapButton(),
+                      ),
+                    ],
+                  ),
                 ),
               ]),
             ),
@@ -877,6 +812,157 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               )),
       ),
     );
+  }
+
+  List<Widget> searchMapButton() {
+    void searchMap(int searchNumber) async {
+      {
+        Prediction? place = await PlacesAutocomplete.show(
+            context: context,
+            apiKey: globalData.googleApiKey(),
+            mode: Mode.overlay,
+            types: [],
+            strictbounds: false,
+            components: [Component(Component.country, 'th')],
+            decoration: InputDecoration(
+              hintText: 'Search',
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(20),
+                borderSide: const BorderSide(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            //google_map_webservice package
+            onError: (err) {
+              print(err);
+            });
+
+        if (place != null) {
+          //form google_maps_webservice package
+          final plist = GoogleMapsPlaces(
+            apiKey: globalData.googleApiKey(),
+            apiHeaders: await const GoogleApiHeaders().getHeaders(),
+            //from google_api_headers package
+          );
+          String placeid = place.placeId ?? "0";
+          final detail = await plist.getDetailsByPlaceId(placeid);
+          final geometry = detail.result.geometry!;
+          final lat = geometry.location.lat;
+          final lang = geometry.location.lng;
+          var newlatlang = LatLng(lat, lang);
+          // split address for district
+          String name = detail.result.name;
+          String district = detail.result.formattedAddress!;
+          bool searchProvin = false;
+          if (district.contains("District")) {
+            district = district.split(" District")[0].split(", ")[1];
+          } else if (district.contains("Amphoe")) {
+            district = district.split("Amphoe")[1].split(", ")[0];
+          } else {
+            searchProvin = true;
+            district = name;
+          }
+          final prefs = await SharedPreferences.getInstance();
+
+          if (searchProvin == false) {
+            District? tempDistrict = await District.getDistrictByNameEN(
+                prefs.getString('jwt') ?? "", district);
+
+            if (tempDistrict != null) {
+              districtStartID = tempDistrict.id;
+            }
+          } else {
+            
+          }
+
+          if (searchNumber == 1) {
+            setState(() {
+              location1 = place.description.toString();
+              marker1 = newlatlang;
+            });
+          } else if (searchNumber == 2) {
+            setState(() {
+              location2 = place.description.toString();
+              marker2 = newlatlang;
+            });
+          }
+          //move map camera to selected place with animation
+          _mapController?.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: newlatlang, zoom: 17)));
+        } else {
+          print(null);
+        }
+      }
+    }
+
+    void setStateShowMoreLine() {
+      setState(() {
+        _isShowMoreLine = !_isShowMoreLine;
+      });
+    }
+
+    double widthSearbar = MediaQuery.of(context).size.width / 2 - 40;
+    return [
+      InkWell(
+          onDoubleTap: setStateShowMoreLine,
+          onTap: () async {
+            searchMap(1);
+          },
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(15, 15, 5, 0),
+            child: Card(
+              // color: Colors.white54.withOpacity(0.5),
+              child: SizedBox(
+                  // padding: const EdgeInsets.all(0),
+                  width: widthSearbar,
+                  child: ListTile(
+                    title: Text(
+                      location1,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        // color: Colors.grey,
+                      ),
+                      maxLines: _isShowMoreLine ? 5 : 1,
+                    ),
+                    // trailing: const Icon(Icons.search),
+                    dense: true,
+                  )),
+            ),
+          )),
+      const Padding(
+          padding: EdgeInsets.only(top: 15, left: 0, right: 0),
+          child: Icon(
+            Icons.arrow_forward,
+            color: Colors.green,
+          )),
+      InkWell(
+          onDoubleTap: setStateShowMoreLine,
+          onTap: () async {
+            searchMap(2);
+          },
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(5, 15, 15, 0),
+            child: Card(
+              // color: Colors.white54.withOpacity(0.5),
+              child: SizedBox(
+                  // padding: const EdgeInsets.all(0),
+                  width: widthSearbar,
+                  child: ListTile(
+                    title: Text(
+                      location2,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        // color: Colors.grey,
+                      ),
+                      maxLines: _isShowMoreLine ? 5 : 1,
+                    ),
+                    // trailing: const Icon(Icons.search),
+                    dense: true,
+                  )),
+            ),
+          )),
+    ];
   }
 
   void showDetailAdd() async {

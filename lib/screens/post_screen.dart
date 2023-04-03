@@ -684,7 +684,7 @@ class _PostScreenState extends State<PostScreen> {
   void getProvince() async {
     final prefs = await SharedPreferences.getInstance();
     List<Province>? tempDataProvinces =
-        await Province.getProvince(prefs.getString('jwt') ?? "");
+        await Province.getProvinces(prefs.getString('jwt') ?? "");
     provinces = tempDataProvinces ?? [];
     stateProvincesEnd.add(Province(id: 0, nameTH: "ทุกจังหวัด"));
     stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
@@ -693,7 +693,7 @@ class _PostScreenState extends State<PostScreen> {
   void getDistrict() async {
     final prefs = await SharedPreferences.getInstance();
     List<District>? tempDataDistricts =
-        await District.getDistrict(prefs.getString('jwt') ?? "");
+        await District.getDistricts(prefs.getString('jwt') ?? "");
     districts = tempDataDistricts ?? [];
   }
 

@@ -1,6 +1,6 @@
 class GlobalData {
   String googleApiKey() {
-    return "AIzaSyD_uj2qt7adtPsSUEG8GAZT741WQuGpEnU";
+    return "AIzaSyCwp3of0o28LsZ6PiLtKkIM9tAo8xG8xh0";
   }
 
   String getMonth(int month) {

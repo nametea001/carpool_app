@@ -14,7 +14,7 @@ class Province {
     this.nameEN,
   });
 
-  static Future<List<Province>?> getProvince(
+  static Future<List<Province>?> getProvinces(
     String token,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('provinces', {
@@ -27,7 +27,7 @@ class Province {
         Province province = Province(
           id: t['id'],
           nameTH: t['name_th'],
-          // nameEN: t['name_en'],
+          nameEN: t['name_en'],
         );
         provinces.add(province);
       }
