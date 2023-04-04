@@ -266,14 +266,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     Icons.pin_drop,
                                     size: 30,
                                   )),
-                              // Text(
-                              //   "Lot",
-                              //   style: TextStyle(
-                              //     fontSize: 12.0,
-                              //     fontWeight: FontWeight.bold,
-                              //     color: Colors.black,
-                              //   ),
-                              // ),
                             ],
                           ),
                         ),
