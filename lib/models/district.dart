@@ -3,10 +3,10 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 
 class District {
-  final int? id;
-  final int? provinceID;
-  final String? nameTH;
-  final String? nameEN;
+  int? id;
+  int? provinceID;
+  String? nameTH;
+  String? nameEN;
 
   District({
     this.id,
@@ -18,9 +18,7 @@ class District {
   static Future<List<District>?> getDistricts(
     String token,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('districts', {
-      'device': "mobile",
-    });
+    NetworkHelper networkHelper = NetworkHelper('districts', {});
     List<District> districts = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {

@@ -43,7 +43,6 @@ class _PostScreenState extends State<PostScreen> {
   TextEditingController dateTimeController = TextEditingController();
   DateTime? datetimeSelected;
   TextEditingController dateTimeBackController = TextEditingController();
-  String stateDatetimeBackSelected = "";
   DateTime? datetimeBackSelected;
 
   List<Province?> provinces = [];
@@ -106,7 +105,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.red,
                 ),
                 Text(
-                  "${post.startAmphireName} ${post.startProvinceName}",
+                  "${post.startName}",
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -119,7 +118,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.green,
                 ),
                 Text(
-                  "${post.endAmphireName} ${post.endProvinceName}",
+                  "${post.endName}",
                   // overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -138,10 +137,11 @@ class _PostScreenState extends State<PostScreen> {
               children: [
                 Icon(
                   Icons.airline_seat_recline_normal,
-                  color: colorSeat(post.seat!, post.seatFull!),
+                  color:
+                      colorSeat(post.postMemberSeat!, post.postDetail!.seat!),
                 ),
                 Text(
-                  "${post.seat}/${post.seatFull}",
+                  "${post.postDetail!.seat}",
                   // style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -151,7 +151,7 @@ class _PostScreenState extends State<PostScreen> {
         // subtitle: Column(
         //   children: [],
         // ),
-        trailing: Text("${post.price}"),
+        trailing: Text("${post.postDetail!.price}"),
         onTap: () {
           Navigator.push(
             context,
@@ -228,10 +228,8 @@ class _PostScreenState extends State<PostScreen> {
                                         setState(() {
                                           _stateGoBack = value.toString();
                                           _isBackSearch = false;
-                                          datetimeBackSelected = null;
-                                          stateDatetimeBackSelected = "";
-                                          dateTimeBackController.text =
-                                              stateDatetimeBackSelected;
+
+                                          dateTimeBackController.text = "";
                                         });
                                       })),
                                 ),
@@ -274,10 +272,8 @@ class _PostScreenState extends State<PostScreen> {
                                         locale: LocaleType.th,
                                         onConfirm: (time) {
                                           datetimeSelected = time;
-                                          String dateTimeFormat =
-                                              dateTimeformat(datetimeSelected);
                                           dateTimeController.text =
-                                              dateTimeFormat;
+                                              dateTimeformat(time);
                                         },
                                       );
                                     },
@@ -331,11 +327,8 @@ class _PostScreenState extends State<PostScreen> {
                                                 locale: LocaleType.th,
                                                 onConfirm: (time) {
                                                   datetimeBackSelected = time;
-                                                  String dateTimeFormat =
-                                                      dateTimeformat(
-                                                          datetimeSelected);
                                                   dateTimeBackController.text =
-                                                      dateTimeFormat;
+                                                      dateTimeformat(time);
                                                 },
                                               );
                                             },
@@ -709,8 +702,8 @@ class _PostScreenState extends State<PostScreen> {
     });
   }
 
-  Color colorSeat(int seat, int seatFull) {
-    if (seat / seatFull == 1) {
+  Color colorSeat(int postMember, int seat) {
+    if (postMember / seat == 1) {
       return Colors.deepOrange;
     } else {
       return Colors.blue;
@@ -769,7 +762,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.green,
                 ),
                 Text(
-                  " ${post.endAmphireName} ${post.endProvinceName}",
+                  " ${post.endName}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -869,81 +862,6 @@ class _PostScreenState extends State<PostScreen> {
                       SizedBox(
                         height: 30,
                       ),
-                      IconButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                      title: const Text('Score'),
-                                      // insetPadding: EdgeInsets.zero,
-
-                                      content: StatefulBuilder(builder:
-                                          (BuildContext context,
-                                              StateSetter setState) {
-                                        // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            TextFormField(
-                                              decoration: InputDecoration(
-                                                  labelText: "คะแนน",
-                                                  filled: true,
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
-                                                    // borderSide: BorderSide.none,
-                                                  ),
-                                                  prefixIcon: const Icon(
-                                                    Icons.score,
-                                                    color: Colors.pink,
-                                                  )),
-                                            ),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-                                            TextFormField(
-                                              maxLines: 3,
-                                              decoration: InputDecoration(
-                                                  labelText: "รายละเอียด",
-                                                  filled: true,
-                                                  border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10.0),
-                                                    // borderSide: BorderSide.none,
-                                                  ),
-                                                  prefixIcon: const Icon(
-                                                    Icons.details,
-                                                    color: Colors.pink,
-                                                  )),
-                                            ),
-                                          ],
-                                        );
-                                      }),
-                                      actions: [
-                                        TextButton(
-                                            child: const Text('Save'),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.white,
-                                              backgroundColor: Colors.green,
-                                            ),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            }),
-                                        TextButton(
-                                            child: const Text('Close'),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: Colors.white,
-                                              backgroundColor: Colors.blueGrey,
-                                            ),
-                                            onPressed: () {
-                                              Navigator.pop(context);
-                                            }),
-                                      ],
-                                    ));
-                          },
-                          icon: Icon(Icons.edit)),
                       SizedBox(
                         height: 30,
                       ),

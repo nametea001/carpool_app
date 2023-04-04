@@ -447,7 +447,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       onSaved: (newValue) {
                                         password = newValue!;
                                       },
-                                      validator: ((String? str) {
+                                      validator: (String? str) {
                                         if (str!.isEmpty) {
                                           return "Please Input Password";
                                         }
@@ -455,7 +455,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           return "Password and Confirm Password is not match";
                                         }
                                         return null;
-                                      }),
+                                      },
                                       decoration: InputDecoration(
                                         labelText: "Password",
                                         filled: true,
@@ -501,7 +501,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       onChanged: (value) {
                                         confirmPassword = value;
                                       },
-                                      validator: ((String? str) {
+                                      validator: (String? str) {
                                         if (str!.isEmpty) {
                                           return "Please Input Confirm Password";
                                         }
@@ -509,7 +509,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           return "Password and Confirm Password is not match";
                                         }
                                         return null;
-                                      }),
+                                      },
                                       // validator: MultiValidator([
                                       //   RequiredValidator(
                                       //       errorText:
@@ -655,7 +655,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   _isSingUp = false;
                                                 });
                                               }
-                                              // formKey2.currentState?.reset;
+                                              formKey2.currentState?.reset;
                                             },
                                             child: const Padding(
                                               padding: EdgeInsets.symmetric(
@@ -729,4 +729,5 @@ class _LoginScreenState extends State<LoginScreen> {
       direction: SkeletonDirection.ltr,
     );
   }
+
 }

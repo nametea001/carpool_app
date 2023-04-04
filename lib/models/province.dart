@@ -4,9 +4,9 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 
 class Province {
-  final int? id;
-  final String? nameTH;
-  final String? nameEN;
+  int? id;
+  String? nameTH;
+  String? nameEN;
 
   Province({
     this.id,

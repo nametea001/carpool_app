@@ -1,4 +1,6 @@
 import 'package:car_pool_project/models/district.dart';
+import 'package:car_pool_project/models/post.dart';
+import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -9,12 +11,14 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:form_field_validator/form_field_validator.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 import '../gobal_function/data.dart';
 
@@ -32,7 +36,7 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   GlobalData globalData = new GlobalData();
   bool _isAdd = false;
-
+  bool _isLoadingAdd = false;
   bool _myLocationEnable = false;
   bool _showMarkerStartToEnd = true;
   String location1 = "Search Start";
@@ -97,14 +101,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   FocusNode _focusNodeColor = FocusNode();
   // datetime control
   TextEditingController dateTimeController = TextEditingController();
-  String stateDatetimeSelected = "";
-  DateTime? datetimeSelected;
   TextEditingController dateTimeBackController = TextEditingController();
-  String stateDatetimeBackSelected = "";
-  DateTime? datetimeBackSelected;
 
-  int? districtStartID = 0;
-  int? districtEndID = 0;
+  PostDetail? postDetailData = PostDetail();
+  Post? postData = Post();
 
   @override
   void initState() {
@@ -141,7 +141,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? Text('Add') : Text('Detail')),
           backgroundColor: Colors.pink,
-          actions: [],
+          actions: [
+            IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isLoadingAdd = !_isLoadingAdd;
+                  });
+                },
+                icon: Icon(Icons.abc))
+          ],
         ),
         body: SingleChildScrollView(
             child: Column(
@@ -296,8 +304,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     stateGoBack = value.toString();
                                     _isBack = false;
                                     dateTimeBackController.text = "";
-                                    datetimeBackSelected = null;
-                                    stateDatetimeBackSelected = "";
+                                    postData!.dateTimeBack = null;
+                                    dateTimeBackController.text = "";
                                   });
                                 })),
                           ),
@@ -330,6 +338,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width - 50,
                           child: TextFormField(
+                            validator: MultiValidator([
+                              RequiredValidator(
+                                  errorText: "Please Slect DateTime")
+                            ]),
                             enabled: _isAdd,
                             showCursor: false,
                             readOnly: true,
@@ -345,15 +357,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 currentTime: DateTime.now(),
                                 locale: LocaleType.th,
                                 onConfirm: (time) {
-                                  datetimeSelected = time;
-                                  int m = int.parse(
-                                      DateFormat.M().format(datetimeSelected!));
-                                  String dw =
-                                      DateFormat.E().format(datetimeSelected!);
-                                  stateDatetimeSelected =
-                                      "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                  postData!.dateTimeStart = time;
                                   dateTimeController.text =
-                                      stateDatetimeSelected;
+                                      dateTimeformat(time);
                                 },
                               );
                             },
@@ -385,6 +391,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 SizedBox(
                                   width: MediaQuery.of(context).size.width - 50,
                                   child: TextFormField(
+                                    validator: (String? str) {
+                                      if (str!.isEmpty && _isBack) {
+                                        return "Please Select DateTime Back";
+                                      }
+                                      return null;
+                                    },
                                     enabled: _isAdd,
                                     showCursor: false,
                                     readOnly: true,
@@ -397,21 +409,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       DatePicker.showDateTimePicker(
                                         context,
                                         showTitleActions: true,
-                                        minTime:
-                                            datetimeSelected ?? DateTime.now(),
-                                        currentTime:
-                                            datetimeSelected ?? DateTime.now(),
+                                        minTime: postData!.dateTimeStart ??
+                                            DateTime.now(),
+                                        currentTime: postData!.dateTimeStart ??
+                                            DateTime.now(),
                                         locale: LocaleType.th,
                                         onConfirm: (time) {
-                                          datetimeBackSelected = time;
-                                          int m = int.parse(DateFormat.M()
-                                              .format(datetimeBackSelected!));
-                                          String dw = DateFormat.E()
-                                              .format(datetimeBackSelected!);
-                                          stateDatetimeBackSelected =
-                                              "${globalData.getDay(dw)} ${datetimeSelected!.day} ${globalData.getMonth(m)} ${datetimeSelected!.year}  ${DateFormat.Hm().format(datetimeSelected!)}";
+                                          postData!.dateTimeBack = time;
                                           dateTimeBackController.text =
-                                              stateDatetimeSelected;
+                                              dateTimeformat(time);
                                         },
                                       );
                                     },
@@ -446,6 +452,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.seat = int.parse(newValue!);
+                                },
+                                validator: MultiValidator([
+                                  RequiredValidator(
+                                      errorText: "Please Input Seat")
+                                ]),
                                 enabled: _isAdd,
                                 focusNode: _focusNodeSeat,
                                 keyboardType: TextInputType.number,
@@ -473,6 +486,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.price =
+                                      double.parse(newValue!);
+                                },
+                                validator: (String? str) {
+                                  if (str!.isEmpty) {
+                                    return "Please Input Price";
+                                  }
+                                  if (int.parse(str) < 0) {
+                                    return "Please Input Price more";
+                                  }
+                                  return null;
+                                },
                                 enabled: _isAdd,
                                 focusNode: _focusNodePrice,
                                 keyboardType: TextInputType.number,
@@ -505,6 +531,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.brand = newValue;
+                                },
+                                validator: MultiValidator([
+                                  RequiredValidator(
+                                      errorText: "Please Input Brand")
+                                ]),
                                 enabled: _isAdd,
                                 focusNode: _focusNodeBrand,
                                 decoration: InputDecoration(
@@ -531,6 +564,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.model = newValue;
+                                },
+                                validator: MultiValidator([
+                                  RequiredValidator(
+                                      errorText: "Please Input model")
+                                ]),
                                 enabled: _isAdd,
                                 focusNode: _focusNodemodel,
                                 decoration: InputDecoration(
@@ -562,6 +602,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.vehicleRegistration =
+                                      newValue;
+                                },
+                                validator: MultiValidator([
+                                  RequiredValidator(
+                                      errorText:
+                                          "Please Input Vehicle Registration")
+                                ]),
                                 enabled: _isAdd,
                                 focusNode: _focusNodeVRegistration,
                                 decoration: InputDecoration(
@@ -588,6 +637,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               width:
                                   (MediaQuery.of(context).size.width / 2) - 30,
                               child: TextFormField(
+                                onSaved: (newValue) {
+                                  postDetailData!.color = newValue;
+                                },
+                                validator: MultiValidator([
+                                  RequiredValidator(
+                                      errorText: "Please Input Color")
+                                ]),
                                 enabled: _isAdd,
                                 focusNode: _focusNodeColor,
                                 decoration: InputDecoration(
@@ -616,6 +672,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         SizedBox(
                           width: MediaQuery.of(context).size.width - 50,
                           child: TextFormField(
+                            onSaved: (newValue) {
+                              if (newValue!.isEmpty) {
+                                postDetailData!.description = null;
+                              } else {
+                                postDetailData!.description = newValue;
+                              }
+                            },
                             enabled: _isAdd,
                             focusNode: _focusNodeDescription,
                             maxLines: 3,
@@ -637,24 +700,48 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Visibility(
-                      visible: _isAdd,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.pink,
-                        ),
-                        onPressed: () async {
-                          showDetailAdd();
-                        },
-                        child: const Text(
-                          "ยืนยัน",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                    ),
+                    _isLoadingAdd
+                        ? _loadingAddPost()
+                        : Visibility(
+                            visible: _isAdd,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.pink,
+                              ),
+                              onPressed: () async {
+                                if (formKey.currentState!.validate()) {
+                                  if ((postData!.startDistrictID == 0 ||
+                                          postData!.endDistrictID == 0) &&
+                                      (postData!.endDistrictID != null &&
+                                          postData!.startDistrictID != null)) {
+                                    showAlertSelecLocation();
+                                  } else {
+                                    setState(() {
+                                      _isLoadingAdd = true;
+                                    });
+                                    formKey.currentState!.save();
+                                    postData!.isback = _isBack;
+                                    // postData!.status = "NEW";
+
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    var post = await Post.addPostAndPostDetail(
+                                        prefs.getString('jwt') ?? "",
+                                        postData!,
+                                        postDetailData!);
+                                  }
+                                }
+                                // showDetailAdd();
+                              },
+                              child: const Text(
+                                "ยืนยัน",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w800),
+                              ),
+                            ),
+                          ),
                     const SizedBox(
                       height: 20,
                     ),
@@ -884,21 +971,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           }
 
           if (searchNumber == 1) {
+            postData!.startDistrictID = tempDistrictID;
+            postData!.startName = name;
+            postDetailData!.startLatLng = newlatlang;
             setState(() {
               location1 = place.description.toString();
               marker1 = newlatlang;
-              districtStartID = tempDistrictID;
             });
           } else if (searchNumber == 2) {
+            postData!.endDistrictID = tempDistrictID;
+            postData!.endName = name;
+            postDetailData!.endLatLng = newlatlang;
             setState(() {
               location2 = place.description.toString();
               marker2 = newlatlang;
-              districtEndID = tempDistrictID;
             });
           }
           //move map camera to selected place with animation
 
-          if (districtStartID != 0 && districtEndID != 0) {
+          if (postData!.startDistrictID == 0 &&
+              postData!.endDistrictID == 0 &&
+              postData!.endDistrictID != null &&
+              postData!.startDistrictID != null) {
             await Future.delayed(const Duration(seconds: 2));
             await updateCameraLocation(marker1, marker2, _mapController!);
           } else {
@@ -1025,14 +1119,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-              title: const Text('Confirm Add '),
+              title: const Text('Confirm Add'),
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("คุณต้องการเข้าร่วมหรือไม่"),
+                    // Text("โปรดจรวจสอบความถูกต้องของข้อมูลก่อน"),
+                    Text("คุณต้องการเข้าเพิ่มโพสต์นี้หรือไม่"),
                   ],
                 );
               }),
@@ -1057,5 +1152,76 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     }),
               ],
             ));
+  }
+
+  void showAlertSelecLocation() async {
+    // var
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("กรุณาเลือกสถานที่ใน Map"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
+  String dateTimeformat(DateTime? time) {
+    int mount = int.parse(DateFormat.M().format(time!));
+    String dayWeek = DateFormat.E().format(time);
+    // String dateTimeFormat =
+    //     "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${time.year}  ${DateFormat.Hm().format(time)}";
+    String dateTimeFormat =
+        "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${DateFormat.Hm().format(time)}";
+    return dateTimeFormat;
+  }
+
+  Widget _loadingAddPost() {
+    return SkeletonLoader(
+      builder: Container(
+          decoration: BoxDecoration(
+            border: Border.all(width: 3, color: Colors.white),
+          ),
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.pink,
+            ),
+            onPressed: null,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 2),
+              child: Text(
+                "Please wait",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800),
+              ),
+            ),
+          )),
+      items: 1,
+      period: Duration(seconds: 2),
+      highlightColor: Colors.pink,
+      // baseColor: Colors.pink,
+      direction: SkeletonDirection.ltr,
+    );
   }
 }
