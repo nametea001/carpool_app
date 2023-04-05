@@ -97,6 +97,8 @@ class _PostScreenState extends State<PostScreen> {
             : null),
         // tileColor: Colors.amberAccent,
         title: Column(
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
@@ -104,10 +106,12 @@ class _PostScreenState extends State<PostScreen> {
                   Icons.pin_drop,
                   color: Colors.red,
                 ),
-                Text(
-                  "${post.startName}",
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    "${post.startName}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -117,10 +121,13 @@ class _PostScreenState extends State<PostScreen> {
                   Icons.golf_course,
                   color: Colors.green,
                 ),
-                Text(
-                  "${post.endName}",
-                  // overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    "${post.endName}",
+                    // textAlign: TextAlign.justify,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
@@ -141,7 +148,7 @@ class _PostScreenState extends State<PostScreen> {
                       colorSeat(post.postMemberSeat!, post.postDetail!.seat!),
                 ),
                 Text(
-                  "${post.postDetail!.seat}",
+                  "${post.postMemberSeat}/${post.postDetail!.seat}",
                   // style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -640,7 +647,7 @@ class _PostScreenState extends State<PostScreen> {
           ),
           body: SafeArea(
               child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               (_isLoading
                   ? listLoader()
@@ -651,7 +658,11 @@ class _PostScreenState extends State<PostScreen> {
                           updateUI();
                         },
                         child: ListView(
-                          physics: const BouncingScrollPhysics(),
+                          shrinkWrap: true,
+                          physics: AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics()),
+                          // physics: BouncingScrollPhysics(),
+                          // physics: AlwaysScrollableScrollPhysics(),
                           children: getListTile(),
                         ),
                       )),

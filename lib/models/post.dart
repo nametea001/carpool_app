@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 class Post {
@@ -43,7 +44,7 @@ class Post {
   static Future<List<Post>?> getPost(
     String token,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('posts', {});
+    NetworkHelper networkHelper = NetworkHelper('posts', {"device": "mobile"});
     List<Post> posts = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
@@ -126,7 +127,23 @@ class Post {
             ? DateTime.parse(t['date_time_back'])
             : null,
         isback: t['isback'],
-        postDetail: t['post_detail'],
+        postDetail: PostDetail(
+          price: double.parse(t['post_details'][0]['price']),
+          seat: t['post_details'][0]['seat'],
+          description: t['post_details'][0]['description'],
+          brand: t['post_details'][0]['brand'],
+          model: t['post_details'][0]['model'],
+          vehicleRegistration: t['post_details'][0]['vehicle_registration'],
+          color: t['post_details'][0]['color'],
+          startLatLng: t['post_details'][0]['lat_lng_start'] != null
+              ? LatLng(t['post_details'][0]['lat_lng_start'][0],
+                  t['post_details'][0]['lat_lng_start'][1])
+              : null,
+          endLatLng: t['post_details'][0]['lat_lng_end'] != null
+              ? LatLng(t['post_details'][0]['lat_lng_end'][0],
+                  t['post_details'][0]['lat_lng_end'][0])
+              : null,
+        ),
       );
       return post;
     }

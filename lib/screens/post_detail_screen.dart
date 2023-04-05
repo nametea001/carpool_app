@@ -24,10 +24,12 @@ import '../gobal_function/data.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
+  final bool? isback;
 
   const PostDetailScreen({
     super.key,
     this.isAdd,
+    this.isback,
   });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -52,8 +54,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     zoom: 15,
   );
 
-  bool _isShowmarker1 = false;
-  bool _isShowmarker2 = false;
+  final bool _isShowmarker1 = false;
+  final bool _isShowmarker2 = false;
   LatLng marker1 = LatLng(17.291925, 104.112884);
   LatLng marker2 = LatLng(17.291925, 104.112884);
 
@@ -92,24 +94,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // input
   final formKey = GlobalKey<FormState>();
   // focuscontroll
-  FocusNode _focusNodeDescription = FocusNode();
-  FocusNode _focusNodeSeat = FocusNode();
-  FocusNode _focusNodePrice = FocusNode();
-  FocusNode _focusNodeBrand = FocusNode();
-  FocusNode _focusNodemodel = FocusNode();
-  FocusNode _focusNodeVRegistration = FocusNode();
-  FocusNode _focusNodeColor = FocusNode();
+  final FocusNode _focusNodeDescription = FocusNode();
+  final FocusNode _focusNodeSeat = FocusNode();
+  final FocusNode _focusNodePrice = FocusNode();
+  final FocusNode _focusNodeBrand = FocusNode();
+  final FocusNode _focusNodemodel = FocusNode();
+  final FocusNode _focusNodeVRegistration = FocusNode();
+  final FocusNode _focusNodeColor = FocusNode();
   // datetime control
-  TextEditingController dateTimeController = TextEditingController();
-  TextEditingController dateTimeBackController = TextEditingController();
+  TextEditingController _dateTimeController = TextEditingController();
+  TextEditingController _dateTimeBackController = TextEditingController();
+  TextEditingController _seatController = TextEditingController();
+  TextEditingController _priceController = TextEditingController();
+  TextEditingController _brandController = TextEditingController();
+  TextEditingController _modelController = TextEditingController();
+  TextEditingController _vehicleRegistrationController =
+      TextEditingController();
+  TextEditingController _colorController = TextEditingController();
+  TextEditingController _descriptionController = TextEditingController();
 
   PostDetail? postDetailData = PostDetail();
-  Post? postData = Post();
+  Post? postData = Post(startDistrictID: 0, endDistrictID: 0);
 
   @override
   void initState() {
     super.initState();
     _isAdd = widget.isAdd ?? false;
+    // _isBack = widget.isBack ?? false;
+    // stateGoBack = _isBack == false ? "go" : "back";
   }
 
   @override
@@ -123,6 +135,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNodeVRegistration.dispose();
     _focusNodeColor.dispose();
     _mapController?.dispose();
+    _dateTimeBackController.dispose();
+    _dateTimeController.dispose();
+    _priceController.dispose();
+    _brandController.dispose();
+    _modelController.dispose();
+    _colorController.dispose();
+    _descriptionController.dispose();
   }
 
   @override
@@ -146,6 +165,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 onPressed: () {
                   setState(() {
                     _isLoadingAdd = !_isLoadingAdd;
+                    // _isAdd = !_isAdd;
                   });
                 },
                 icon: Icon(Icons.abc))
@@ -185,19 +205,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               markerId: MarkerId("marker2"),
                               position: marker2),
                         }
-                      : {},
+                      : {
+                          Marker(
+                              draggable: false,
+                              markerId: MarkerId("marker2"),
+                              position: marker2),
+                        },
                 ),
 
                 //search autoconplete input
-                Visibility(
-                  visible: _isAdd,
-                  child: Column(
-                    children: [
-                      Row(
-                        children: searchMapButton(),
-                      ),
-                    ],
-                  ),
+                Column(
+                  children: [
+                    Row(
+                      children: searchMapButton(),
+                    ),
+                  ],
                 ),
               ]),
             ),
@@ -234,22 +256,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       await _mapController?.animateCamera(
                                         CameraUpdate.newLatLngZoom(
                                             LatLng(l.latitude, l.longitude),
-                                            14),
+                                            15),
                                       );
+
+                                      await Future.delayed(
+                                          const Duration(seconds: 4));
+                                      updateCameraLocation(
+                                          LatLng(l.latitude, l.longitude),
+                                          marker2,
+                                          _mapController!);
                                     }
                                   },
                                   icon: const Icon(
                                     Icons.my_location,
                                     size: 30,
                                   )),
-                              // Text(
-                              //   "Lot",
-                              //   style: TextStyle(
-                              //     fontSize: 12.0,
-                              //     fontWeight: FontWeight.bold,
-                              //     color: Colors.black,
-                              //   ),
-                              // ),
                             ],
                           ),
                         ),
@@ -269,6 +290,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       _showMarkerStartToEnd = true;
                                       _myLocationEnable = false;
                                     });
+                                    await Future.delayed(
+                                        const Duration(seconds: 2));
+                                    await updateCameraLocation(
+                                        marker1, marker2, _mapController!);
                                   },
                                   icon: const Icon(
                                     Icons.pin_drop,
@@ -303,9 +328,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   setState(() {
                                     stateGoBack = value.toString();
                                     _isBack = false;
-                                    dateTimeBackController.text = "";
+                                    _dateTimeBackController.text = "";
                                     postData!.dateTimeBack = null;
-                                    dateTimeBackController.text = "";
                                   });
                                 })),
                           ),
@@ -347,7 +371,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             readOnly: true,
                             focusNode: FocusNode(canRequestFocus: false),
                             keyboardType: TextInputType.none,
-                            controller: dateTimeController,
+                            controller: _dateTimeController,
                             onTap: () {
                               FocusScope.of(context).unfocus();
                               DatePicker.showDateTimePicker(
@@ -358,7 +382,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 locale: LocaleType.th,
                                 onConfirm: (time) {
                                   postData!.dateTimeStart = time;
-                                  dateTimeController.text =
+                                  _dateTimeController.text =
                                       dateTimeformat(time);
                                 },
                               );
@@ -403,7 +427,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     focusNode:
                                         FocusNode(canRequestFocus: false),
                                     keyboardType: TextInputType.none,
-                                    controller: dateTimeBackController,
+                                    controller: _dateTimeBackController,
                                     onTap: () {
                                       FocusScope.of(context).unfocus();
                                       DatePicker.showDateTimePicker(
@@ -416,7 +440,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         locale: LocaleType.th,
                                         onConfirm: (time) {
                                           postData!.dateTimeBack = time;
-                                          dateTimeBackController.text =
+                                          _dateTimeBackController.text =
                                               dateTimeformat(time);
                                         },
                                       );
@@ -704,41 +728,36 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         ? _loadingAddPost()
                         : Visibility(
                             visible: _isAdd,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.pink,
-                              ),
-                              onPressed: () async {
-                                if (formKey.currentState!.validate()) {
-                                  if ((postData!.startDistrictID == 0 ||
-                                          postData!.endDistrictID == 0) &&
-                                      (postData!.endDistrictID != null &&
-                                          postData!.startDistrictID != null)) {
-                                    showAlertSelecLocation();
-                                  } else {
-                                    setState(() {
-                                      _isLoadingAdd = true;
-                                    });
-                                    formKey.currentState!.save();
-                                    postData!.isback = _isBack;
-                                    // postData!.status = "NEW";
-
-                                    final prefs =
-                                        await SharedPreferences.getInstance();
-                                    var post = await Post.addPostAndPostDetail(
-                                        prefs.getString('jwt') ?? "",
-                                        postData!,
-                                        postDetailData!);
+                            child: Container(
+                              padding: EdgeInsets.only(left: 70, right: 70),
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.pink,
+                                ),
+                                onPressed: () async {
+                                  if (formKey.currentState!.validate()) {
+                                    if (postData!.startDistrictID == 0 ||
+                                        postData!.endDistrictID == 0 ||
+                                        postData!.endDistrictID == null ||
+                                        postData!.startDistrictID == null) {
+                                      showAlertSelecLocation();
+                                    } else {
+                                      formKey.currentState!.save();
+                                      postData!.isback = _isBack;
+                                      // postData!.status = "NEW";
+                                      showDetailAdd();
+                                    }
                                   }
-                                }
-                                // showDetailAdd();
-                              },
-                              child: const Text(
-                                "ยืนยัน",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800),
+                                  // showDetailAdd();
+                                },
+                                child: const Text(
+                                  "ยืนยัน",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800),
+                                ),
                               ),
                             ),
                           ),
@@ -988,16 +1007,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             });
           }
           //move map camera to selected place with animation
-
-          if (postData!.startDistrictID == 0 &&
-              postData!.endDistrictID == 0 &&
+          _mapController?.animateCamera(CameraUpdate.newCameraPosition(
+              CameraPosition(target: newlatlang, zoom: 15)));
+          if (postData!.startDistrictID != 0 &&
+              postData!.endDistrictID != 0 &&
               postData!.endDistrictID != null &&
               postData!.startDistrictID != null) {
-            await Future.delayed(const Duration(seconds: 2));
+            await Future.delayed(const Duration(seconds: 4));
             await updateCameraLocation(marker1, marker2, _mapController!);
-          } else {
-            _mapController?.animateCamera(CameraUpdate.newCameraPosition(
-                CameraPosition(target: newlatlang, zoom: 15)));
           }
         } else {
           print(null);
@@ -1014,10 +1031,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     double widthSearbar = MediaQuery.of(context).size.width / 2 - 40;
     return [
       InkWell(
-          onDoubleTap: setStateShowMoreLine,
-          onTap: () async {
-            searchMap(1);
-          },
+          onDoubleTap: _isAdd ? setStateShowMoreLine : null,
+          onTap: _isAdd
+              ? () async {
+                  searchMap(1);
+                }
+              : setStateShowMoreLine,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(15, 15, 5, 0),
             child: Card(
@@ -1046,10 +1065,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             color: Colors.green,
           )),
       InkWell(
-          onDoubleTap: setStateShowMoreLine,
-          onTap: () async {
-            searchMap(2);
-          },
+          onDoubleTap: _isAdd ? setStateShowMoreLine : null,
+          onTap: _isAdd
+              ? () async {
+                  searchMap(2);
+                }
+              : setStateShowMoreLine,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(5, 15, 15, 0),
             child: Card(
@@ -1114,46 +1135,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void showDetailAdd() async {
-    // var
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-              title: const Text('Confirm Add'),
-              content: StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Text("โปรดจรวจสอบความถูกต้องของข้อมูลก่อน"),
-                    Text("คุณต้องการเข้าเพิ่มโพสต์นี้หรือไม่"),
-                  ],
-                );
-              }),
-              actions: [
-                TextButton(
-                    child: const Text('Add'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.green,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-                TextButton(
-                    child: const Text('Close'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.blueGrey,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
-              ],
-            ));
-  }
-
   void showAlertSelecLocation() async {
     // var
     await showDialog(
@@ -1184,6 +1165,120 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
+  void showDetailAdd() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Confirm Add'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text("คุณต้องการเพิ่มโพสต์นี้หรือไม่"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Add'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        _isLoadingAdd = true;
+                      });
+                      final prefs = await SharedPreferences.getInstance();
+                      Post? post = await Post.addPostAndPostDetail(
+                          prefs.getString('jwt') ?? "",
+                          postData!,
+                          postDetailData!);
+                      Navigator.pop(context);
+                      setState(() {
+                        _isAdd = false;
+                        _isLoadingAdd = false;
+                      });
+                      if (post != null) {
+                        showAlerSuccess();
+                      } else {
+                        Navigator.pop(context);
+                        showAlerError();
+                      }
+                    }),
+                TextButton(
+                    child: const Text('Cancel'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
+  void showAlerError() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
+  void showAlerSuccess() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Success'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text("ดำเดินการสำเร็จ"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
   String dateTimeformat(DateTime? time) {
     int mount = int.parse(DateFormat.M().format(time!));
     String dayWeek = DateFormat.E().format(time);
@@ -1194,29 +1289,37 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return dateTimeFormat;
   }
 
+  void updateUI() async {
+    final prefs = await SharedPreferences.getInstance();
+    // List<Post>? tempData = await Post.getPost(prefs.getString('jwt') ?? "");
+  }
+
   Widget _loadingAddPost() {
     return SkeletonLoader(
-      builder: Container(
-          decoration: BoxDecoration(
-            border: Border.all(width: 3, color: Colors.white),
-          ),
-          width: double.infinity,
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.pink,
+      builder: Padding(
+        padding: const EdgeInsets.only(right: 70, left: 70),
+        child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 3, color: Colors.white),
             ),
-            onPressed: null,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 2),
-              child: Text(
-                "Please wait",
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800),
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pink,
               ),
-            ),
-          )),
+              onPressed: null,
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 2),
+                child: Text(
+                  "Please wait",
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800),
+                ),
+              ),
+            )),
+      ),
       items: 1,
       period: Duration(seconds: 2),
       highlightColor: Colors.pink,
