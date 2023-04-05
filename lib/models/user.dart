@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:car_pool_project/services/networking.dart';
 
 class User {
-  int? userID;
+  int? id;
   String? username;
   int? userRoleID;
   String? firstName;
@@ -13,7 +13,7 @@ class User {
   String? img;
   String? jwt;
   User({
-    this.userID,
+    this.id,
     this.username,
     this.userRoleID,
     this.firstName,
@@ -39,7 +39,7 @@ class User {
     if (json != null && json['error'] == false && json['token'] != null) {
       Map u = json['user'];
       User user = User(
-        userID: u["id"],
+        id: u["id"],
         username: u["username"],
         firstName: u["first_name"],
         lastName: u["last_name"],
@@ -71,7 +71,7 @@ class User {
     if (json != null && json['error'] == false) {
       Map u = json['user'];
       User user = User(
-        userID: u["id"],
+        id: u["id"],
         username: u["username"],
         firstName: u["first_name"],
         lastName: u["last_name"],

@@ -15,6 +15,7 @@ class PostDetail {
   String? model;
   String? vehicleRegistration;
   String? color;
+  int? createdUserId;
 
   PostDetail({
     this.id,
@@ -28,6 +29,7 @@ class PostDetail {
     this.model,
     this.vehicleRegistration,
     this.color,
+    this.createdUserId,
   });
 
   static Future<List<PostDetail>?> getPostDetails(
@@ -51,7 +53,6 @@ class PostDetail {
           brand: t['brand'],
           model: t['model'],
           vehicleRegistration: t['vehicle_registration'],
-          color: t['color'],
         );
         postDetails.add(postDetail);
       }

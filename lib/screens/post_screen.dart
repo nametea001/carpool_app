@@ -171,6 +171,8 @@ class _PostScreenState extends State<PostScreen> {
                 dateTimeEnd: post.dateTimeBack,
                 startName: post.startName,
                 endName: post.endName,
+                postStatus: post.status,
+                postCreatedUserID: post.createdUserID,
               ),
             ),
           );

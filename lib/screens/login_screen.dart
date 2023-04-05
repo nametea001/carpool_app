@@ -334,6 +334,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                           .getInstance();
                                                   await prefs.setString(
                                                       'jwt', u.jwt.toString());
+                                                  await prefs.setInt(
+                                                      "user_id", u.id ?? 0);
                                                   // ignore: use_build_context_synchronously
                                                   Navigator.push(
                                                     context,
@@ -729,5 +731,4 @@ class _LoginScreenState extends State<LoginScreen> {
       direction: SkeletonDirection.ltr,
     );
   }
-
 }

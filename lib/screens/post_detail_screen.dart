@@ -2,6 +2,7 @@ import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/province.dart';
+import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -19,6 +20,7 @@ import 'package:google_maps_webservice/places.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
+import 'package:google_maps_routes/google_maps_routes.dart';
 
 import '../gobal_function/data.dart';
 
@@ -30,6 +32,8 @@ class PostDetailScreen extends StatefulWidget {
   final DateTime? dateTimeEnd;
   final String? startName;
   final String? endName;
+  final int? postCreatedUserID;
+  final String? postStatus;
 
   const PostDetailScreen({
     super.key,
@@ -40,6 +44,8 @@ class PostDetailScreen extends StatefulWidget {
     this.dateTimeEnd,
     this.startName,
     this.endName,
+    this.postCreatedUserID,
+    this.postStatus,
   });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -123,17 +129,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   TextEditingController _colorController = TextEditingController();
   TextEditingController _descriptionController = TextEditingController();
 
+  int postCreatedUserID = 0;
+
   PostDetail? postDetailData = PostDetail();
   Post? postData = Post(startDistrictID: 0, endDistrictID: 0);
   PostDetail? postDetailTemp = PostDetail();
   bool _isLoading = false;
+  bool _isJoin = false;
 
   DateTime? dateTimeStart;
   DateTime? dateTimeEnd;
   int? postID = 0;
+  String? postStatus = "";
+
+  MapsRoutes route = MapsRoutes();
+  DistanceCalculator distanceCalculator = DistanceCalculator();
+  String totalDistance = 'No route';
+
+  int userID = 0;
   @override
   void initState() {
     super.initState();
+
     _isAdd = widget.isAdd ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
     dateTimeStart = widget.dateTimeStart ?? null;
@@ -141,6 +158,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     location1 = widget.startName ?? location1;
     location2 = widget.endName ?? location2;
     postID = widget.postID ?? 0;
+    postStatus = widget.postStatus ?? null;
+    postCreatedUserID = widget.postCreatedUserID ?? 0;
+    setUserID();
     updateUI();
   }
 
@@ -210,6 +230,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           Factory<OneSequenceGestureRecognizer>(
                               () => EagerGestureRecognizer())
                         },
+                        polylines: route.routes,
                         myLocationButtonEnabled: false,
                         myLocationEnabled: _myLocationEnable,
                         zoomControlsEnabled: true,
@@ -276,19 +297,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           });
                                           Position? l = await _getLocation();
                                           if (l != null) {
+                                            LatLng latLngTemp =
+                                                LatLng(l.latitude, l.longitude);
                                             await _mapController?.animateCamera(
                                               CameraUpdate.newLatLngZoom(
-                                                  LatLng(
-                                                      l.latitude, l.longitude),
-                                                  15),
+                                                  latLngTemp, 15),
                                             );
-
+                                            route.routes.clear();
                                             await Future.delayed(
                                                 const Duration(seconds: 4));
-                                            updateCameraLocation(
-                                                LatLng(l.latitude, l.longitude),
-                                                marker2,
-                                                _mapController!);
+                                            await routeDraw(
+                                                latLngTemp, marker2);
+                                            updateCameraLocation(latLngTemp,
+                                                marker2, _mapController!);
                                           }
                                         },
                                         icon: const Icon(
@@ -315,8 +336,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             _showMarkerStartToEnd = true;
                                             _myLocationEnable = false;
                                           });
+                                          route.routes.clear();
                                           await Future.delayed(
                                               const Duration(seconds: 2));
+                                          await routeDraw(marker1, marker2);
                                           await updateCameraLocation(marker1,
                                               marker2, _mapController!);
                                         },
@@ -834,146 +857,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 backgroundColor: Colors.green,
                 activeBackgroundColor: Colors.red,
                 spacing: 12,
-                children: [
-                  SpeedDialChild(
-                    backgroundColor: Colors.greenAccent,
-                    label: "Join",
-                    child: Icon(Icons.add),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Join'),
-                                // insetPadding: EdgeInsets.zero,
-                                insetPadding: EdgeInsets.only(
-                                    left: 20, right: 20, bottom: 30, top: 30),
-                                content: StatefulBuilder(builder:
-                                    (BuildContext context,
-                                        StateSetter setState) {
-                                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                                  return Text(
-                                      "คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
-                                }),
-                                actions: [
-                                  TextButton(
-                                      child: const Text('Join'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.green,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                  TextButton(
-                                      child: const Text('Close'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.blueGrey,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                ],
-                              ));
-                    },
-                  ),
-                  SpeedDialChild(
-                    backgroundColor: Colors.blue,
-                    label: "Chat",
-                    child: Icon(Icons.message),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => ChatDetailScreen()),
-                      );
-                    },
-                  ),
-                  SpeedDialChild(
-                    backgroundColor: Colors.green,
-                    label: "Done",
-                    child: Icon(Icons.check_circle_outline),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Done'),
-                                // insetPadding: EdgeInsets.zero,
-                                insetPadding: EdgeInsets.only(
-                                    left: 20, right: 20, bottom: 30, top: 30),
-                                content: StatefulBuilder(builder:
-                                    (BuildContext context,
-                                        StateSetter setState) {
-                                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                                  return Text(
-                                      "คุณต้องการจะจบการเดินทางหรือไม่");
-                                }),
-                                actions: [
-                                  TextButton(
-                                      child: const Text('Done'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.green,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                  TextButton(
-                                      child: const Text('No'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                ],
-                              ));
-                    },
-                  ),
-                  SpeedDialChild(
-                    backgroundColor: Colors.red,
-                    label: "Cancel",
-                    child: Icon(Icons.cancel_outlined),
-                    onTap: () {
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                                title: const Text('Cancel'),
-                                // insetPadding: EdgeInsets.zero,
-                                insetPadding: EdgeInsets.only(
-                                    left: 20, right: 20, bottom: 30, top: 30),
-                                content: StatefulBuilder(builder:
-                                    (BuildContext context,
-                                        StateSetter setState) {
-                                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                                  return Text(
-                                      "คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
-                                }),
-                                actions: [
-                                  TextButton(
-                                      child: const Text('Cancel'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                  TextButton(
-                                      child: const Text('No'),
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Colors.white,
-                                        backgroundColor: Colors.green,
-                                      ),
-                                      onPressed: () {
-                                        Navigator.pop(context);
-                                      }),
-                                ],
-                              ));
-                    },
-                  ),
-                ],
+                children: speedDialChild(),
               )),
       ),
     );
@@ -1070,6 +954,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               postData!.endDistrictID != null &&
               postData!.startDistrictID != null) {
             await Future.delayed(const Duration(seconds: 4));
+            await routeDraw(marker1, marker2);
             await updateCameraLocation(marker1, marker2, _mapController!);
           }
         } else {
@@ -1345,35 +1230,222 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return dateTimeFormat;
   }
 
-  void updateUI() async {
-    setState(() {
-      _isLoading = true;
-    });
-    final prefs = await SharedPreferences.getInstance();
-    PostDetail? tempData = await PostDetail.getPostDetailByPostID(
-        prefs.getString('jwt') ?? "", postID!);
-    if (tempData != null) {
-      postDetailTemp = tempData;
-      _dateTimeController.text = dateTimeformat(dateTimeStart);
-      _seatController.text = tempData.seat.toString();
-      _priceController.text = tempData.price.toString();
-      _brandController.text = tempData.brand!;
-      _modelController.text = tempData.model!;
-      _vehicleRegistrationController.text = tempData.vehicleRegistration!;
-      _colorController.text = tempData.color!;
-      _descriptionController.text =
-          tempData.description ?? "ไม่รายระเอียดเพิ่มเติม";
-      if (_isBack) {
-        _dateTimeBackController.text = dateTimeformat(dateTimeEnd);
-      }
-      marker1 = tempData.startLatLng!;
-      marker2 = tempData.endLatLng!;
+  List<SpeedDialChild> speedDialChild() {
+    List<SpeedDialChild> sc = [];
+    if (postCreatedUserID != userID &&
+        _isJoin == false &&
+        postStatus == "NEW") {
+      var s = SpeedDialChild(
+        backgroundColor: Colors.greenAccent,
+        label: "Join",
+        child: Icon(Icons.add),
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Join'),
+                    // insetPadding: EdgeInsets.zero,
+                    insetPadding: EdgeInsets.only(
+                        left: 20, right: 20, bottom: 30, top: 30),
+                    content: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                      return Text("คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
+                    }),
+                    actions: [
+                      TextButton(
+                          child: const Text('Join'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.green,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      TextButton(
+                          child: const Text('Close'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                    ],
+                  ));
+        },
+      );
+      sc.add(s);
     }
+    if (_isJoin == true) {
+      var s = SpeedDialChild(
+        backgroundColor: Colors.blue,
+        label: "Chat",
+        child: Icon(Icons.message),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+          );
+        },
+      );
+      sc.add(s);
+    }
+    if ((postStatus == "IN_PROGRESS" || postStatus == "NEW") &&
+        postCreatedUserID == userID) {
+      var s = SpeedDialChild(
+        backgroundColor: Colors.blue,
+        label: "Chat",
+        child: Icon(Icons.message),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+          );
+        },
+      );
+      sc.add(s);
+      var s1 = SpeedDialChild(
+        backgroundColor: Colors.green,
+        label: "Done",
+        child: Icon(Icons.check_circle_outline),
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Done'),
+                    // insetPadding: EdgeInsets.zero,
+                    insetPadding: EdgeInsets.only(
+                        left: 20, right: 20, bottom: 30, top: 30),
+                    content: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                      return Text("คุณต้องการจะจบการเดินทางหรือไม่");
+                    }),
+                    actions: [
+                      TextButton(
+                          child: const Text('Done'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.green,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      TextButton(
+                          child: const Text('No'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                    ],
+                  ));
+        },
+      );
+      sc.add(s1);
+      var s2 = SpeedDialChild(
+        backgroundColor: Colors.red,
+        label: "Cancel",
+        child: Icon(Icons.cancel_outlined),
+        onTap: () {
+          showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Cancel'),
+                    // insetPadding: EdgeInsets.zero,
+                    insetPadding: EdgeInsets.only(
+                        left: 20, right: 20, bottom: 30, top: 30),
+                    content: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                      return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
+                    }),
+                    actions: [
+                      TextButton(
+                          child: const Text('Cancel'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                      TextButton(
+                          child: const Text('No'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.green,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                    ],
+                  ));
+        },
+      );
+      sc.add(s2);
+    }
+    if (sc.length <= 1) {
+      return [SpeedDialChild()];
+    } else {
+      return sc;
+    }
+  }
+
+  void setUserID() async {
+    final prefs = await SharedPreferences.getInstance();
+    userID = prefs.getInt("user_id") ?? 0;
+  }
+
+  void updateUI() async {
+    if (!_isAdd) {
+      setState(() {
+        _isLoading = true;
+      });
+      final prefs = await SharedPreferences.getInstance();
+      PostDetail? tempData = await PostDetail.getPostDetailByPostID(
+          prefs.getString('jwt') ?? "", postID!);
+      if (tempData != null) {
+        postDetailTemp = tempData;
+        _dateTimeController.text = dateTimeformat(dateTimeStart);
+        _seatController.text = tempData.seat.toString();
+        _priceController.text = tempData.price.toString();
+        _brandController.text = tempData.brand!;
+        _modelController.text = tempData.model!;
+        _vehicleRegistrationController.text = tempData.vehicleRegistration!;
+        _colorController.text = tempData.color!;
+        _descriptionController.text =
+            tempData.description ?? "ไม่รายระเอียดเพิ่มเติม";
+        if (_isBack) {
+          _dateTimeBackController.text = dateTimeformat(dateTimeEnd);
+        }
+        marker1 = tempData.startLatLng!;
+        marker2 = tempData.endLatLng!;
+      }
+      setState(() {
+        _isLoading = false;
+      });
+      await Future.delayed(const Duration(seconds: 4));
+      await routeDraw(marker1, marker2);
+      await updateCameraLocation(marker1, marker2, _mapController!);
+    }
+  }
+
+  Future routeDraw(LatLng l1, LatLng l2) async {
+    route.routes.clear();
+    var points = [l1, l2];
+    var color = Color.fromRGBO(130, 78, 210, 1.0);
+    // var color = Colors.green;
+    await route.drawRoute(
+        points, 'Test routes', color, GlobalData().googleApiKey(),
+        travelMode: TravelModes.walking);
     setState(() {
-      _isLoading = false;
+      totalDistance =
+          distanceCalculator.calculateRouteDistance(points, decimals: 1);
     });
-    await Future.delayed(const Duration(seconds: 4));
-    await updateCameraLocation(marker1, marker2, _mapController!);
   }
 
   Widget _loadingAddPost() {
