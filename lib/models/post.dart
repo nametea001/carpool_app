@@ -141,7 +141,7 @@ class Post {
               : null,
           endLatLng: t['post_details'][0]['lat_lng_end'] != null
               ? LatLng(t['post_details'][0]['lat_lng_end'][0],
-                  t['post_details'][0]['lat_lng_end'][0])
+                  t['post_details'][0]['lat_lng_end'][1])
               : null,
         ),
       );

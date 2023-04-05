@@ -33,7 +33,7 @@ class PostDetail {
   static Future<List<PostDetail>?> getPostDetails(
     String token,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('postDetails', {});
+    NetworkHelper networkHelper = NetworkHelper('posts_detail', {});
     List<PostDetail> postDetails = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
@@ -41,8 +41,12 @@ class PostDetail {
         PostDetail postDetail = PostDetail(
           id: t['id'],
           postID: t['post_id'],
-          // startLatLng: LatLng(t['lat']),
-          // endLatLng: LatLng(t['lat']),
+          startLatLng: t['lat_lng_start'] != null
+              ? LatLng(t['lat_lng_start'][0], t['lat_lng_start'][1])
+              : null,
+          endLatLng: t['lat_lng_end'] != null
+              ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
+              : null,
           description: t['description'],
           brand: t['brand'],
           model: t['model'],
@@ -56,30 +60,29 @@ class PostDetail {
     return null;
   }
 
-  static Future<List<PostDetail>?> addPostDetails(
-    String token,
-    PostDetail postDetail,
-  ) async {
-    NetworkHelper networkHelper =
-        NetworkHelper('post_detail/add_post_detail', {});
-    List<PostDetail> postDetails = [];
+  static Future<PostDetail?> getPostDetailByPostID(
+      String token, int postID) async {
+    NetworkHelper networkHelper = NetworkHelper('post_details/${postID}', {});
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
-      for (Map t in json['postDetails']) {
-        PostDetail postDetail = PostDetail(
-          id: t['id'],
-          postID: t['post_id'],
-          // startLatLng: LatLng(t['lat']),
-          // endLatLng: LatLng(t['lat']),
-          description: t['description'],
-          brand: t['brand'],
-          model: t['model'],
-          vehicleRegistration: t['vehicle_registration'],
-          color: t['color'],
-        );
-        postDetails.add(postDetail);
-      }
-      return postDetails;
+      Map t = json['post_detail'];
+      PostDetail postDetail = PostDetail(
+        id: t['id'],
+        postID: t['post_id'],
+        startLatLng: t['lat_lng_start'] != null
+            ? LatLng(t['lat_lng_start'][0], t['lat_lng_start'][1])
+            : null,
+        endLatLng: t['lat_lng_end'] != null
+            ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
+            : null,
+        description: t['description'],
+        brand: t['brand'],
+        model: t['model'],
+        vehicleRegistration: t['vehicle_registration'],
+        color: t['color'],
+      );
+
+      return postDetail;
     }
     return null;
   }

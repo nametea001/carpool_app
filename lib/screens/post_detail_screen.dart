@@ -25,11 +25,21 @@ import '../gobal_function/data.dart';
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
   final bool? isback;
+  final int? postID;
+  final DateTime? dateTimeStart;
+  final DateTime? dateTimeEnd;
+  final String? startName;
+  final String? endName;
 
   const PostDetailScreen({
     super.key,
     this.isAdd,
     this.isback,
+    this.postID,
+    this.dateTimeStart,
+    this.dateTimeEnd,
+    this.startName,
+    this.endName,
   });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -115,13 +125,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   PostDetail? postDetailData = PostDetail();
   Post? postData = Post(startDistrictID: 0, endDistrictID: 0);
+  PostDetail? postDetailTemp = PostDetail();
+  bool _isLoading = false;
 
+  DateTime? dateTimeStart;
+  DateTime? dateTimeEnd;
+  int? postID = 0;
   @override
   void initState() {
     super.initState();
     _isAdd = widget.isAdd ?? false;
-    // _isBack = widget.isBack ?? false;
-    // stateGoBack = _isBack == false ? "go" : "back";
+    stateGoBack = _isBack == false ? "go" : "back";
+    dateTimeStart = widget.dateTimeStart ?? null;
+    dateTimeEnd = widget.dateTimeEnd ?? null;
+    location1 = widget.startName ?? location1;
+    location2 = widget.endName ?? location2;
+    postID = widget.postID ?? 0;
+    updateUI();
   }
 
   @override
@@ -164,612 +184,648 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             IconButton(
                 onPressed: () {
                   setState(() {
-                    _isLoadingAdd = !_isLoadingAdd;
+                    _isLoading = !_isLoading;
                     // _isAdd = !_isAdd;
                   });
                 },
                 icon: Icon(Icons.abc))
           ],
         ),
-        body: SingleChildScrollView(
-            child: Column(
-          children: [
-            Container(
-              // padding: EdgeInsets.only(left: 20, right: 20),
-              height: (MediaQuery.of(context).size.height / 2) - 30,
-              child: Stack(children: [
-                GoogleMap(
-                  //Map widget from google_maps_flutter package
-                  // zoomGesturesEnabled: false, //enable Zoom in, out on map
-                  // gestureRecognizers: Set()
-                  //   ..add(Factory<PanGestureRecognizer>(
-                  //       () => PanGestureRecognizer())),
-                  gestureRecognizers: {
-                    Factory<OneSequenceGestureRecognizer>(
-                        () => EagerGestureRecognizer())
-                  },
-                  myLocationButtonEnabled: false,
-                  myLocationEnabled: _myLocationEnable,
-                  zoomControlsEnabled: true,
-                  initialCameraPosition: _kGooglePlex,
-                  mapType: MapType.normal, //map type
-                  onMapCreated: _onMapCreated,
-                  markers: _showMarkerStartToEnd
-                      ? {
-                          Marker(
-                              draggable: false,
-                              markerId: MarkerId("marker1"),
-                              position: marker1),
-                          Marker(
-                              draggable: false,
-                              markerId: MarkerId("marker2"),
-                              position: marker2),
-                        }
-                      : {
-                          Marker(
-                              draggable: false,
-                              markerId: MarkerId("marker2"),
-                              position: marker2),
+        body: _isLoading
+            ? _loadingDetail()
+            : SingleChildScrollView(
+                child: Column(
+                children: [
+                  Container(
+                    // padding: EdgeInsets.only(left: 20, right: 20),
+                    height: (MediaQuery.of(context).size.height / 2) - 30,
+                    child: Stack(children: [
+                      GoogleMap(
+                        //Map widget from google_maps_flutter package
+                        // zoomGesturesEnabled: false, //enable Zoom in, out on map
+                        // gestureRecognizers: Set()
+                        //   ..add(Factory<PanGestureRecognizer>(
+                        //       () => PanGestureRecognizer())),
+                        gestureRecognizers: {
+                          Factory<OneSequenceGestureRecognizer>(
+                              () => EagerGestureRecognizer())
                         },
-                ),
+                        myLocationButtonEnabled: false,
+                        myLocationEnabled: _myLocationEnable,
+                        zoomControlsEnabled: true,
+                        initialCameraPosition: _kGooglePlex,
+                        mapType: MapType.normal, //map type
+                        onMapCreated: _onMapCreated,
+                        markers: _showMarkerStartToEnd
+                            ? {
+                                Marker(
+                                    draggable: false,
+                                    markerId: MarkerId("marker1"),
+                                    position: marker1),
+                                Marker(
+                                    draggable: false,
+                                    markerId: MarkerId("marker2"),
+                                    position: marker2),
+                              }
+                            : {
+                                Marker(
+                                    draggable: false,
+                                    markerId: MarkerId("marker2"),
+                                    position: marker2),
+                              },
+                      ),
 
-                //search autoconplete input
-                Column(
-                  children: [
-                    Row(
-                      children: searchMapButton(),
-                    ),
-                  ],
-                ),
-              ]),
-            ),
-            Visibility(
-              visible: !_isAdd,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(10),
+                      //search autoconplete input
+                      Column(
+                        children: [
+                          Row(
+                            children: searchMapButton(),
+                          ),
+                        ],
+                      ),
+                    ]),
                   ),
-                  // button under map
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.white, width: 1),
-                          borderRadius: BorderRadius.circular(50),
+                  Visibility(
+                    visible: !_isAdd,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: InkWell(
-                          onTap: () {},
-                          child: Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () async {
-                                    setState(() {
-                                      _showMarkerStartToEnd = false;
-                                      _myLocationEnable = true;
-                                    });
-                                    Position? l = await _getLocation();
-                                    if (l != null) {
-                                      await _mapController?.animateCamera(
-                                        CameraUpdate.newLatLngZoom(
-                                            LatLng(l.latitude, l.longitude),
-                                            15),
-                                      );
+                        // button under map
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                    color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: InkWell(
+                                onTap: () {},
+                                child: Column(
+                                  children: [
+                                    IconButton(
+                                        onPressed: () async {
+                                          setState(() {
+                                            _showMarkerStartToEnd = false;
+                                            _myLocationEnable = true;
+                                          });
+                                          Position? l = await _getLocation();
+                                          if (l != null) {
+                                            await _mapController?.animateCamera(
+                                              CameraUpdate.newLatLngZoom(
+                                                  LatLng(
+                                                      l.latitude, l.longitude),
+                                                  15),
+                                            );
 
-                                      await Future.delayed(
-                                          const Duration(seconds: 4));
-                                      updateCameraLocation(
-                                          LatLng(l.latitude, l.longitude),
-                                          marker2,
-                                          _mapController!);
+                                            await Future.delayed(
+                                                const Duration(seconds: 4));
+                                            updateCameraLocation(
+                                                LatLng(l.latitude, l.longitude),
+                                                marker2,
+                                                _mapController!);
+                                          }
+                                        },
+                                        icon: const Icon(
+                                          Icons.my_location,
+                                          size: 30,
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Card(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                    color: Colors.white, width: 1),
+                                borderRadius: BorderRadius.circular(50),
+                              ),
+                              child: InkWell(
+                                onTap: () {},
+                                child: Column(
+                                  children: [
+                                    IconButton(
+                                        onPressed: () async {
+                                          setState(() {
+                                            _showMarkerStartToEnd = true;
+                                            _myLocationEnable = false;
+                                          });
+                                          await Future.delayed(
+                                              const Duration(seconds: 2));
+                                          await updateCameraLocation(marker1,
+                                              marker2, _mapController!);
+                                        },
+                                        icon: const Icon(
+                                          Icons.pin_drop,
+                                          size: 30,
+                                        )),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(top: 10, right: 25, left: 25),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Visibility(
+                            visible: _isAdd,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 30,
+                                  child: RadioListTile(
+                                      value: "go",
+                                      groupValue: stateGoBack,
+                                      onChanged: ((value) {
+                                        setState(() {
+                                          stateGoBack = value.toString();
+                                          _isBack = false;
+                                          _dateTimeBackController.text = "";
+                                          postData!.dateTimeBack = null;
+                                        });
+                                      })),
+                                ),
+                                const Text("ไปอย่างเดียว"),
+                                SizedBox(
+                                  width:
+                                      (MediaQuery.of(context).size.width / 2) -
+                                          140,
+                                ),
+                                SizedBox(
+                                  width: 30,
+                                  child: RadioListTile(
+                                      value: "back",
+                                      groupValue: stateGoBack,
+                                      onChanged: ((value) {
+                                        setState(() {
+                                          stateGoBack = value.toString();
+                                          _isBack = true;
+                                        });
+                                      })),
+                                ),
+                                const Text("ไปและกลับ"),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width - 50,
+                                child: TextFormField(
+                                  validator: MultiValidator([
+                                    RequiredValidator(
+                                        errorText: "Please Slect DateTime")
+                                  ]),
+                                  enabled: _isAdd,
+                                  showCursor: false,
+                                  readOnly: true,
+                                  focusNode: FocusNode(canRequestFocus: false),
+                                  keyboardType: TextInputType.none,
+                                  controller: _dateTimeController,
+                                  onTap: () {
+                                    FocusScope.of(context).unfocus();
+                                    DatePicker.showDateTimePicker(
+                                      context,
+                                      showTitleActions: true,
+                                      minTime: DateTime.now(),
+                                      currentTime: DateTime.now(),
+                                      locale: LocaleType.th,
+                                      onConfirm: (time) {
+                                        postData!.dateTimeStart = time;
+                                        _dateTimeController.text =
+                                            dateTimeformat(time);
+                                      },
+                                    );
+                                  },
+                                  decoration: InputDecoration(
+                                      labelText: "เวลาเดินทาง",
+                                      filled: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        // borderSide: BorderSide.none,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.schedule,
+                                        color: Colors.pink,
+                                      )),
+                                ),
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // time back
+                          Visibility(
+                              visible: _isBack,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width -
+                                                50,
+                                        child: TextFormField(
+                                          validator: (String? str) {
+                                            if (str!.isEmpty && _isBack) {
+                                              return "Please Select DateTime Back";
+                                            }
+                                            return null;
+                                          },
+                                          enabled: _isAdd,
+                                          showCursor: false,
+                                          readOnly: true,
+                                          focusNode:
+                                              FocusNode(canRequestFocus: false),
+                                          keyboardType: TextInputType.none,
+                                          controller: _dateTimeBackController,
+                                          onTap: () {
+                                            FocusScope.of(context).unfocus();
+                                            DatePicker.showDateTimePicker(
+                                              context,
+                                              showTitleActions: true,
+                                              minTime:
+                                                  postData!.dateTimeStart ??
+                                                      DateTime.now(),
+                                              currentTime:
+                                                  postData!.dateTimeStart ??
+                                                      DateTime.now(),
+                                              locale: LocaleType.th,
+                                              onConfirm: (time) {
+                                                postData!.dateTimeBack = time;
+                                                _dateTimeBackController.text =
+                                                    dateTimeformat(time);
+                                              },
+                                            );
+                                          },
+                                          decoration: InputDecoration(
+                                              labelText: "เวลาเดินทางกลับ",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                                // borderSide: BorderSide.none,
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.schedule,
+                                                color: Colors.pink,
+                                              )),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                ],
+                              )),
+
+                          // seat and price
+                          Row(
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.seat =
+                                            int.parse(newValue!);
+                                      },
+                                      validator: MultiValidator([
+                                        RequiredValidator(
+                                            errorText: "Please Input Seat")
+                                      ]),
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodeSeat,
+                                      controller: _seatController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                          labelText: "จำนวนที่นั่ง",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.airline_seat_recline_normal,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.price =
+                                            double.parse(newValue!);
+                                      },
+                                      validator: (String? str) {
+                                        if (str!.isEmpty) {
+                                          return "Please Input Price";
+                                        }
+                                        if (int.parse(str) < 0) {
+                                          return "Please Input Price more";
+                                        }
+                                        return null;
+                                      },
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodePrice,
+                                      controller: _priceController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                          labelText: "ราคาต่อที่นั่ง",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.payment,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // brand and model
+                          Row(
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.brand = newValue;
+                                      },
+                                      validator: MultiValidator([
+                                        RequiredValidator(
+                                            errorText: "Please Input Brand")
+                                      ]),
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodeBrand,
+                                      controller: _brandController,
+                                      decoration: InputDecoration(
+                                          labelText: "ยี่ห้อ",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.car_crash,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.model = newValue;
+                                      },
+                                      validator: MultiValidator([
+                                        RequiredValidator(
+                                            errorText: "Please Input model")
+                                      ]),
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodemodel,
+                                      controller: _modelController,
+                                      decoration: InputDecoration(
+                                          labelText: "รุ่น",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.directions_car,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // brand and model
+                          Row(
+                            children: [
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.vehicleRegistration =
+                                            newValue;
+                                      },
+                                      validator: MultiValidator([
+                                        RequiredValidator(
+                                            errorText:
+                                                "Please Input Vehicle Registration")
+                                      ]),
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodeVRegistration,
+                                      controller:
+                                          _vehicleRegistrationController,
+                                      decoration: InputDecoration(
+                                          labelText: "ทะเบียน",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.font_download,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Column(
+                                children: [
+                                  SizedBox(
+                                    width: (MediaQuery.of(context).size.width /
+                                            2) -
+                                        30,
+                                    child: TextFormField(
+                                      onSaved: (newValue) {
+                                        postDetailData!.color = newValue;
+                                      },
+                                      validator: MultiValidator([
+                                        RequiredValidator(
+                                            errorText: "Please Input Color")
+                                      ]),
+                                      enabled: _isAdd,
+                                      focusNode: _focusNodeColor,
+                                      controller: _colorController,
+                                      decoration: InputDecoration(
+                                          labelText: "สี",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
+                                          ),
+                                          prefixIcon: const Icon(
+                                            Icons.palette,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          // description
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width - 50,
+                                child: TextFormField(
+                                  onSaved: (newValue) {
+                                    if (newValue!.isEmpty) {
+                                      postDetailData!.description = null;
+                                    } else {
+                                      postDetailData!.description = newValue;
                                     }
                                   },
-                                  icon: const Icon(
-                                    Icons.my_location,
-                                    size: 30,
-                                  )),
+                                  enabled: _isAdd,
+                                  focusNode: _focusNodeDescription,
+                                  controller: _descriptionController,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                      labelText: "รายระเอียดเพิ่มเติม",
+                                      filled: true,
+                                      border: OutlineInputBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        // borderSide: BorderSide.none,
+                                      ),
+                                      prefixIcon: const Icon(
+                                        Icons.edit_note,
+                                        color: Colors.pink,
+                                      )),
+                                ),
+                              )
                             ],
                           ),
-                        ),
-                      ),
-                      Card(
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.white, width: 1),
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                        child: InkWell(
-                          onTap: () {},
-                          child: Column(
-                            children: [
-                              IconButton(
-                                  onPressed: () async {
-                                    setState(() {
-                                      _showMarkerStartToEnd = true;
-                                      _myLocationEnable = false;
-                                    });
-                                    await Future.delayed(
-                                        const Duration(seconds: 2));
-                                    await updateCameraLocation(
-                                        marker1, marker2, _mapController!);
-                                  },
-                                  icon: const Icon(
-                                    Icons.pin_drop,
-                                    size: 30,
-                                  )),
-                            ],
+                          const SizedBox(
+                            height: 10,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 10, right: 25, left: 25),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Visibility(
-                      visible: _isAdd,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 30,
-                            child: RadioListTile(
-                                value: "go",
-                                groupValue: stateGoBack,
-                                onChanged: ((value) {
-                                  setState(() {
-                                    stateGoBack = value.toString();
-                                    _isBack = false;
-                                    _dateTimeBackController.text = "";
-                                    postData!.dateTimeBack = null;
-                                  });
-                                })),
+                          _isLoadingAdd
+                              ? _loadingAddPost()
+                              : Visibility(
+                                  visible: _isAdd,
+                                  child: Container(
+                                    padding:
+                                        EdgeInsets.only(left: 70, right: 70),
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.pink,
+                                      ),
+                                      onPressed: () async {
+                                        if (formKey.currentState!.validate()) {
+                                          if (postData!.startDistrictID == 0 ||
+                                              postData!.endDistrictID == 0 ||
+                                              postData!.endDistrictID == null ||
+                                              postData!.startDistrictID ==
+                                                  null) {
+                                            showAlertSelecLocation();
+                                          } else {
+                                            formKey.currentState!.save();
+                                            postData!.isback = _isBack;
+                                            // postData!.status = "NEW";
+                                            showDetailAdd();
+                                          }
+                                        }
+                                        // showDetailAdd();
+                                      },
+                                      child: const Text(
+                                        "ยืนยัน",
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w800),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          const SizedBox(
+                            height: 20,
                           ),
-                          const Text("ไปอย่างเดียว"),
-                          SizedBox(
-                            width:
-                                (MediaQuery.of(context).size.width / 2) - 140,
-                          ),
-                          SizedBox(
-                            width: 30,
-                            child: RadioListTile(
-                                value: "back",
-                                groupValue: stateGoBack,
-                                onChanged: ((value) {
-                                  setState(() {
-                                    stateGoBack = value.toString();
-                                    _isBack = true;
-                                  });
-                                })),
-                          ),
-                          const Text("ไปและกลับ"),
                         ],
                       ),
                     ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 50,
-                          child: TextFormField(
-                            validator: MultiValidator([
-                              RequiredValidator(
-                                  errorText: "Please Slect DateTime")
-                            ]),
-                            enabled: _isAdd,
-                            showCursor: false,
-                            readOnly: true,
-                            focusNode: FocusNode(canRequestFocus: false),
-                            keyboardType: TextInputType.none,
-                            controller: _dateTimeController,
-                            onTap: () {
-                              FocusScope.of(context).unfocus();
-                              DatePicker.showDateTimePicker(
-                                context,
-                                showTitleActions: true,
-                                minTime: DateTime.now(),
-                                currentTime: DateTime.now(),
-                                locale: LocaleType.th,
-                                onConfirm: (time) {
-                                  postData!.dateTimeStart = time;
-                                  _dateTimeController.text =
-                                      dateTimeformat(time);
-                                },
-                              );
-                            },
-                            decoration: InputDecoration(
-                                labelText: "เวลาเดินทาง",
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  // borderSide: BorderSide.none,
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.schedule,
-                                  color: Colors.pink,
-                                )),
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // time back
-                    Visibility(
-                        visible: _isBack,
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: MediaQuery.of(context).size.width - 50,
-                                  child: TextFormField(
-                                    validator: (String? str) {
-                                      if (str!.isEmpty && _isBack) {
-                                        return "Please Select DateTime Back";
-                                      }
-                                      return null;
-                                    },
-                                    enabled: _isAdd,
-                                    showCursor: false,
-                                    readOnly: true,
-                                    focusNode:
-                                        FocusNode(canRequestFocus: false),
-                                    keyboardType: TextInputType.none,
-                                    controller: _dateTimeBackController,
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      DatePicker.showDateTimePicker(
-                                        context,
-                                        showTitleActions: true,
-                                        minTime: postData!.dateTimeStart ??
-                                            DateTime.now(),
-                                        currentTime: postData!.dateTimeStart ??
-                                            DateTime.now(),
-                                        locale: LocaleType.th,
-                                        onConfirm: (time) {
-                                          postData!.dateTimeBack = time;
-                                          _dateTimeBackController.text =
-                                              dateTimeformat(time);
-                                        },
-                                      );
-                                    },
-                                    decoration: InputDecoration(
-                                        labelText: "เวลาเดินทางกลับ",
-                                        filled: true,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          // borderSide: BorderSide.none,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.schedule,
-                                          color: Colors.pink,
-                                        )),
-                                  ),
-                                )
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                          ],
-                        )),
-
-                    // seat and price
-                    Row(
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.seat = int.parse(newValue!);
-                                },
-                                validator: MultiValidator([
-                                  RequiredValidator(
-                                      errorText: "Please Input Seat")
-                                ]),
-                                enabled: _isAdd,
-                                focusNode: _focusNodeSeat,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                    labelText: "จำนวนที่นั่ง",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.airline_seat_recline_normal,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.price =
-                                      double.parse(newValue!);
-                                },
-                                validator: (String? str) {
-                                  if (str!.isEmpty) {
-                                    return "Please Input Price";
-                                  }
-                                  if (int.parse(str) < 0) {
-                                    return "Please Input Price more";
-                                  }
-                                  return null;
-                                },
-                                enabled: _isAdd,
-                                focusNode: _focusNodePrice,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                    labelText: "ราคาต่อที่นั่ง",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.payment,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // brand and model
-                    Row(
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.brand = newValue;
-                                },
-                                validator: MultiValidator([
-                                  RequiredValidator(
-                                      errorText: "Please Input Brand")
-                                ]),
-                                enabled: _isAdd,
-                                focusNode: _focusNodeBrand,
-                                decoration: InputDecoration(
-                                    labelText: "ยี่ห้อ",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.car_crash,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.model = newValue;
-                                },
-                                validator: MultiValidator([
-                                  RequiredValidator(
-                                      errorText: "Please Input model")
-                                ]),
-                                enabled: _isAdd,
-                                focusNode: _focusNodemodel,
-                                decoration: InputDecoration(
-                                    labelText: "รุ่น",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.directions_car,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // brand and model
-                    Row(
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.vehicleRegistration =
-                                      newValue;
-                                },
-                                validator: MultiValidator([
-                                  RequiredValidator(
-                                      errorText:
-                                          "Please Input Vehicle Registration")
-                                ]),
-                                enabled: _isAdd,
-                                focusNode: _focusNodeVRegistration,
-                                decoration: InputDecoration(
-                                    labelText: "ทะเบียน",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.font_download,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                        const SizedBox(
-                          width: 10,
-                        ),
-                        Column(
-                          children: [
-                            SizedBox(
-                              width:
-                                  (MediaQuery.of(context).size.width / 2) - 30,
-                              child: TextFormField(
-                                onSaved: (newValue) {
-                                  postDetailData!.color = newValue;
-                                },
-                                validator: MultiValidator([
-                                  RequiredValidator(
-                                      errorText: "Please Input Color")
-                                ]),
-                                enabled: _isAdd,
-                                focusNode: _focusNodeColor,
-                                decoration: InputDecoration(
-                                    labelText: "สี",
-                                    filled: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(10.0),
-                                      // borderSide: BorderSide.none,
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.palette,
-                                      color: Colors.pink,
-                                    )),
-                              ),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    // description
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width - 50,
-                          child: TextFormField(
-                            onSaved: (newValue) {
-                              if (newValue!.isEmpty) {
-                                postDetailData!.description = null;
-                              } else {
-                                postDetailData!.description = newValue;
-                              }
-                            },
-                            enabled: _isAdd,
-                            focusNode: _focusNodeDescription,
-                            maxLines: 3,
-                            decoration: InputDecoration(
-                                labelText: "รายระเอียดเพิ่มเติม",
-                                filled: true,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  // borderSide: BorderSide.none,
-                                ),
-                                prefixIcon: const Icon(
-                                  Icons.edit_note,
-                                  color: Colors.pink,
-                                )),
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    _isLoadingAdd
-                        ? _loadingAddPost()
-                        : Visibility(
-                            visible: _isAdd,
-                            child: Container(
-                              padding: EdgeInsets.only(left: 70, right: 70),
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.pink,
-                                ),
-                                onPressed: () async {
-                                  if (formKey.currentState!.validate()) {
-                                    if (postData!.startDistrictID == 0 ||
-                                        postData!.endDistrictID == 0 ||
-                                        postData!.endDistrictID == null ||
-                                        postData!.startDistrictID == null) {
-                                      showAlertSelecLocation();
-                                    } else {
-                                      formKey.currentState!.save();
-                                      postData!.isback = _isBack;
-                                      // postData!.status = "NEW";
-                                      showDetailAdd();
-                                    }
-                                  }
-                                  // showDetailAdd();
-                                },
-                                child: const Text(
-                                  "ยืนยัน",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800),
-                                ),
-                              ),
-                            ),
-                          ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        )),
+                  ),
+                ],
+              )),
         floatingActionButton: (_isAdd
             ? null
             : SpeedDial(
@@ -1119,7 +1175,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       bounds = LatLngBounds(southwest: source, northeast: destination);
     }
 
-    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 70);
+    CameraUpdate cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 110);
 
     return checkCameraLocation(cameraUpdate, mapController);
   }
@@ -1290,8 +1346,34 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void updateUI() async {
+    setState(() {
+      _isLoading = true;
+    });
     final prefs = await SharedPreferences.getInstance();
-    // List<Post>? tempData = await Post.getPost(prefs.getString('jwt') ?? "");
+    PostDetail? tempData = await PostDetail.getPostDetailByPostID(
+        prefs.getString('jwt') ?? "", postID!);
+    if (tempData != null) {
+      postDetailTemp = tempData;
+      _dateTimeController.text = dateTimeformat(dateTimeStart);
+      _seatController.text = tempData.seat.toString();
+      _priceController.text = tempData.price.toString();
+      _brandController.text = tempData.brand!;
+      _modelController.text = tempData.model!;
+      _vehicleRegistrationController.text = tempData.vehicleRegistration!;
+      _colorController.text = tempData.color!;
+      _descriptionController.text =
+          tempData.description ?? "ไม่รายระเอียดเพิ่มเติม";
+      if (_isBack) {
+        _dateTimeBackController.text = dateTimeformat(dateTimeEnd);
+      }
+      marker1 = tempData.startLatLng!;
+      marker2 = tempData.endLatLng!;
+    }
+    setState(() {
+      _isLoading = false;
+    });
+    await Future.delayed(const Duration(seconds: 4));
+    await updateCameraLocation(marker1, marker2, _mapController!);
   }
 
   Widget _loadingAddPost() {
@@ -1319,6 +1401,68 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ),
               ),
             )),
+      ),
+      items: 1,
+      period: Duration(seconds: 2),
+      highlightColor: Colors.pink,
+      // baseColor: Colors.pink,
+      direction: SkeletonDirection.ltr,
+    );
+  }
+
+  Widget _loadingDetail() {
+    return SkeletonLoader(
+      builder: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(width: 3, color: Colors.white),
+            ),
+            height: (MediaQuery.of(context).size.height / 2) - 30,
+            width: MediaQuery.of(context).size.height,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Container(
+              padding: EdgeInsets.only(top: 50),
+              decoration: BoxDecoration(
+                border: Border.all(width: 3, color: Colors.white),
+              ),
+              width: MediaQuery.of(context).size.height,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
+            child: Container(
+              padding: EdgeInsets.only(top: 50),
+              decoration: BoxDecoration(
+                border: Border.all(width: 3, color: Colors.white),
+              ),
+              width: MediaQuery.of(context).size.height,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
+            child: Container(
+              padding: EdgeInsets.only(top: 50),
+              decoration: BoxDecoration(
+                border: Border.all(width: 3, color: Colors.white),
+              ),
+              width: MediaQuery.of(context).size.height,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
+            child: Container(
+              padding: EdgeInsets.only(top: 50),
+              decoration: BoxDecoration(
+                border: Border.all(width: 3, color: Colors.white),
+              ),
+              width: MediaQuery.of(context).size.height,
+            ),
+          ),
+        ],
       ),
       items: 1,
       period: Duration(seconds: 2),

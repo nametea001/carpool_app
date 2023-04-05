@@ -165,6 +165,12 @@ class _PostScreenState extends State<PostScreen> {
             MaterialPageRoute(
               builder: (context) => PostDetailScreen(
                 isAdd: false,
+                isback: post.isback,
+                postID: post.id,
+                dateTimeStart: post.dateTimeStart,
+                dateTimeEnd: post.dateTimeBack,
+                startName: post.startName,
+                endName: post.endName,
               ),
             ),
           );
