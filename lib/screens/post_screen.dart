@@ -87,10 +87,8 @@ class _PostScreenState extends State<PostScreen> {
                 child: CircleAvatar(
                   maxRadius: 30,
                   child: ClipOval(
-                    child: Image.memory(
-                      base64Decode(post.img!),
-                      fit: BoxFit.cover,
-                    ),
+                    child: Image.memory(base64Decode(post.img!),
+                        fit: BoxFit.cover),
                   ),
                 ),
               )
@@ -164,6 +162,7 @@ class _PostScreenState extends State<PostScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => PostDetailScreen(
+                userID: user.id,
                 isAdd: false,
                 isback: post.isback,
                 postID: post.id,

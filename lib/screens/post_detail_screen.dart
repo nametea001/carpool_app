@@ -1,6 +1,7 @@
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
+import 'package:car_pool_project/models/post_member.dart';
 import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
@@ -21,7 +22,6 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
-
 import '../gobal_function/data.dart';
 
 class PostDetailScreen extends StatefulWidget {
@@ -34,6 +34,7 @@ class PostDetailScreen extends StatefulWidget {
   final String? endName;
   final int? postCreatedUserID;
   final String? postStatus;
+  final int? userID;
 
   const PostDetailScreen({
     super.key,
@@ -46,6 +47,7 @@ class PostDetailScreen extends StatefulWidget {
     this.endName,
     this.postCreatedUserID,
     this.postStatus,
+    this.userID,
   });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -133,7 +135,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   PostDetail? postDetailData = PostDetail();
   Post? postData = Post(startDistrictID: 0, endDistrictID: 0);
-  PostDetail? postDetailTemp = PostDetail();
+  // PostDetail? postDetailTemp = PostDetail();
   bool _isLoading = false;
   bool _isJoin = false;
 
@@ -151,6 +153,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void initState() {
     super.initState();
 
+    userID = widget.userID ?? 0;
     _isAdd = widget.isAdd ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
     dateTimeStart = widget.dateTimeStart ?? null;
@@ -160,7 +163,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     postID = widget.postID ?? 0;
     postStatus = widget.postStatus ?? null;
     postCreatedUserID = widget.postCreatedUserID ?? 0;
-    setUserID();
     updateUI();
   }
 
@@ -182,6 +184,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _modelController.dispose();
     _colorController.dispose();
     _descriptionController.dispose();
+    // route.routes.clear();
   }
 
   @override
@@ -200,16 +203,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? Text('Add') : Text('Detail')),
           backgroundColor: Colors.pink,
-          actions: [
-            IconButton(
-                onPressed: () {
-                  setState(() {
-                    _isLoading = !_isLoading;
-                    // _isAdd = !_isAdd;
-                  });
-                },
-                icon: Icon(Icons.abc))
-          ],
+          // actions: [IconButton(onPressed: () async {}, icon: Icon(Icons.abc))],
         ),
         body: _isLoading
             ? _loadingDetail()
@@ -849,16 +843,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   ),
                 ],
               )),
-        floatingActionButton: (_isAdd
-            ? null
-            : SpeedDial(
-                icon: Icons.expand_less,
-                activeIcon: Icons.expand_more,
-                backgroundColor: Colors.green,
-                activeBackgroundColor: Colors.red,
-                spacing: 12,
-                children: speedDialChild(),
-              )),
+        floatingActionButton: (_isAdd ? null : flotButton()),
       ),
     );
   }
@@ -1230,188 +1215,271 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return dateTimeFormat;
   }
 
-  List<SpeedDialChild> speedDialChild() {
-    List<SpeedDialChild> sc = [];
-    if (postCreatedUserID != userID &&
-        _isJoin == false &&
-        postStatus == "NEW") {
-      var s = SpeedDialChild(
-        backgroundColor: Colors.greenAccent,
-        label: "Join",
-        child: Icon(Icons.add),
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Join'),
-                    // insetPadding: EdgeInsets.zero,
-                    insetPadding: EdgeInsets.only(
-                        left: 20, right: 20, bottom: 30, top: 30),
-                    content: StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                      return Text("คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
-                    }),
-                    actions: [
-                      TextButton(
-                          child: const Text('Join'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.green,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      TextButton(
-                          child: const Text('Close'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.blueGrey,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                    ],
-                  ));
-        },
-      );
-      sc.add(s);
-    }
-    if (_isJoin == true) {
-      var s = SpeedDialChild(
-        backgroundColor: Colors.blue,
-        label: "Chat",
-        child: Icon(Icons.message),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-          );
-        },
-      );
-      sc.add(s);
-    }
-    if ((postStatus == "IN_PROGRESS" || postStatus == "NEW") &&
-        postCreatedUserID == userID) {
-      var s = SpeedDialChild(
-        backgroundColor: Colors.blue,
-        label: "Chat",
-        child: Icon(Icons.message),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-          );
-        },
-      );
-      sc.add(s);
-      var s1 = SpeedDialChild(
+  SpeedDial flotButton() {
+    if (postCreatedUserID != userID && postStatus == "NEW" && _isJoin == true) {
+      return SpeedDial(
+        icon: Icons.expand_less,
+        activeIcon: Icons.expand_more,
         backgroundColor: Colors.green,
-        label: "Done",
-        child: Icon(Icons.check_circle_outline),
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Done'),
-                    // insetPadding: EdgeInsets.zero,
-                    insetPadding: EdgeInsets.only(
-                        left: 20, right: 20, bottom: 30, top: 30),
-                    content: StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                      return Text("คุณต้องการจะจบการเดินทางหรือไม่");
-                    }),
-                    actions: [
-                      TextButton(
-                          child: const Text('Done'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.green,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      TextButton(
-                          child: const Text('No'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.red,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                    ],
-                  ));
-        },
+        activeBackgroundColor: Colors.red,
+        spacing: 12,
+        children: [
+          SpeedDialChild(
+            backgroundColor: Colors.greenAccent,
+            label: "Join",
+            child: Icon(Icons.add),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Join'),
+                        // insetPadding: EdgeInsets.zero,
+                        insetPadding: EdgeInsets.only(
+                            left: 20, right: 20, bottom: 30, top: 30),
+                        content: StatefulBuilder(builder:
+                            (BuildContext context, StateSetter setState) {
+                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                          return Text("คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
+                        }),
+                        actions: [
+                          TextButton(
+                              child: const Text('Join'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                          TextButton(
+                              child: const Text('Close'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.blueGrey,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                        ],
+                      ));
+            },
+          )
+        ],
       );
-      sc.add(s1);
-      var s2 = SpeedDialChild(
-        backgroundColor: Colors.red,
-        label: "Cancel",
-        child: Icon(Icons.cancel_outlined),
-        onTap: () {
-          showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Cancel'),
-                    // insetPadding: EdgeInsets.zero,
-                    insetPadding: EdgeInsets.only(
-                        left: 20, right: 20, bottom: 30, top: 30),
-                    content: StatefulBuilder(
-                        builder: (BuildContext context, StateSetter setState) {
-                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                      return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
-                    }),
-                    actions: [
-                      TextButton(
-                          child: const Text('Cancel'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.red,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                      TextButton(
-                          child: const Text('No'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.green,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          }),
-                    ],
-                  ));
-        },
+    } else if ((postCreatedUserID != userID && _isJoin == false) ||
+        (postCreatedUserID == userID &&
+            (postStatus == "DONE" || postStatus == "CANCEL"))) {
+      return SpeedDial(
+        icon: Icons.expand_less,
+        activeIcon: Icons.expand_more,
+        backgroundColor: Colors.green,
+        activeBackgroundColor: Colors.red,
+        spacing: 12,
+        children: [
+          SpeedDialChild(
+            backgroundColor: Colors.blue,
+            label: "Chat",
+            child: Icon(Icons.message),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              );
+            },
+          ),
+        ],
       );
-      sc.add(s2);
+    } else if (postCreatedUserID == userID && postStatus == "NEW") {
+      return SpeedDial(
+        icon: Icons.expand_less,
+        activeIcon: Icons.expand_more,
+        backgroundColor: Colors.green,
+        activeBackgroundColor: Colors.red,
+        spacing: 12,
+        children: [
+          // chat
+          SpeedDialChild(
+            backgroundColor: Colors.blue,
+            label: "Chat",
+            child: Icon(Icons.message),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              );
+            },
+          ),
+          // cancel
+          SpeedDialChild(
+            backgroundColor: Colors.red,
+            label: "Cancel",
+            child: Icon(Icons.cancel_outlined),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Cancel'),
+                        // insetPadding: EdgeInsets.zero,
+                        insetPadding: EdgeInsets.only(
+                            left: 20, right: 20, bottom: 30, top: 30),
+                        content: StatefulBuilder(builder:
+                            (BuildContext context, StateSetter setState) {
+                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                          return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
+                        }),
+                        actions: [
+                          TextButton(
+                              child: const Text('Yes'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.red,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                          TextButton(
+                              child: const Text('No'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                        ],
+                      ));
+            },
+          ),
+        ],
+      );
+    } else if (postCreatedUserID == userID && (postStatus == "IN_PROGRESS")) {
+      return SpeedDial(
+        icon: Icons.expand_less,
+        activeIcon: Icons.expand_more,
+        backgroundColor: Colors.green,
+        activeBackgroundColor: Colors.red,
+        spacing: 12,
+        children: [
+          // chat
+          SpeedDialChild(
+            backgroundColor: Colors.blue,
+            label: "Chat",
+            child: Icon(Icons.message),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              );
+            },
+          ),
+          // done
+          SpeedDialChild(
+            backgroundColor: Colors.green,
+            label: "Done",
+            child: Icon(Icons.check_circle_outline),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Done'),
+                        // insetPadding: EdgeInsets.zero,
+                        insetPadding: EdgeInsets.only(
+                            left: 20, right: 20, bottom: 30, top: 30),
+                        content: StatefulBuilder(builder:
+                            (BuildContext context, StateSetter setState) {
+                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                          return Text("คุณต้องการจะจบการเดินทางหรือไม่");
+                        }),
+                        actions: [
+                          TextButton(
+                              child: const Text('Done'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                          TextButton(
+                              child: const Text('No'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.red,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                        ],
+                      ));
+            },
+          ),
+          // cancel
+          SpeedDialChild(
+            backgroundColor: Colors.red,
+            label: "Cancel",
+            child: Icon(Icons.cancel_outlined),
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                        title: const Text('Cancel'),
+                        // insetPadding: EdgeInsets.zero,
+                        insetPadding: EdgeInsets.only(
+                            left: 20, right: 20, bottom: 30, top: 30),
+                        content: StatefulBuilder(builder:
+                            (BuildContext context, StateSetter setState) {
+                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                          return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
+                        }),
+                        actions: [
+                          TextButton(
+                              child: const Text('Yes'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.red,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                          TextButton(
+                              child: const Text('No'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.green,
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              }),
+                        ],
+                      ));
+            },
+          ),
+        ],
+      );
     }
-    if (sc.length <= 1) {
-      return [SpeedDialChild()];
-    } else {
-      return sc;
-    }
-  }
-
-  void setUserID() async {
-    final prefs = await SharedPreferences.getInstance();
-    userID = prefs.getInt("user_id") ?? 0;
+    return const SpeedDial(
+      icon: Icons.expand_less,
+      activeIcon: Icons.expand_more,
+      backgroundColor: Colors.green,
+      activeBackgroundColor: Colors.red,
+      spacing: 12,
+      children: [],
+    );
   }
 
   void updateUI() async {
+    final prefs = await SharedPreferences.getInstance();
+    // userID = prefs.getInt("user_id") ?? 0;
     if (!_isAdd) {
       setState(() {
         _isLoading = true;
       });
-      final prefs = await SharedPreferences.getInstance();
       PostDetail? tempData = await PostDetail.getPostDetailByPostID(
           prefs.getString('jwt') ?? "", postID!);
       if (tempData != null) {
-        postDetailTemp = tempData;
+        // postDetailTemp = tempData;
         _dateTimeController.text = dateTimeformat(dateTimeStart);
-        _seatController.text = tempData.seat.toString();
+        // _seatController.text = tempData.seat.toString();
         _priceController.text = tempData.price.toString();
         _brandController.text = tempData.brand!;
         _modelController.text = tempData.model!;
@@ -1424,10 +1492,45 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         }
         marker1 = tempData.startLatLng!;
         marker2 = tempData.endLatLng!;
+
+        int countMember = 0;
+        bool _isMember = false;
+
+        if (postCreatedUserID != userID) {
+          List<PostMember>? tempDataPostmember =
+              await PostMember.getPostMembersForCheckJoin(
+                  prefs.getString('jwt') ?? "", postID!);
+
+          if (tempDataPostmember == null) {
+            setState(() {
+              _isJoin = true;
+            });
+          } else {
+            for (var i in tempDataPostmember) {
+              countMember++;
+              if (i.userID == userID) {
+                _isMember = true;
+                break;
+              }
+            }
+            if (_isMember == false && countMember < tempData.seat!) {
+              setState(() {
+                _isJoin = true;
+              });
+            } else {
+              setState(() {
+                _isJoin = false;
+              });
+            }
+          }
+        }
+
+        _seatController.text = "${countMember}/${tempData.seat.toString()}";
       }
       setState(() {
         _isLoading = false;
       });
+
       await Future.delayed(const Duration(seconds: 4));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
@@ -1439,13 +1542,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     var points = [l1, l2];
     var color = Color.fromRGBO(130, 78, 210, 1.0);
     // var color = Colors.green;
-    await route.drawRoute(
-        points, 'Test routes', color, GlobalData().googleApiKey(),
-        travelMode: TravelModes.walking);
-    setState(() {
-      totalDistance =
-          distanceCalculator.calculateRouteDistance(points, decimals: 1);
-    });
+    try {
+      await route.drawRoute(
+          points, 'Test routes', color, GlobalData().googleApiKey(),
+          travelMode: TravelModes.walking);
+      setState(() {
+        totalDistance =
+            distanceCalculator.calculateRouteDistance(points, decimals: 1);
+      });
+    } catch (err) {
+      print(err);
+    }
   }
 
   Widget _loadingAddPost() {

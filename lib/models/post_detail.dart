@@ -49,6 +49,8 @@ class PostDetail {
           endLatLng: t['lat_lng_end'] != null
               ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
               : null,
+          seat: t['seat'],
+          price: t['price'] != null ? double.parse(t['price']) : null,
           description: t['description'],
           brand: t['brand'],
           model: t['model'],
@@ -77,10 +79,13 @@ class PostDetail {
             ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
             : null,
         description: t['description'],
+        seat: t['seat'],
+        price: t['price'] != null ? double.parse(t['price']) : null,
         brand: t['brand'],
         model: t['model'],
         vehicleRegistration: t['vehicle_registration'],
         color: t['color'],
+        
       );
 
       return postDetail;
