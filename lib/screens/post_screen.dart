@@ -48,7 +48,8 @@ class _PostScreenState extends State<PostScreen> {
   List<Province?> provinces = [];
   List<District?> districts = [];
   List<Province?> stateProvincesEnd = [];
-  List<District?> stateDistricts = [];
+  List<District?> stateDistrictsStart = [];
+  List<District?> stateDistrictsEnd = [];
 
   int? provinceStartID = 0;
   int? districtStartID = 0;
@@ -209,8 +210,8 @@ class _PostScreenState extends State<PostScreen> {
       // ),
       IconButton(
           onPressed: () async {
-            stateDistricts = [];
-            stateDistricts = [];
+            // stateDistrictsStart.clear();
+            // stateDistrictsEnd.clear();
             provinceStartID = 0;
             provinceEndtID = 0;
             districtStartID = 0;
@@ -231,6 +232,7 @@ class _PostScreenState extends State<PostScreen> {
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
+                            // select dateitme
                             Row(
                               children: [
                                 SizedBox(
@@ -369,6 +371,7 @@ class _PostScreenState extends State<PostScreen> {
                                     ),
                                   ],
                                 )),
+                            // Select provin end
                             Row(
                               children: [
                                 Expanded(
@@ -391,7 +394,7 @@ class _PostScreenState extends State<PostScreen> {
                                       ),
                                     ),
                                     onChanged: (Province? p) {
-                                      stateDistricts.clear();
+                                      stateDistrictsStart.clear();
                                       provinceStartID = p!.id;
                                       districtStartID = 0;
                                       District selectingDistrict = District(
@@ -400,13 +403,14 @@ class _PostScreenState extends State<PostScreen> {
                                           nameTH: "ทุกอำเภอ");
                                       // print(selectingDistrict.nameTH);
                                       setState(() {
-                                        stateDistricts.add(selectingDistrict);
+                                        stateDistrictsStart
+                                            .add(selectingDistrict);
                                         _isSelectedProvinceStart = true;
                                       });
                                       districts.forEach((a) {
                                         if (a!.provinceID == p.id) {
                                           setState(() {
-                                            stateDistricts.add(a);
+                                            stateDistrictsStart.add(a);
                                           });
                                         }
                                       });
@@ -415,6 +419,7 @@ class _PostScreenState extends State<PostScreen> {
                                 )
                               ],
                             ),
+                            // Select district start
                             Visibility(
                               visible: _isSelectedProvinceStart,
                               child: Row(
@@ -424,7 +429,7 @@ class _PostScreenState extends State<PostScreen> {
                                       popupProps: const PopupProps.menu(
                                         showSearchBox: true,
                                       ),
-                                      items: stateDistricts,
+                                      items: stateDistrictsStart,
                                       itemAsString: (District? a) =>
                                           a!.nameTH.toString(),
                                       dropdownDecoratorProps:
@@ -442,6 +447,7 @@ class _PostScreenState extends State<PostScreen> {
                                 ],
                               ),
                             ),
+                            // Select provin end
                             Row(
                               children: [
                                 Expanded(
@@ -465,32 +471,37 @@ class _PostScreenState extends State<PostScreen> {
                                       ),
                                     ),
                                     onChanged: (Province? p) {
-                                      stateDistricts.clear();
+                                      stateDistrictsEnd.clear();
                                       if (p!.id != 0) {
                                         provinceStartID = p.id;
                                         districtStartID = 0;
-                                      }
-                                      District selectingDistrict = District(
-                                          id: 0,
-                                          provinceID: 0,
-                                          nameTH: "ทุกอำเภอ");
-                                      // print(selectingDistrict.nameTH);
-                                      setState(() {
+
+                                        District selectingDistrict = District(
+                                            id: 0,
+                                            provinceID: 0,
+                                            nameTH: "ทุกอำเภอ");
+                                        // print(selectingDistrict.nameTH);
+                                        setState(() {
+                                          _isSelectedProvinceEnd = true;
+                                          stateDistrictsEnd
+                                              .add(selectingDistrict);
+                                        });
+                                        districts.forEach((a) {
+                                          if (a!.provinceID == p.id) {
+                                            setState(() {
+                                              stateDistrictsEnd.add(a);
+                                            });
+                                          }
+                                        });
+                                      } else {
                                         _isSelectedProvinceEnd = true;
-                                        stateDistricts.add(selectingDistrict);
-                                      });
-                                      districts.forEach((a) {
-                                        if (a!.provinceID == p.id) {
-                                          setState(() {
-                                            stateDistricts.add(a);
-                                          });
-                                        }
-                                      });
+                                      }
                                     },
                                   ),
                                 )
                               ],
                             ),
+                            // Select district end
                             Visibility(
                               visible: _isSelectedProvinceEnd,
                               child: Row(
@@ -500,7 +511,7 @@ class _PostScreenState extends State<PostScreen> {
                                       popupProps: const PopupProps.menu(
                                         showSearchBox: true,
                                       ),
-                                      items: stateDistricts,
+                                      items: stateDistrictsEnd,
                                       itemAsString: (District? a) =>
                                           a!.nameTH.toString(),
                                       dropdownDecoratorProps:
