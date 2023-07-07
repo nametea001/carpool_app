@@ -724,7 +724,17 @@ class _PostScreenState extends State<PostScreen> {
       _isLoading = true;
     });
     final prefs = await SharedPreferences.getInstance();
-    List<Post>? tempData = await Post.getPost(prefs.getString('jwt') ?? "");
+
+    List<Post>? tempData = await Post.getPost(
+      prefs.getString('jwt') ?? "",
+      prefs.getInt('start_province_id') ?? 1,
+      0,
+      0,
+      0,
+      DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
+      "",
+      false,
+    );
     setState(() {
       posts = tempData ?? [];
       _isLoading = false;

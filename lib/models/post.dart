@@ -43,8 +43,24 @@ class Post {
 
   static Future<List<Post>?> getPost(
     String token,
+    int provinceStartID,
+    int districtStartID,
+    int provinceEndtID,
+    int districtEndID,
+    String datetimeSelected,
+    String datetimeBackSelected,
+    bool isback,
   ) async {
-    NetworkHelper networkHelper = NetworkHelper('posts', {"device": "mobile"});
+    NetworkHelper networkHelper = NetworkHelper('posts', {
+      "device": "mobile",
+      "start_province_id": provinceStartID.toString(),
+      "start_district_id": districtStartID.toString(),
+      "end_province_id": provinceEndtID.toString(),
+      "start_district_id": districtEndID.toString(),
+      "date_time_start": datetimeSelected,
+      "date_time_back": datetimeBackSelected,
+      "isback": isback.toString()
+    });
     List<Post> posts = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {

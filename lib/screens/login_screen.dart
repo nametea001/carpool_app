@@ -347,6 +347,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                                           u.jwt.toString());
                                                       await prefs.setInt(
                                                           "user_id", u.id ?? 0);
+                                                      await prefs.setInt(
+                                                          "start_province_id",
+                                                          prefs.getInt(
+                                                                  'start_province_id') ??
+                                                              1);
 
                                                       _passwordController
                                                           .clear();
