@@ -20,7 +20,7 @@ class Post {
   DateTime? dateTimeStart;
   DateTime? dateTimeBack;
   String? status;
-  bool? isback;
+  bool? isBack;
   PostDetail? postDetail;
 
   Post({
@@ -37,7 +37,7 @@ class Post {
     this.dateTimeStart,
     this.dateTimeBack,
     this.status,
-    this.isback,
+    this.isBack,
     this.postDetail,
   });
 
@@ -49,17 +49,17 @@ class Post {
     int districtEndID,
     String datetimeSelected,
     String datetimeBackSelected,
-    bool isback,
+    bool isBack,
   ) async {
     NetworkHelper networkHelper = NetworkHelper('posts', {
       "device": "mobile",
       "start_province_id": provinceStartID.toString(),
       "start_district_id": districtStartID.toString(),
       "end_province_id": provinceEndtID.toString(),
-      "start_district_id": districtEndID.toString(),
+      "end_district_id": districtEndID.toString(),
       "date_time_start": datetimeSelected,
       "date_time_back": datetimeBackSelected,
-      "isback": isback.toString()
+      "is_back": isBack.toString()
     });
     List<Post> posts = [];
     var json = await networkHelper.getData(token);
@@ -100,7 +100,7 @@ class Post {
 
     String? dateTImeStart =
         DateFormat('yyyy-MM-dd HH:mm:ss').format(dataPost.dateTimeStart!);
-    String? dateTimeBack = dataPost.isback == true
+    String? dateTimeBack = dataPost.isBack == true
         ? DateFormat('yyyy-MM-dd HH:mm:ss').format(dataPost.dateTimeBack!)
         : null;
 
@@ -113,7 +113,7 @@ class Post {
         "name_end": dataPost.endName,
         "start_district_id": dataPost.startDistrictID,
         "end_district_id": dataPost.endDistrictID,
-        "go_back": dataPost.isback,
+        "is_back": dataPost.isBack,
         "date_time_start": dateTImeStart,
         "date_time_back": dateTimeBack,
         // "status": dataPost.status,
@@ -142,7 +142,7 @@ class Post {
         dateTimeBack: t['date_time_back'] != null
             ? DateTime.parse(t['date_time_back'])
             : null,
-        isback: t['isback'],
+        isBack: t['isback'],
         postDetail: PostDetail(
           price: double.parse(t['post_details'][0]['price']),
           seat: t['post_details'][0]['seat'],

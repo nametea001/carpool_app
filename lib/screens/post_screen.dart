@@ -165,7 +165,7 @@ class _PostScreenState extends State<PostScreen> {
               builder: (context) => PostDetailScreen(
                 userID: user.id,
                 isAdd: false,
-                isback: post.isback,
+                isback: post.isBack,
                 postID: post.id,
                 dateTimeStart: post.dateTimeStart,
                 dateTimeEnd: post.dateTimeBack,
@@ -566,6 +566,11 @@ class _PostScreenState extends State<PostScreen> {
             );
           },
           icon: const Icon(Icons.message)),
+
+      // IconButton(
+      //     onPressed: () async {
+      //     },
+      //     icon: const Icon(Icons.textsms_sharp)),
     ];
     return bt;
   }
@@ -725,15 +730,26 @@ class _PostScreenState extends State<PostScreen> {
     });
     final prefs = await SharedPreferences.getInstance();
 
+    provinceStartID = provinceStartID == 0
+        ? prefs.getInt('start_province_id')
+        : provinceStartID;
+    String strDatetimeStart = datetimeSelected == null
+        ? DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now())
+        : DateFormat("yyyy-MM-dd HH:mm:ss").format(datetimeSelected!);
+    String strDatetimeEnd = datetimeBackSelected == null
+        ? ""
+        : DateFormat("yyyy-MM-dd HH:mm:ss").format(datetimeBackSelected!);
+    bool isBack = datetimeBackSelected == null ? false : true;
+
     List<Post>? tempData = await Post.getPost(
-      prefs.getString('jwt') ?? "",
-      prefs.getInt('start_province_id') ?? 1,
-      0,
-      0,
-      0,
-      DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now()),
-      "",
-      false,
+      prefs.getString('jwt') ?? "", //token
+      provinceStartID!,
+      districtStartID!,
+      provinceEndtID!,
+      districtEndID!,
+      strDatetimeStart,
+      strDatetimeEnd,
+      isBack,
     );
     setState(() {
       posts = tempData ?? [];

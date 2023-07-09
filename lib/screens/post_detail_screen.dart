@@ -816,7 +816,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             showAlertSelecLocation();
                                           } else {
                                             formKey.currentState!.save();
-                                            postData!.isback = _isBack;
+                                            postData!.isBack = _isBack;
                                             // postData!.status = "NEW";
                                             showDetailAdd();
                                           }
