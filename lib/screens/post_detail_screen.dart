@@ -202,13 +202,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? Text('Add') : Text('Detail')),
           backgroundColor: Colors.pink,
-          // actions: [IconButton(onPressed: () async {}, icon: Icon(Icons.abc))],
+          // actions: [
+          //   IconButton(
+          //       onPressed: () async {
+          //         setState(() {
+          //           _isJoin = !_isJoin;
+          //         });
+          //       },
+          //       icon: Icon(Icons.abc))
+          // ],
         ),
         body: _isLoading
             ? _loadingDetail()
             : SingleChildScrollView(
                 child: Column(
                 children: [
+                  Container(
+                    child: Row(
+                      children: [],
+                    ),
+                  ),
                   Container(
                     // padding: EdgeInsets.only(left: 20, right: 20),
                     height: (MediaQuery.of(context).size.height / 2) - 30,
@@ -1247,7 +1260,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                               ),
-                              onPressed: () {
+                              onPressed: () async {
+                                final prefs =
+                                    await SharedPreferences.getInstance();
+
+                                PostMember? postMemberJoin =
+                                    await PostMember.joinPost(
+                                        prefs.getString('jwt') ?? "", postID!);
+                                if (postMemberJoin != null) {
+                                  setState(() {
+                                    _isJoin = false;
+                                  });
+                                  updateUI();
+                                }
                                 Navigator.pop(context);
                               }),
                           TextButton(
@@ -1485,7 +1510,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _vehicleRegistrationController.text = tempData.vehicleRegistration!;
         _colorController.text = tempData.color!;
         _descriptionController.text =
-            tempData.description ?? "ไม่รายระเอียดเพิ่มเติม";
+            tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
         if (_isBack) {
           _dateTimeBackController.text = dateTimeformat(dateTimeEnd);
         }

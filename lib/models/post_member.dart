@@ -42,7 +42,7 @@ class PostMember {
     List<PostMember> postMembers = [];
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
-      for (Map t in json['postMembers']) {
+      for (Map t in json['post_members']) {
         PostMember postMember = PostMember(
           id: t['id'],
           postID: t['post_id'],
@@ -51,6 +51,26 @@ class PostMember {
         postMembers.add(postMember);
       }
       return postMembers;
+    }
+    return null;
+  }
+
+  static Future<PostMember?> joinPost(String token, int postID) async {
+    NetworkHelper networkHelper = NetworkHelper("post_members/join_post", {});
+    var json = await networkHelper.postData(
+      jsonEncode(<String, dynamic>{
+        "post_id": postID,
+      }),
+      token,
+    );
+    if (json != null && json['error'] == false) {
+      Map t = json['post_members'];
+      PostMember postMember = PostMember(
+        id: t['id'],
+        postID: t['post_id'],
+        userID: t['user_id'],
+      );
+      return postMember;
     }
     return null;
   }

@@ -816,9 +816,12 @@ class _PostScreenState extends State<PostScreen> {
                   Icons.golf_course,
                   color: Colors.green,
                 ),
-                Text(
-                  " ${post.endName}",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    " ${post.endName}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ],
             ),
