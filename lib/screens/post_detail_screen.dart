@@ -311,7 +311,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             );
                                             route.routes.clear();
                                             await Future.delayed(
-                                                const Duration(seconds: 4));
+                                                const Duration(seconds: 2));
                                             await routeDraw(
                                                 latLngTemp, marker2);
                                             updateCameraLocation(latLngTemp,
@@ -950,7 +950,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               postData!.endDistrictID != 0 &&
               postData!.endDistrictID != null &&
               postData!.startDistrictID != null) {
-            await Future.delayed(const Duration(seconds: 4));
+            await Future.delayed(const Duration(seconds: 2));
             await routeDraw(marker1, marker2);
             await updateCameraLocation(marker1, marker2, _mapController!);
           }
@@ -1548,14 +1548,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             }
           }
         }
-
         _seatController.text = "${countMember}/${tempData.seat.toString()}";
       }
       setState(() {
         _isLoading = false;
       });
 
-      await Future.delayed(const Duration(seconds: 4));
+      await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
     }
@@ -1564,7 +1563,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future routeDraw(LatLng l1, LatLng l2) async {
     route.routes.clear();
     var points = [l1, l2];
-    var color = Color.fromRGBO(130, 78, 210, 1.0);
+    var color = Color.fromRGBO(53, 237, 59, 1);
     // var color = Colors.green;
     try {
       await route.drawRoute(
