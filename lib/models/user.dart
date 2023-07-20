@@ -12,6 +12,7 @@ class User {
   String? userRoleName;
   String? img;
   String? jwt;
+  String? sex;
   User({
     this.id,
     this.username,
@@ -22,6 +23,7 @@ class User {
     this.userRoleName,
     this.img,
     this.jwt,
+    this.sex,
   });
 
   static Future<User?> checkLogin(String username, String password) async {

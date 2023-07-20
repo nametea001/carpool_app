@@ -4,6 +4,7 @@ import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/province.dart';
+import 'package:car_pool_project/models/review.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
@@ -58,6 +59,9 @@ class _PostScreenState extends State<PostScreen> {
   int? districtEndID = 0;
   bool _isSelectedProvinceEnd = false;
 
+  bool _isLoadingReview = false;
+  List<Review> reviews = [];
+
   @override
   void initState() {
     super.initState();
@@ -82,7 +86,13 @@ class _PostScreenState extends State<PostScreen> {
             top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
         leading: (post.img != null
             ? GestureDetector(
-                onTap: () {
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  List<Review>? tempData = await Review.getReviews(
+                      prefs.getString('jwt') ?? "", post.createdUserID!);
+                  setState(() {
+                    reviews = tempData ?? [];
+                  });
                   showDetailUserPost(post);
                 },
                 child: CircleAvatar(
@@ -777,19 +787,18 @@ class _PostScreenState extends State<PostScreen> {
 
   List<ListTile> getListTileReviews() {
     List<ListTile> list = [];
-    // var getColor = GetColor();
-    int i = 0;
-    for (var post in posts) {
+    // int i = 0;
+    for (var review in reviews) {
       var l = ListTile(
         // tileColor: getColor.colorListTile(i),
         contentPadding:
             const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
-        leading: (post.img != null
+        leading: (review.img != null
             ? CircleAvatar(
                 maxRadius: 30,
                 child: ClipOval(
                   child: Image.memory(
-                    base64Decode(post.img!),
+                    base64Decode(review.img!),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -805,7 +814,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.green,
                 ),
                 Text(
-                  " ${user.firstName} ${user.lastName} ${i}",
+                  " ${review.user?.firstName} ${review.user?.lastName} ",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -818,7 +827,7 @@ class _PostScreenState extends State<PostScreen> {
                 ),
                 Flexible(
                   child: Text(
-                    " ${post.endName}",
+                    " ${review.endName}",
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -860,7 +869,6 @@ class _PostScreenState extends State<PostScreen> {
         // trailing: const Text("10"),
         // onTap: () {},
       );
-      i++;
       list.add(l);
     }
 
@@ -868,7 +876,6 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void showDetailUserPost(Post p) async {
-    // var
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -910,7 +917,7 @@ class _PostScreenState extends State<PostScreen> {
                               height: 12,
                             ),
                             Text(
-                              "${user.firstName} ${user.lastName}",
+                              "${p.user?.firstName} ${p.user?.lastName}",
                               style: const TextStyle(
                                   fontSize: 28, color: Colors.black),
                             ),

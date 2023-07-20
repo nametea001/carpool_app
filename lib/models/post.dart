@@ -22,6 +22,8 @@ class Post {
   String? status;
   bool? isBack;
   PostDetail? postDetail;
+  // user
+  User? user;
 
   Post({
     this.id,
@@ -39,6 +41,7 @@ class Post {
     this.status,
     this.isBack,
     this.postDetail,
+    this.user,
   });
 
   static Future<List<Post>?> getPost(
@@ -66,27 +69,32 @@ class Post {
     if (json != null && json['error'] == false) {
       for (Map t in json['posts']) {
         Post post = Post(
-          id: t['id'],
-          startName: t['name_start'],
-          endName: t['name_end'],
-          startDistrictID: t['start_district_id'],
-          // startProvinceID: t['start_district']['provinces']['id'],
-          endDistrictID: t['end_district_id'],
-          // endProvinceID: t['end_district']['provinces']['id'],
-          postMemberSeat: t['_count']['post_members'],
-          img: t['img'],
-          status: t['status'],
-          createdUserID: t['created_user_id'],
-          dateTimeStart: t['date_time_start'] != null
-              ? DateTime.parse(t['date_time_start'])
-              : null,
-          dateTimeBack: t['date_time_back'] != null
-              ? DateTime.parse(t['date_time_back'])
-              : null,
-          postDetail: PostDetail(
-              price: double.parse(t['post_details'][0]['price']),
-              seat: t['post_details'][0]['seat']),
-        );
+            id: t['id'],
+            startName: t['name_start'],
+            endName: t['name_end'],
+            startDistrictID: t['start_district_id'],
+            // startProvinceID: t['start_district']['provinces']['id'],
+            endDistrictID: t['end_district_id'],
+            // endProvinceID: t['end_district']['provinces']['id'],
+            postMemberSeat: t['_count']['post_members'],
+            img: t['img'],
+            status: t['status'],
+            createdUserID: t['created_user_id'],
+            dateTimeStart: t['date_time_start'] != null
+                ? DateTime.parse(t['date_time_start'])
+                : null,
+            dateTimeBack: t['date_time_back'] != null
+                ? DateTime.parse(t['date_time_back'])
+                : null,
+            postDetail: PostDetail(
+                price: double.parse(t['post_details'][0]['price']),
+                seat: t['post_details'][0]['seat']),
+            user: User(
+              firstName: t['users']['first_name'],
+              lastName: t['users']['last_name'],
+              email: t['users']['email'],
+              sex: t['users']['sex'],
+            ));
         posts.add(post);
       }
       return posts;
