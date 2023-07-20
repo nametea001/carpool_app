@@ -25,7 +25,7 @@ class Review {
     this.user,
   });
 
-  static Future<List<Review>?> getReviews(String token, int userID) async {
+  static Future<List<dynamic>?> getReviews(String token, int userID) async {
     NetworkHelper networkHelper = NetworkHelper('reviews', {
       "user_id": userID.toString(),
     });
@@ -46,8 +46,18 @@ class Review {
         );
         reviews.add(review);
       }
-      return reviews;
+      return [reviews, json['avg_review']['_avg']['score']];
     }
     return null;
   }
+
+  // static Future<double?> avgRatingReveiw(String token, int userID) async {
+  //   NetworkHelper networkHelper = NetworkHelper('login', {});
+  //   var json = await networkHelper.getData(token);
+  //   if (json != null && json['error'] == false) {
+  //     double avg = json['_avg'];
+  //     return avg;
+  //   }
+  //   return null;
+  // }
 }

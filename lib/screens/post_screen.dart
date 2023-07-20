@@ -11,6 +11,7 @@ import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/directions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,6 +62,7 @@ class _PostScreenState extends State<PostScreen> {
 
   bool _isLoadingReview = false;
   List<Review> reviews = [];
+  double avgReview = 0.0;
 
   @override
   void initState() {
@@ -88,10 +90,12 @@ class _PostScreenState extends State<PostScreen> {
             ? GestureDetector(
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
-                  List<Review>? tempData = await Review.getReviews(
+                  var tempData = await Review.getReviews(
                       prefs.getString('jwt') ?? "", post.createdUserID!);
                   setState(() {
-                    reviews = tempData ?? [];
+                    reviews = tempData![0] ?? [];
+                    avgReview =
+                        tempData[1] != null ? tempData[1].toDouble() : 0.0;
                   });
                   showDetailUserPost(post);
                 },
@@ -572,7 +576,7 @@ class _PostScreenState extends State<PostScreen> {
           onPressed: () async {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ChatScreen()),
+              MaterialPageRoute(builder: (context) => const ChatScreen()),
             );
           },
           icon: const Icon(Icons.message)),
@@ -692,7 +696,7 @@ class _PostScreenState extends State<PostScreen> {
                         },
                         child: ListView(
                           shrinkWrap: true,
-                          physics: AlwaysScrollableScrollPhysics(
+                          physics: const AlwaysScrollableScrollPhysics(
                               parent: BouncingScrollPhysics()),
                           // physics: BouncingScrollPhysics(),
                           // physics: AlwaysScrollableScrollPhysics(),
@@ -789,6 +793,7 @@ class _PostScreenState extends State<PostScreen> {
     List<ListTile> list = [];
     // int i = 0;
     for (var review in reviews) {
+      double score = review.score != null ? review.score!.toDouble() : 0.0;
       var l = ListTile(
         // tileColor: getColor.colorListTile(i),
         contentPadding:
@@ -852,15 +857,38 @@ class _PostScreenState extends State<PostScreen> {
             ),
             Row(
               children: [
-                Text(
-                  " ⭐ ⭐  ⭐  ⭐ ",
+                // RatingBar.builder(
+                //   initialRating: 1,
+                //   minRating: 1,
+                //   direction: Axis.horizontal,
+                //   allowHalfRating: true,
+                //   itemCount: 5,
+                //   itemPadding:
+                //       EdgeInsets.symmetric(horizontal: 0.3, vertical: 0.2),
+                //   itemBuilder: (context, _) => Icon(
+                //     Icons.star,
+                //     color: Colors.amber,
+                //   ),
+                //   onRatingUpdate: (rating) {
+                //     print(rating);
+                //   },
+                // ),
+                RatingBarIndicator(
+                  rating: score,
+                  itemCount: 5,
+                  itemSize: 25,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
                 ),
               ],
             ),
             Row(
               children: [
                 Text(
-                  "ดีมาก",
+                  "  ${review.description}",
                 ),
               ],
             ),
@@ -881,64 +909,98 @@ class _PostScreenState extends State<PostScreen> {
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
               // insetPadding: EdgeInsets.zero,
-              insetPadding:
-                  EdgeInsets.only(left: 20, right: 20, bottom: 30, top: 30),
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Container(
-                  // color: Colors.white, // Dialog background
-                  width: MediaQuery.of(context).size.width, // Dialog width
-                  height:
-                      MediaQuery.of(context).size.height - 200, // Dialog height
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        // color: Colors.pink,
-                        // padding: EdgeInsets.only(
-                        //   top: 24 + MediaQuery.of(context).padding.top,
-                        //   bottom: 24,
+                if (reviews.length > 0) {
+                  return Container(
+                    // color: Colors.white, // Dialog background
+                    width: MediaQuery.of(context).size.width, // Dialog width
+                    height: MediaQuery.of(context).size.height -
+                        200, // Dialog height
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          // color: Colors.pink,
+                          // padding: EdgeInsets.only(
+                          //   top: 24 + MediaQuery.of(context).padding.top,
+                          //   bottom: 24,
+                          // ),
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 52,
+                                child: user.img != null
+                                    ? ClipOval(
+                                        child: Image.memory(
+                                          base64Decode(user.img!),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(
+                                height: 12,
+                              ),
+                              Text(
+                                "${p.user?.firstName} ${p.user?.lastName}",
+                                style: const TextStyle(
+                                    fontSize: 28, color: Colors.black),
+                              ),
+                              Text(
+                                "${p.user?.email}",
+                                style: const TextStyle(
+                                    fontSize: 15, color: Colors.black),
+                              ),
+                              Text(
+                                "${p.user?.sex}",
+                                style: const TextStyle(
+                                    fontSize: 15, color: Colors.black),
+                              ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                              RatingBarIndicator(
+                                rating: avgReview,
+                                itemCount: 5,
+                                itemSize: 25,
+                                physics: const BouncingScrollPhysics(),
+                                itemBuilder: (context, _) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // SizedBox(
+                        //   height: 30,
                         // ),
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 52,
-                              child: user.img != null
-                                  ? ClipOval(
-                                      child: Image.memory(
-                                        base64Decode(user.img!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            ),
-                            Text(
-                              "${p.user?.firstName} ${p.user?.lastName}",
-                              style: const TextStyle(
-                                  fontSize: 28, color: Colors.black),
-                            ),
-                          ],
+                        // Divider(
+                        //   color: Colors.black,
+                        // ),
+                        const SizedBox(
+                          height: 20,
                         ),
-                      ),
-                      SizedBox(
-                        height: 30,
-                      ),
-                      SizedBox(
-                        height: 30,
-                      ),
-                      Expanded(
-                        child: ListView(
-                          physics: const BouncingScrollPhysics(),
-                          children: getListTileReviews(),
+                        Expanded(
+                          child: ListView(
+                            physics: const BouncingScrollPhysics(),
+                            children: getListTileReviews(),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
+                      ],
+                    ),
+                  );
+                } else {
+                  return Container(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [const Text("No review")]),
+                  );
+                }
               }),
               actions: [
                 TextButton(
