@@ -6,6 +6,7 @@ import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/province.dart';
 import 'package:car_pool_project/models/review.dart';
 import 'package:car_pool_project/models/user.dart';
+import 'package:car_pool_project/screens/car_screen.dart';
 import 'package:car_pool_project/screens/chat_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -589,6 +590,35 @@ class _PostScreenState extends State<PostScreen> {
     return bt;
   }
 
+  Widget listView() {
+    if (posts.length > 0) {
+      return Expanded(
+          child: RefreshIndicator(
+        onRefresh: () async {
+          updateUI();
+        },
+        child: ListView(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          // physics: BouncingScrollPhysics(),
+          // physics: AlwaysScrollableScrollPhysics(),
+          children: getListTile(),
+        ),
+      ));
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text(
+            "No data",
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          )
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -602,107 +632,15 @@ class _PostScreenState extends State<PostScreen> {
             actions: appBarBt(),
           ),
           // sidebar
-          drawer: Drawer(
-            child: SingleChildScrollView(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Container(
-                  color: Colors.pink,
-                  padding: EdgeInsets.only(
-                    top: 24 + MediaQuery.of(context).padding.top,
-                    bottom: 24,
-                  ),
-                  child: Column(
-                    children: [
-                      CircleAvatar(
-                        radius: 52,
-                        child: user.img != null
-                            ? ClipOval(
-                                child: Image.memory(
-                                  base64Decode(user.img!),
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : null,
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Text(
-                        "${user.firstName} ${user.lastName}",
-                        style:
-                            const TextStyle(fontSize: 28, color: Colors.white),
-                      ),
-                      Text(
-                        "${user.email}",
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  child: Wrap(
-                    runSpacing: 16,
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.person),
-                        title: const Text("Profile"),
-                        onTap: () {},
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.history),
-                        title: const Text("History"),
-                        onTap: () {},
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.info),
-                        title: const Text("help"),
-                        onTap: () {},
-                      ),
-                      const Divider(
-                        color: Colors.black,
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: const Text("Logout"),
-                        onTap: () {
-                          setState(() {
-                            _isLogout = true;
-                          });
-                          Navigator.pop(context);
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )),
-          ),
+          drawer: sideBar(),
           body: SafeArea(
               child: Column(
-            // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               (_isLoading
                   ? listLoader()
                   : Container(
-                      child: Expanded(
-                          child: RefreshIndicator(
-                        onRefresh: () async {
-                          updateUI();
-                        },
-                        child: ListView(
-                          shrinkWrap: true,
-                          physics: const AlwaysScrollableScrollPhysics(
-                              parent: BouncingScrollPhysics()),
-                          // physics: BouncingScrollPhysics(),
-                          // physics: AlwaysScrollableScrollPhysics(),
-                          children: getListTile(),
-                        ),
-                      )),
+                      child: listView(),
                     )),
             ],
           )),
@@ -719,6 +657,99 @@ class _PostScreenState extends State<PostScreen> {
             child: const Icon(Icons.add),
             backgroundColor: Colors.pink,
           )),
+    );
+  }
+
+  Drawer sideBar() {
+    return Drawer(
+      child: SingleChildScrollView(
+          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            color: Colors.pink,
+            padding: EdgeInsets.only(
+              top: 24 + MediaQuery.of(context).padding.top,
+              bottom: 24,
+            ),
+            child: Column(
+              children: [
+                CircleAvatar(
+                  radius: 52,
+                  child: user.img != null
+                      ? ClipOval(
+                          child: Image.memory(
+                            base64Decode(user.img!),
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(
+                  height: 12,
+                ),
+                Text(
+                  "${user.firstName} ${user.lastName}",
+                  style: const TextStyle(fontSize: 28, color: Colors.white),
+                ),
+                Text(
+                  "${user.email}",
+                  style: const TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(24),
+            child: Wrap(
+              runSpacing: 16,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text("Profile"),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.directions_car),
+                  title: const Text("My Cars"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CarScreen()),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.history),
+                  title: const Text("History"),
+                  onTap: () {},
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info),
+                  title: const Text("help"),
+                  onTap: () {},
+                ),
+                const Divider(
+                  color: Colors.black,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text("Logout"),
+                  onTap: () {
+                    setState(() {
+                      _isLogout = true;
+                    });
+                    Navigator.pop(context);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      )),
     );
   }
 

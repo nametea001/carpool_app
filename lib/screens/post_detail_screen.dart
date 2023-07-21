@@ -1159,8 +1159,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showAlerError() async {
-    await showDialog(
+  void showAlerError() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Error'),
