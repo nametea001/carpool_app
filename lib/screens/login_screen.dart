@@ -44,6 +44,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   TextEditingController _passwordController = TextEditingController();
 
+  String sex = "Male";
+
   @override
   void initState() {
     super.initState();
@@ -663,6 +665,59 @@ class _LoginScreenState extends State<LoginScreen> {
                                               color: Colors.pink,
                                             )),
                                       ),
+                                      const SizedBox(
+                                        height: 20.0,
+                                      ),
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // Text("Sex"),
+                                          const Icon(
+                                            Icons.man,
+                                            color: Colors.blue,
+                                            size: 35,
+                                          ),
+                                          SizedBox(
+                                            width: 30,
+                                            child: RadioListTile(
+                                                value: "Male",
+                                                groupValue: sex,
+                                                onChanged: ((value) {
+                                                  setState(() {
+                                                    sex = value.toString();
+                                                    userSignUp.sex = sex;
+                                                  });
+                                                })),
+                                          ),
+                                          const Text("Male"),
+                                          SizedBox(
+                                            width: (MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    2) -
+                                                140,
+                                          ),
+                                          const Icon(
+                                            Icons.woman,
+                                            color: Colors.pink,
+                                            size: 35,
+                                          ),
+                                          SizedBox(
+                                            width: 30,
+                                            child: RadioListTile(
+                                                value: "Famale",
+                                                groupValue: sex,
+                                                onChanged: ((value) {
+                                                  setState(() {
+                                                    sex = value.toString();
+                                                    userSignUp.sex = sex;
+                                                  });
+                                                })),
+                                          ),
+                                          const Text("Famale"),
+                                        ],
+                                      ),
                                       //  register button
                                       _isSingUp
                                           ? _loadingSingin()
@@ -675,6 +730,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   backgroundColor: Colors.pink,
                                                 ),
                                                 onPressed: () async {
+                                                  userSignUp.sex = sex;
                                                   if (formKey2.currentState!
                                                           .validate() &&
                                                       password ==
@@ -685,12 +741,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     setState(() {
                                                       _isSingUp = true;
                                                     });
-                                                    Future<User?> u =
-                                                        User.signUp(userSignUp,
-                                                            password);
+                                                    User? u = await User.signUp(
+                                                        userSignUp, password);
                                                     setState(() {
                                                       _isSingUp = false;
                                                     });
+                                                    if (u != null) {
+                                                      showAlerRegisterSuccess();
+                                                    } else {
+                                                      showAlerRegisterFail();
+                                                    }
                                                   }
                                                   formKey2.currentState?.reset;
                                                 },
@@ -725,6 +785,64 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void showAlerRegisterSuccess() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Success'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text("ดำเดินการสำเร็จ"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
+  void showAlerRegisterFail() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Fail'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Text("เกิดข้อพิพลาด"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Close'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
   }
 
   Widget visibility(bool check) {

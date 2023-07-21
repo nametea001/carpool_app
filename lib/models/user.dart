@@ -67,17 +67,19 @@ class User {
           'first_name': user.firstName,
           'last_name': user.lastName,
           'email': user.email,
+          'sex': user.sex
         }),
         "");
 
     if (json != null && json['error'] == false) {
       Map u = json['user'];
       User user = User(
-        id: u["id"],
+        // id: u["id"],
         username: u["username"],
-        firstName: u["first_name"],
-        lastName: u["last_name"],
+        // firstName: u["first_name"],
+        // lastName: u["last_name"],
         email: u["email"],
+        // sex: u["sex"],
       );
       return user;
     }
