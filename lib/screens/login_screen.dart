@@ -121,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             actions: <Widget>[
                               TextButton(
-                                child: const Text('Save'),
                                 style: TextButton.styleFrom(
                                   foregroundColor: Colors.white,
                                   backgroundColor: Colors.green,
@@ -130,16 +129,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   globals.serverIP = ip;
                                   Navigator.pop(context);
                                 },
+                                child: const Text('Save'),
                               ),
                               TextButton(
-                                  child: const Text('Close'),
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.white,
                                     backgroundColor: Colors.blueGrey,
                                   ),
                                   onPressed: () {
                                     Navigator.pop(context);
-                                  }),
+                                  },
+                                  child: const Text('Close')),
                             ],
                           ));
                 }),
@@ -190,14 +190,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     actions: [
                       TextButton(
-                          child: const Text('Close'),
                           style: TextButton.styleFrom(
                             primary: Colors.white,
                             backgroundColor: Colors.blueGrey,
                           ),
                           onPressed: () {
                             Navigator.pop(context);
-                          }),
+                          },
+                          child: const Text('Close')),
                     ],
                   ),
                 );
@@ -804,14 +804,14 @@ class _LoginScreenState extends State<LoginScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.grey,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }
@@ -833,14 +833,14 @@ class _LoginScreenState extends State<LoginScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.grey,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }

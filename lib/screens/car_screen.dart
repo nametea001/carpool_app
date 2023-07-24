@@ -263,7 +263,6 @@ class _CarScreenState extends State<CarScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Add'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.green,
@@ -271,6 +270,7 @@ class _CarScreenState extends State<CarScreen> {
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
+                        Navigator.pop(context);
                         // print(carData!.brand);
                         // print(carData!.model);
                         // print(carData!.vehicleRegistration);
@@ -286,18 +286,18 @@ class _CarScreenState extends State<CarScreen> {
                         } else {
                           showAlerError();
                         }
-                        Navigator.pop(context);
                       }
-                    }),
+                    },
+                    child: const Text('Add')),
                 TextButton(
-                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Cancel')),
               ],
             ));
     // await showGeneralDialog(
@@ -411,7 +411,6 @@ class _CarScreenState extends State<CarScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Edit'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.amber,
@@ -419,6 +418,7 @@ class _CarScreenState extends State<CarScreen> {
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
+                        Navigator.pop(context);
                         // print(carData!.brand);
                         // print(carData!.model);
                         // print(carData!.vehicleRegistration);
@@ -435,18 +435,18 @@ class _CarScreenState extends State<CarScreen> {
                         } else {
                           showAlerError();
                         }
-                        Navigator.pop(context);
                       }
-                    }),
+                    },
+                    child: const Text('Edit')),
                 TextButton(
-                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Cancel')),
               ],
             ));
   }
@@ -466,8 +466,10 @@ class _CarScreenState extends State<CarScreen> {
                 return Form(
                   key: formKey,
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    // Text("คุณต้องการที่จะลบหรือไม่"),
                     TextFormField(
-                      enabled: false,
+                      // enabled: false,
+                      readOnly: true,
                       controller: modelTextController,
                       validator: MultiValidator(
                           [RequiredValidator(errorText: "Please Input model")]),
@@ -485,7 +487,8 @@ class _CarScreenState extends State<CarScreen> {
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
-                      enabled: false,
+                      // enabled: false,
+                      readOnly: true,
                       controller: brandTextController,
                       validator: MultiValidator(
                           [RequiredValidator(errorText: "Please Input Brand")]),
@@ -503,7 +506,8 @@ class _CarScreenState extends State<CarScreen> {
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
-                      enabled: false,
+                      // enabled: false,
+                      readOnly: true,
                       controller: vehicleRegistrationTextController,
                       onSaved: (newValue) {
                         carData!.vehicleRegistration = newValue;
@@ -526,7 +530,8 @@ class _CarScreenState extends State<CarScreen> {
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
-                      enabled: false,
+                      // enabled: false,
+                      readOnly: true,
                       controller: colorTextController,
                       validator: MultiValidator(
                           [RequiredValidator(errorText: "Please Input Color")]),
@@ -547,7 +552,6 @@ class _CarScreenState extends State<CarScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Delete'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
@@ -556,25 +560,30 @@ class _CarScreenState extends State<CarScreen> {
                       setState(() {
                         _isLoading = true;
                       });
+                      Navigator.pop(context);
+
                       final prefs = await SharedPreferences.getInstance();
+                      setState(() {
+                        _isLoading = true;
+                      });
                       Car? tempData = await Car.deleteCar(
                           prefs.getString('jwt') ?? "", c.id!);
-                      Navigator.pop(context);
                       if (tempData != null) {
                         updateUI();
                       } else {
                         showAlerError();
                       }
-                    }),
+                    },
+                    child: const Text('Delete')),
                 TextButton(
-                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.green,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Cancel')),
               ],
             ));
   }
@@ -614,14 +623,14 @@ class _CarScreenState extends State<CarScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }

@@ -23,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 import '../gobal_function/data.dart';
+import '../models/car.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
@@ -149,6 +150,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   String totalDistance = 'No route';
 
   int userID = 0;
+
+  List<Car>? cars = null;
+  Car? car = null;
+
   @override
   void initState() {
     super.initState();
@@ -162,6 +167,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     postID = widget.postID ?? 0;
     postStatus = widget.postStatus ?? null;
     postCreatedUserID = widget.postCreatedUserID ?? 0;
+    getCar();
     updateUI();
   }
 
@@ -373,6 +379,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           Visibility(
                             visible: _isAdd,
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
                                   width: 30,
@@ -625,17 +632,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         30,
                                     child: TextFormField(
                                       onSaved: (newValue) {
-                                        postDetailData!.brand = newValue;
+                                        postDetailData!.model = newValue;
                                       },
                                       validator: MultiValidator([
                                         RequiredValidator(
-                                            errorText: "Please Input Brand")
+                                            errorText: "Please Input model")
                                       ]),
+                                      onTap: () {
+                                        if (_isAdd) {
+                                          selectCar();
+                                        }
+                                      },
+                                      // enabled: false,
+                                      readOnly: true,
+                                      showCursor: false,
                                       enabled: _isAdd,
-                                      focusNode: _focusNodeBrand,
-                                      controller: _brandController,
+                                      focusNode: _focusNodemodel,
+                                      controller: _modelController,
                                       decoration: InputDecoration(
-                                          labelText: "ยี่ห้อ",
+                                          labelText: "รุ่น",
                                           filled: true,
                                           border: OutlineInputBorder(
                                             borderRadius:
@@ -643,7 +658,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             // borderSide: BorderSide.none,
                                           ),
                                           prefixIcon: const Icon(
-                                            Icons.car_crash,
+                                            Icons.directions_car,
                                             color: Colors.pink,
                                           )),
                                     ),
@@ -661,17 +676,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         30,
                                     child: TextFormField(
                                       onSaved: (newValue) {
-                                        postDetailData!.model = newValue;
+                                        postDetailData!.brand = newValue;
                                       },
                                       validator: MultiValidator([
                                         RequiredValidator(
-                                            errorText: "Please Input model")
+                                            errorText: "Please Input Brand")
                                       ]),
+                                      onTap: () {
+                                        if (_isAdd) {
+                                          selectCar();
+                                        }
+                                      },
+                                      readOnly: true,
+                                      showCursor: false,
+                                      // enabled: false,
                                       enabled: _isAdd,
-                                      focusNode: _focusNodemodel,
-                                      controller: _modelController,
+                                      focusNode: _focusNodeBrand,
+                                      controller: _brandController,
                                       decoration: InputDecoration(
-                                          labelText: "รุ่น",
+                                          labelText: "ยี่ห้อ",
                                           filled: true,
                                           border: OutlineInputBorder(
                                             borderRadius:
@@ -679,7 +702,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             // borderSide: BorderSide.none,
                                           ),
                                           prefixIcon: const Icon(
-                                            Icons.directions_car,
+                                            Icons.car_crash,
                                             color: Colors.pink,
                                           )),
                                     ),
@@ -710,6 +733,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             errorText:
                                                 "Please Input Vehicle Registration")
                                       ]),
+                                      onTap: () {
+                                        if (_isAdd) {
+                                          selectCar();
+                                        }
+                                      },
+                                      readOnly: true,
+                                      showCursor: false,
+                                      // enabled: false,
                                       enabled: _isAdd,
                                       focusNode: _focusNodeVRegistration,
                                       controller:
@@ -747,8 +778,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         RequiredValidator(
                                             errorText: "Please Input Color")
                                       ]),
+                                      onTap: () {
+                                        if (_isAdd) {
+                                          selectCar();
+                                        }
+                                      },
+                                      readOnly: true,
+                                      showCursor: false,
+                                      // enabled: false,
                                       enabled: _isAdd,
-                                      focusNode: _focusNodeColor,
+                                      // focusNode: _focusNodeColor,
                                       controller: _colorController,
                                       decoration: InputDecoration(
                                           labelText: "สี",
@@ -1073,6 +1112,73 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void selectCar() async {
+    _focusNodePrice.unfocus();
+    _focusNodeBrand.unfocus();
+    _focusNodemodel.unfocus();
+    _focusNodeVRegistration.unfocus();
+    _focusNodeColor.unfocus();
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Select Car'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("เลือกรถของคุณ"),
+                        const SizedBox(width: 15),
+                        DropdownButton<Car>(
+                            value: car,
+                            items: cars!.map((Car car) {
+                              return DropdownMenuItem<Car>(
+                                  value: car, child: Text("${car.model}"));
+                            }).toList(),
+                            onChanged: (Car? c) {
+                              // print(c!.model);
+                              setState(() {
+                                car = c;
+                              });
+                            }),
+                      ],
+                    )
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () {
+                      _modelController.text = car?.model ?? "";
+                      _brandController.text = car?.brand ?? "";
+                      _vehicleRegistrationController.text =
+                          car?.vehicleRegistration ?? "";
+                      _colorController.text = car?.color ?? "";
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Select')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
   void showAlertSelecLocation() async {
     // var
     await showDialog(
@@ -1084,21 +1190,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
                 return Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
+                  children: const [
                     Text("กรุณาเลือกสถานที่ใน Map"),
                   ],
                 );
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.blueGrey,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }
@@ -1120,7 +1226,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Add'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.green,
@@ -1145,16 +1250,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         Navigator.pop(context);
                         showAlerError();
                       }
-                    }),
+                    },
+                    child: const Text('Add')),
                 TextButton(
-                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Cancel')),
               ],
             ));
   }
@@ -1176,14 +1282,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }
@@ -1205,14 +1311,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.grey,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
   }
@@ -1255,7 +1361,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         }),
                         actions: [
                           TextButton(
-                              child: const Text('Join'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
@@ -1274,16 +1379,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   updateUI();
                                 }
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('Join')),
                           TextButton(
-                              child: const Text('Close'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.blueGrey,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('Close')),
                         ],
                       ));
             },
@@ -1353,23 +1459,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         }),
                         actions: [
                           TextButton(
-                              child: const Text('Yes'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.red,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('Yes')),
                           TextButton(
-                              child: const Text('No'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('No')),
                         ],
                       ));
             },
@@ -1416,23 +1522,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         }),
                         actions: [
                           TextButton(
-                              child: const Text('Done'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('Done')),
                           TextButton(
-                              child: const Text('No'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.red,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('No')),
                         ],
                       ));
             },
@@ -1457,23 +1563,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         }),
                         actions: [
                           TextButton(
-                              child: const Text('Yes'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.red,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('Yes')),
                           TextButton(
-                              child: const Text('No'),
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.white,
                                 backgroundColor: Colors.green,
                               ),
                               onPressed: () {
                                 Navigator.pop(context);
-                              }),
+                              },
+                              child: const Text('No')),
                         ],
                       ));
             },
@@ -1548,7 +1654,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             }
           }
         }
-        _seatController.text = "${countMember}/${tempData.seat.toString()}";
+        _seatController.text = "${countMember}/${tempData.seat}";
       }
       setState(() {
         _isLoading = false;
@@ -1557,6 +1663,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
+    }
+  }
+
+  void getCar() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Car>? tempData = await Car.getCars(prefs.getString('jwt') ?? "");
+    if (tempData != null) {
+      car = tempData[0];
+      setState(() {
+        cars = tempData;
+      });
+    } else {
+      setState(() {
+        cars = [];
+      });
     }
   }
 

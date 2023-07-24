@@ -550,7 +550,6 @@ class _PostScreenState extends State<PostScreen> {
                       }),
                       actions: [
                         TextButton(
-                          child: const Text('Search'),
                           style: TextButton.styleFrom(
                             foregroundColor: Colors.white,
                             backgroundColor: Colors.green,
@@ -558,16 +557,17 @@ class _PostScreenState extends State<PostScreen> {
                           onPressed: () {
                             Navigator.pop(context);
                           },
+                          child: const Text('Search'),
                         ),
                         TextButton(
-                            child: const Text('Close'),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.blueGrey,
                             ),
                             onPressed: () {
                               Navigator.pop(context);
-                            }),
+                            },
+                            child: const Text('Close')),
                       ],
                     ));
           },
@@ -654,8 +654,8 @@ class _PostScreenState extends State<PostScreen> {
                         )),
               );
             },
-            child: const Icon(Icons.add),
             backgroundColor: Colors.pink,
+            child: const Icon(Icons.add),
           )),
     );
   }
@@ -1035,14 +1035,14 @@ class _PostScreenState extends State<PostScreen> {
               }),
               actions: [
                 TextButton(
-                    child: const Text('Close'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.blueGrey,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
-                    }),
+                    },
+                    child: const Text('Close')),
               ],
             ));
     // await showGeneralDialog(
