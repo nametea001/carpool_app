@@ -3,6 +3,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 
+import '../gobal_function/color.dart';
 import '../models/car.dart';
 
 class CarScreen extends StatefulWidget {
@@ -20,6 +21,12 @@ class _CarScreenState extends State<CarScreen> {
   List<Car>? cars = [];
   Car? carData = Car();
 
+  TextEditingController modelTextController = TextEditingController();
+  TextEditingController brandTextController = TextEditingController();
+  TextEditingController colorTextController = TextEditingController();
+  TextEditingController vehicleRegistrationTextController =
+      TextEditingController();
+
   void initState() {
     super.initState();
     updateUI();
@@ -27,6 +34,10 @@ class _CarScreenState extends State<CarScreen> {
 
   void dispose() {
     super.dispose();
+    modelTextController.dispose();
+    brandTextController.dispose();
+    colorTextController.dispose();
+    vehicleRegistrationTextController.dispose();
   }
 
   List<Widget> appBarBt() {
@@ -56,18 +67,61 @@ class _CarScreenState extends State<CarScreen> {
   }
 
   Widget listViewCars() {
-    print(cars!.length);
+    // print(cars!.length);
     if (cars!.length > 0) {
+      var c = GetColor();
+      int i = 0;
       List<ListTile> list = [];
       for (var car in cars!) {
         var l = ListTile(
-          // contentPadding: const EdgeInsets.only(
-          //     top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
-          // tileColor: getColor.colorListTile(i),
-          title: Text(car.model!),
-          // trailing: Text(dateTimeformat(DateTime.now())),
-          onTap: () {},
+          contentPadding: const EdgeInsets.only(
+              top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
+          tileColor: c.colorListTile(i),
+          title: Column(
+            children: [
+              Row(
+                children: [
+                  // Icon(
+                  //   Icons.directions_car_filled,
+                  //   color: Colors.amber,
+                  // ),
+                  Flexible(
+                    child: Text(" ${car.model}  ${car.brand}",
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(" ${car.color}",
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          subtitle: Text(" ${car.vehicleRegistration}"),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    editCar(car);
+                  },
+                  icon: const Icon(Icons.edit, color: Colors.amber)),
+              IconButton(
+                  onPressed: () {
+                    deleteCar(car);
+                  },
+                  icon: const Icon(Icons.delete, color: Colors.red)),
+            ],
+          ),
+          // onTap: () {},
         );
+        i++;
         list.add(l);
       }
       return Expanded(
@@ -129,25 +183,6 @@ class _CarScreenState extends State<CarScreen> {
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     TextFormField(
                       onSaved: (newValue) {
-                        carData!.brand = newValue;
-                      },
-                      validator: MultiValidator(
-                          [RequiredValidator(errorText: "Please Input Brand")]),
-                      decoration: InputDecoration(
-                          labelText: "ยี่ห้อ",
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                            // borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.car_crash,
-                            color: Colors.pink,
-                          )),
-                    ),
-                    const SizedBox(height: 5),
-                    TextFormField(
-                      onSaved: (newValue) {
                         carData!.model = newValue;
                       },
                       validator: MultiValidator(
@@ -164,7 +199,26 @@ class _CarScreenState extends State<CarScreen> {
                             color: Colors.pink,
                           )),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      onSaved: (newValue) {
+                        carData!.brand = newValue;
+                      },
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input Brand")]),
+                      decoration: InputDecoration(
+                          labelText: "ยี่ห้อ",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.car_crash,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
                     TextFormField(
                       onSaved: (newValue) {
                         carData!.vehicleRegistration = newValue;
@@ -185,7 +239,7 @@ class _CarScreenState extends State<CarScreen> {
                             color: Colors.pink,
                           )),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 10),
                     TextFormField(
                       onSaved: (newValue) {
                         carData!.color = newValue;
@@ -230,16 +284,16 @@ class _CarScreenState extends State<CarScreen> {
                         if (tempData != null) {
                           updateUI();
                         } else {
-                          showAlerAddError();
+                          showAlerError();
                         }
                         Navigator.pop(context);
                       }
                     }),
                 TextButton(
-                    child: const Text('Close'),
+                    child: const Text('Cancel'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.white,
-                      backgroundColor: Colors.blueGrey,
+                      backgroundColor: Colors.red,
                     ),
                     onPressed: () {
                       Navigator.pop(context);
@@ -254,6 +308,275 @@ class _CarScreenState extends State<CarScreen> {
     //         children: [],
     //       )),
     // );
+  }
+
+  void editCar(Car c) async {
+    modelTextController.text = c.model!;
+    brandTextController.text = c.brand!;
+    vehicleRegistrationTextController.text = c.vehicleRegistration!;
+    colorTextController.text = c.color!;
+
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Edit Car'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                return Form(
+                  key: formKey,
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    TextFormField(
+                      controller: modelTextController,
+                      onSaved: (newValue) {
+                        carData!.model = newValue;
+                      },
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input model")]),
+                      decoration: InputDecoration(
+                          labelText: "รุ่น",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.directions_car,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: brandTextController,
+                      onSaved: (newValue) {
+                        carData!.brand = newValue;
+                      },
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input Brand")]),
+                      decoration: InputDecoration(
+                          labelText: "ยี่ห้อ",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.car_crash,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: vehicleRegistrationTextController,
+                      onSaved: (newValue) {
+                        carData!.vehicleRegistration = newValue;
+                      },
+                      validator: MultiValidator([
+                        RequiredValidator(
+                            errorText: "Please Input Vehicle Registration")
+                      ]),
+                      decoration: InputDecoration(
+                          labelText: "ทะเบียน",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.font_download,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: colorTextController,
+                      onSaved: (newValue) {
+                        carData!.color = newValue;
+                      },
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input Color")]),
+                      decoration: InputDecoration(
+                          labelText: "สี",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.palette,
+                            color: Colors.pink,
+                          )),
+                    ),
+                  ]),
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Edit'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      if (formKey.currentState!.validate()) {
+                        formKey.currentState!.save();
+                        // print(carData!.brand);
+                        // print(carData!.model);
+                        // print(carData!.vehicleRegistration);
+                        // print(carData!.color);
+                        carData!.id = c.id;
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        final prefs = await SharedPreferences.getInstance();
+                        Car? tempData = await Car.editCar(
+                            prefs.getString('jwt') ?? "", carData!);
+                        if (tempData != null) {
+                          updateUI();
+                        } else {
+                          showAlerError();
+                        }
+                        Navigator.pop(context);
+                      }
+                    }),
+                TextButton(
+                    child: const Text('Cancel'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
+  }
+
+  void deleteCar(Car c) async {
+    modelTextController.text = c.model!;
+    brandTextController.text = c.brand!;
+    vehicleRegistrationTextController.text = c.vehicleRegistration!;
+    colorTextController.text = c.color!;
+
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Delete Car'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                return Form(
+                  key: formKey,
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    TextFormField(
+                      enabled: false,
+                      controller: modelTextController,
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input model")]),
+                      decoration: InputDecoration(
+                          labelText: "รุ่น",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.directions_car,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      enabled: false,
+                      controller: brandTextController,
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input Brand")]),
+                      decoration: InputDecoration(
+                          labelText: "ยี่ห้อ",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.car_crash,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      enabled: false,
+                      controller: vehicleRegistrationTextController,
+                      onSaved: (newValue) {
+                        carData!.vehicleRegistration = newValue;
+                      },
+                      validator: MultiValidator([
+                        RequiredValidator(
+                            errorText: "Please Input Vehicle Registration")
+                      ]),
+                      decoration: InputDecoration(
+                          labelText: "ทะเบียน",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.font_download,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      enabled: false,
+                      controller: colorTextController,
+                      validator: MultiValidator(
+                          [RequiredValidator(errorText: "Please Input Color")]),
+                      decoration: InputDecoration(
+                          labelText: "สี",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.palette,
+                            color: Colors.pink,
+                          )),
+                    ),
+                  ]),
+                );
+              }),
+              actions: [
+                TextButton(
+                    child: const Text('Delete'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () async {
+                      setState(() {
+                        _isLoading = true;
+                      });
+                      final prefs = await SharedPreferences.getInstance();
+                      Car? tempData = await Car.deleteCar(
+                          prefs.getString('jwt') ?? "", c.id!);
+                      Navigator.pop(context);
+                      if (tempData != null) {
+                        updateUI();
+                      } else {
+                        showAlerError();
+                      }
+                    }),
+                TextButton(
+                    child: const Text('Cancel'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    }),
+              ],
+            ));
   }
 
   void updateUI() async {
@@ -271,7 +594,10 @@ class _CarScreenState extends State<CarScreen> {
     });
   }
 
-  void showAlerAddError() {
+  void showAlerError() {
+    setState(() {
+      _isLoading = false;
+    });
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
