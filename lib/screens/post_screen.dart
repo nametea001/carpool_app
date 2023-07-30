@@ -188,6 +188,14 @@ class _PostScreenState extends State<PostScreen> {
                 endName: post.endName,
                 postStatus: post.status,
                 postCreatedUserID: post.createdUserID,
+                postUser: User(
+                  id: post.createdUserID,
+                  firstName: post.user?.firstName,
+                  lastName: post.user?.lastName,
+                  img: post.img,
+                  sex: post.user?.sex,
+                  email: post.user?.email,
+                ),
               ),
             ),
           );
@@ -940,6 +948,7 @@ class _PostScreenState extends State<PostScreen> {
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
               // insetPadding: EdgeInsets.zero,
+
               insetPadding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 30, top: 30),
               content: StatefulBuilder(
@@ -979,7 +988,9 @@ class _PostScreenState extends State<PostScreen> {
                               Text(
                                 "${p.user?.firstName} ${p.user?.lastName}",
                                 style: const TextStyle(
-                                    fontSize: 28, color: Colors.black),
+                                    fontSize: 28,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w400),
                               ),
                               Text(
                                 "${p.user?.email}",
@@ -991,18 +1002,59 @@ class _PostScreenState extends State<PostScreen> {
                                 style: const TextStyle(
                                     fontSize: 15, color: Colors.black),
                               ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              RatingBarIndicator(
-                                rating: avgReview,
-                                itemCount: 5,
-                                itemSize: 25,
-                                physics: const BouncingScrollPhysics(),
-                                itemBuilder: (context, _) => const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
+                              // const SizedBox(
+                              //   height: 10,
+                              // ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    TextButton(
+                                        style: TextButton.styleFrom(
+                                            foregroundColor: Colors.white,
+                                            backgroundColor: Colors.blue),
+                                        onPressed: () {},
+                                        child: Row(
+                                          children: const [
+                                            Icon(Icons.message),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text(
+                                              "Chat",
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                              ),
+                                            )
+                                          ],
+                                        )),
+                                  ],
                                 ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                // crossAxisAlignment: CrossAxisAlignment.baseline,
+                                children: [
+                                  RatingBarIndicator(
+                                    rating: avgReview,
+                                    itemCount: 5,
+                                    itemSize: 25,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemBuilder: (context, _) => const Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    "$avgReview",
+                                    style: const TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -16,6 +17,7 @@ class PostDetail {
   String? vehicleRegistration;
   String? color;
   int? createdUserId;
+  Post? posts;
 
   PostDetail({
     this.id,
@@ -30,6 +32,7 @@ class PostDetail {
     this.vehicleRegistration,
     this.color,
     this.createdUserId,
+    this.posts,
   });
 
   static Future<List<PostDetail>?> getPostDetails(
@@ -85,7 +88,7 @@ class PostDetail {
         model: t['model'],
         vehicleRegistration: t['vehicle_registration'],
         color: t['color'],
-        
+        posts: Post(status: t["posts"]['status']),
       );
 
       return postDetail;
