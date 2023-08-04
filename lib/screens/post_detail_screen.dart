@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/post_member.dart';
+import 'package:car_pool_project/screens/car_screen.dart';
 // import 'package:car_pool_project/models/province.dart';
 // import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
@@ -25,6 +28,7 @@ import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
+import '../models/user.dart';
 
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
@@ -37,20 +41,21 @@ class PostDetailScreen extends StatefulWidget {
   final int? postCreatedUserID;
   final String? postStatus;
   final int? userID;
+  final User? postUser;
 
-  const PostDetailScreen({
-    super.key,
-    this.isAdd,
-    this.isback,
-    this.postID,
-    this.dateTimeStart,
-    this.dateTimeEnd,
-    this.startName,
-    this.endName,
-    this.postCreatedUserID,
-    this.postStatus,
-    this.userID,
-  });
+  const PostDetailScreen(
+      {super.key,
+      this.isAdd,
+      this.isback,
+      this.postID,
+      this.dateTimeStart,
+      this.dateTimeEnd,
+      this.startName,
+      this.endName,
+      this.postCreatedUserID,
+      this.postStatus,
+      this.userID,
+      this.postUser});
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
 }
@@ -152,12 +157,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   int userID = 0;
 
-  List<Car>? cars = null;
-  Car? car = null;
+  User postUser = User();
+
+  List<Car>? cars = [];
+  Car? car = Car();
+
+  List<Review> reviews = [];
 
   @override
   void initState() {
     super.initState();
+    postUser = widget.postUser ?? User();
     userID = widget.userID ?? 0;
     _isAdd = widget.isAdd ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
@@ -207,7 +217,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: (_isAdd ? Text('Add') : Text('Detail')),
+          title: (_isAdd ? const Text('Add') : const Text('Detail')),
           backgroundColor: Colors.pink,
           // actions: [
           //   IconButton(
@@ -223,12 +233,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ? _loadingDetail()
             : SingleChildScrollView(
                 child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    child: Row(
-                      children: [],
-                    ),
-                  ),
                   Container(
                     // padding: EdgeInsets.only(left: 20, right: 20),
                     height: (MediaQuery.of(context).size.height / 2) - 30,
@@ -254,17 +260,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             ? {
                                 Marker(
                                     draggable: false,
-                                    markerId: MarkerId("marker1"),
+                                    markerId: const MarkerId("marker1"),
                                     position: marker1),
                                 Marker(
                                     draggable: false,
-                                    markerId: MarkerId("marker2"),
+                                    markerId: const MarkerId("marker2"),
                                     position: marker2),
                               }
                             : {
                                 Marker(
                                     draggable: false,
-                                    markerId: MarkerId("marker2"),
+                                    markerId: const MarkerId("marker2"),
                                     position: marker2),
                               },
                       ),
@@ -852,8 +858,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               : Visibility(
                                   visible: _isAdd,
                                   child: Container(
-                                    padding:
-                                        EdgeInsets.only(left: 70, right: 70),
+                                    padding: const EdgeInsets.only(
+                                        left: 70, right: 70),
                                     width: double.infinity,
                                     child: ElevatedButton(
                                       style: ElevatedButton.styleFrom(
@@ -887,8 +893,62 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   ),
                                 ),
                           const SizedBox(
-                            height: 20,
+                            height: 5,
                           ),
+                          Visibility(
+                            visible: !_isAdd,
+                            child: GestureDetector(
+                              onTap: () {},
+                              child: Container(
+                                // decoration: BoxDecoration(color: Colors.red),
+                                // width: MediaQuery.of(context).size.width,
+
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  // crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 40,
+                                      child: postUser.img != null
+                                          ? ClipOval(
+                                              child: Image.memory(
+                                                base64Decode(postUser.img!),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                    const SizedBox(width: 15),
+                                    Column(
+                                      children: [
+                                        Text(
+                                          "${postUser.firstName} ${postUser.lastName}",
+                                          style: const TextStyle(
+                                              fontSize: 30,
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          "${postUser.email}",
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black),
+                                        ),
+                                        Text(
+                                          "${postUser.sex}",
+                                          style: const TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.black),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
@@ -1120,65 +1180,123 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNodemodel.unfocus();
     _focusNodeVRegistration.unfocus();
     _focusNodeColor.unfocus();
-    await showDialog(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-              title: const Text('Select Car'),
-              content: StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("เลือกรถของคุณ"),
-                        const SizedBox(width: 15),
-                        DropdownButton<Car>(
-                            value: car,
-                            items: cars!.map((Car car) {
-                              return DropdownMenuItem<Car>(
-                                  value: car, child: Text("${car.model}"));
-                            }).toList(),
-                            onChanged: (Car? c) {
-                              // print(c!.model);
-                              setState(() {
-                                car = c;
-                              });
-                            }),
-                      ],
-                    )
-                  ],
-                );
-              }),
-              actions: [
-                TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.green,
-                    ),
-                    onPressed: () {
-                      _modelController.text = car?.model ?? "";
-                      _brandController.text = car?.brand ?? "";
-                      _vehicleRegistrationController.text =
-                          car?.vehicleRegistration ?? "";
-                      _colorController.text = car?.color ?? "";
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Select')),
-                TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Colors.red,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel')),
-              ],
-            ));
+
+    if (cars != null && cars!.isNotEmpty) {
+      await showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+                title: const Text('Select Car'),
+                content: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text("เลือกรถของคุณ"),
+                          const SizedBox(width: 15),
+                          DropdownButton<Car>(
+                              value: car,
+                              items: cars!.map((Car car) {
+                                return DropdownMenuItem<Car>(
+                                    value: car, child: Text("${car.model}"));
+                              }).toList(),
+                              onChanged: (Car? c) {
+                                // print(c!.model);
+                                setState(() {
+                                  car = c;
+                                });
+                              }),
+                        ],
+                      )
+                    ],
+                  );
+                }),
+                actions: [
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.green,
+                      ),
+                      onPressed: () {
+                        _modelController.text = car?.model ?? "";
+                        _brandController.text = car?.brand ?? "";
+                        _vehicleRegistrationController.text =
+                            car?.vehicleRegistration ?? "";
+                        _colorController.text = car?.color ?? "";
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Select')),
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.red,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel')),
+                ],
+              ));
+    } else {
+      await showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+                title: const Text('Select Car'),
+                content: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                  // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Text("ไม่รถที่บันทึกไว้ "),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => const CarScreen()));
+                            },
+                            icon: Icon(Icons.add),
+                            color: Colors.green,
+                          )
+                        ],
+                      ),
+                    ],
+                  );
+                }),
+                actions: [
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.grey,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Close')),
+                ],
+              ));
+    }
   }
 
   void showAlertSelecLocation() async {
@@ -1325,6 +1443,148 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
+  void showJoinPost() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Join'),
+              // insetPadding: EdgeInsets.zero,
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Text("คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+
+                      PostMember? postMemberJoin = await PostMember.joinPost(
+                          prefs.getString('jwt') ?? "", postID!);
+                      if (postMemberJoin != null) {
+                        setState(() {
+                          _isJoin = false;
+                        });
+                        updateUI();
+                      }
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Join')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showCancelPost() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Cancel'),
+              // insetPadding: EdgeInsets.zero,
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final prefs = await SharedPreferences.getInstance();
+                      Post? tempData = await Post.updateStatusPost(
+                          prefs.getString('jwt') ?? "", postID!, "CANCEL");
+                      if (tempData != null) {
+                        showAlerSuccess();
+                        setState(() {
+                          postStatus = tempData.status;
+                        });
+                        updateUI();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('Yes')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('No')),
+              ],
+            ));
+  }
+
+  void showDonePost() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Done'),
+              // insetPadding: EdgeInsets.zero,
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Text("คุณต้องการจะจบการเดินทางหรือไม่");
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      final prefs = await SharedPreferences.getInstance();
+                      Post? tempData = await Post.updateStatusPost(
+                          prefs.getString('jwt') ?? "", postID!, "DONE");
+                      if (tempData != null) {
+                        showAlerSuccess();
+                        setState(() {
+                          postStatus = tempData.status;
+                        });
+                        updateUI();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('Done')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('No')),
+              ],
+            ));
+  }
+
   String dateTimeformat(DateTime? time) {
     int mount = int.parse(DateFormat.M().format(time!));
     String dayWeek = DateFormat.E().format(time);
@@ -1347,53 +1607,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.greenAccent,
             label: "Join",
-            child: Icon(Icons.add),
+            child: const Icon(Icons.add),
             onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Join'),
-                        // insetPadding: EdgeInsets.zero,
-                        insetPadding: EdgeInsets.only(
-                            left: 20, right: 20, bottom: 30, top: 30),
-                        content: StatefulBuilder(builder:
-                            (BuildContext context, StateSetter setState) {
-                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                          return Text("คุณต้องการเข้าร่วมการเดินทางนี้หรือไม่");
-                        }),
-                        actions: [
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.green,
-                              ),
-                              onPressed: () async {
-                                final prefs =
-                                    await SharedPreferences.getInstance();
-
-                                PostMember? postMemberJoin =
-                                    await PostMember.joinPost(
-                                        prefs.getString('jwt') ?? "", postID!);
-                                if (postMemberJoin != null) {
-                                  setState(() {
-                                    _isJoin = false;
-                                  });
-                                  updateUI();
-                                }
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Join')),
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.blueGrey,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Close')),
-                        ],
-                      ));
+              showJoinPost();
             },
           )
         ],
@@ -1411,11 +1627,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.blue,
             label: "Chat",
-            child: Icon(Icons.message),
+            child: const Icon(Icons.message),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ChatDetailScreen()),
               );
             },
           ),
@@ -1433,11 +1650,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.blue,
             label: "Chat",
-            child: Icon(Icons.message),
+            child: const Icon(Icons.message),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ChatDetailScreen()),
               );
             },
           ),
@@ -1445,41 +1663,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.red,
             label: "Cancel",
-            child: Icon(Icons.cancel_outlined),
+            child: const Icon(Icons.cancel_outlined),
             onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Cancel'),
-                        // insetPadding: EdgeInsets.zero,
-                        insetPadding: EdgeInsets.only(
-                            left: 20, right: 20, bottom: 30, top: 30),
-                        content: StatefulBuilder(builder:
-                            (BuildContext context, StateSetter setState) {
-                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                          return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
-                        }),
-                        actions: [
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Yes')),
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.green,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('No')),
-                        ],
-                      ));
+              showCancelPost();
             },
           ),
         ],
@@ -1496,11 +1682,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.blue,
             label: "Chat",
-            child: Icon(Icons.message),
+            child: const Icon(Icons.message),
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ChatDetailScreen()),
               );
             },
           ),
@@ -1508,60 +1695,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           SpeedDialChild(
             backgroundColor: Colors.green,
             label: "Done",
-            child: Icon(Icons.check_circle_outline),
+            child: const Icon(Icons.check_circle_outline),
             onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Done'),
-                        // insetPadding: EdgeInsets.zero,
-                        insetPadding: EdgeInsets.only(
-                            left: 20, right: 20, bottom: 30, top: 30),
-                        content: StatefulBuilder(builder:
-                            (BuildContext context, StateSetter setState) {
-                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                          return Text("คุณต้องการจะจบการเดินทางหรือไม่");
-                        }),
-                        actions: [
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.green,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Done')),
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('No')),
-                        ],
-                      ));
+              showDonePost();
             },
           ),
           // cancel
           SpeedDialChild(
             backgroundColor: Colors.red,
             label: "Cancel",
-            child: Icon(Icons.cancel_outlined),
+            child: const Icon(Icons.cancel_outlined),
             onTap: () {
               showDialog(
                   context: context,
                   builder: (BuildContext context) => AlertDialog(
                         title: const Text('Cancel'),
                         // insetPadding: EdgeInsets.zero,
-                        insetPadding: EdgeInsets.only(
+                        insetPadding: const EdgeInsets.only(
                             left: 20, right: 20, bottom: 30, top: 30),
                         content: StatefulBuilder(builder:
                             (BuildContext context, StateSetter setState) {
                           // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                          return Text("คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
+                          return const Text(
+                              "คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
                         }),
                         actions: [
                           TextButton(
@@ -1660,6 +1816,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       }
       setState(() {
         _isLoading = false;
+        postStatus = tempData?.posts!.status;
       });
 
       await Future.delayed(const Duration(seconds: 2));
@@ -1671,7 +1828,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   void getCar() async {
     final prefs = await SharedPreferences.getInstance();
     List<Car>? tempData = await Car.getCars(prefs.getString('jwt') ?? "");
-    if (tempData != null) {
+    if (tempData != null && tempData.isNotEmpty) {
       car = tempData[0];
       setState(() {
         cars = tempData;
@@ -1686,7 +1843,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future routeDraw(LatLng l1, LatLng l2) async {
     route.routes.clear();
     var points = [l1, l2];
-    var color = Color.fromRGBO(53, 237, 59, 1);
+    var color = const Color.fromRGBO(53, 237, 59, 1);
     // var color = Colors.green;
     try {
       await route.drawRoute(
@@ -1728,7 +1885,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             )),
       ),
       items: 1,
-      period: Duration(seconds: 2),
+      period: const Duration(seconds: 2),
       highlightColor: Colors.pink,
       // baseColor: Colors.pink,
       direction: SkeletonDirection.ltr,
@@ -1750,7 +1907,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Container(
-              padding: EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 50),
               decoration: BoxDecoration(
                 border: Border.all(width: 3, color: Colors.white),
               ),
@@ -1760,7 +1917,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
             child: Container(
-              padding: EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 50),
               decoration: BoxDecoration(
                 border: Border.all(width: 3, color: Colors.white),
               ),
@@ -1770,7 +1927,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
             child: Container(
-              padding: EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 50),
               decoration: BoxDecoration(
                 border: Border.all(width: 3, color: Colors.white),
               ),
@@ -1780,7 +1937,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 1, 20, 20),
             child: Container(
-              padding: EdgeInsets.only(top: 50),
+              padding: const EdgeInsets.only(top: 50),
               decoration: BoxDecoration(
                 border: Border.all(width: 3, color: Colors.white),
               ),
@@ -1790,7 +1947,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ],
       ),
       items: 1,
-      period: Duration(seconds: 2),
+      period: const Duration(seconds: 2),
       highlightColor: Colors.pink,
       // baseColor: Colors.pink,
       direction: SkeletonDirection.ltr,

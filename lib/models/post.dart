@@ -138,7 +138,7 @@ class Post {
       token,
     );
     if (json != null && json['error'] == false) {
-      Map t = json['posts'];
+      Map t = json['post'];
       Post post = Post(
         id: t['id'],
         startName: t['name_start'],
@@ -169,6 +169,22 @@ class Post {
               : null,
         ),
       );
+      return post;
+    }
+    return null;
+  }
+
+  static Future<Post?> updateStatusPost(
+      String token, int postID, String status) async {
+    NetworkHelper networkHelper = NetworkHelper('posts/update_status_post', {});
+
+    var json = await networkHelper.postData(
+      jsonEncode(<String, dynamic>{"post_id": postID, "status": status}),
+      token,
+    );
+    if (json != null && json['error'] == false) {
+      Map t = json['post'];
+      Post post = Post(id: t['id'], status: t['status']);
       return post;
     }
     return null;
