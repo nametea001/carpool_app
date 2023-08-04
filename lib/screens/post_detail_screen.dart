@@ -2,15 +2,16 @@ import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/post_member.dart';
-import 'package:car_pool_project/models/province.dart';
-import 'package:car_pool_project/models/user.dart';
+// import 'package:car_pool_project/models/province.dart';
+// import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
+// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -73,8 +74,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     zoom: 15,
   );
 
-  final bool _isShowmarker1 = false;
-  final bool _isShowmarker2 = false;
+  // final bool _isShowmarker1 = false;
+  // final bool _isShowmarker2 = false;
   LatLng marker1 = LatLng(17.291925, 104.112884);
   LatLng marker2 = LatLng(17.291925, 104.112884);
 
@@ -1077,6 +1078,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     LatLng destination,
     GoogleMapController mapController,
   ) async {
+    // ignore: unnecessary_null_comparison
     if (mapController == null) return;
 
     LatLngBounds bounds;

@@ -9,12 +9,10 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/car_screen.dart';
 import 'package:car_pool_project/screens/chat_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+// import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_webservice/directions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:intl/intl.dart';
@@ -61,7 +59,6 @@ class _PostScreenState extends State<PostScreen> {
   int? districtEndID = 0;
   bool _isSelectedProvinceEnd = false;
 
-  bool _isLoadingReview = false;
   List<Review> reviews = [];
   double avgReview = 0.0;
 

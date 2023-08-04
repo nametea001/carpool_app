@@ -46,7 +46,8 @@ dependencies:
   form_field_validator: ^1.1.0
   flutter_speed_dial: ^6.2.0
   geolocator: ^9.0.2
-  flutter_datetime_picker: ^1.5.1
+  # flutter_datetime_picker: ^1.5.1 # bug version flutter >= 3.10.0
+  flutter_datetime_picker_plus: ^2.0.1
   dropdown_search: ^5.0.3
   flutter_launcher_icons: ^0.12.0
   prefs: ^4.0.0

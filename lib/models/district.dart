@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 
 class District {

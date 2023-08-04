@@ -14,7 +14,6 @@ class CarScreen extends StatefulWidget {
 }
 
 class _CarScreenState extends State<CarScreen> {
-  @override
   final formKey = GlobalKey<FormState>();
 
   bool _isLoading = true;
@@ -27,6 +26,7 @@ class _CarScreenState extends State<CarScreen> {
   TextEditingController vehicleRegistrationTextController =
       TextEditingController();
 
+  @override
   void initState() {
     super.initState();
     updateUI();

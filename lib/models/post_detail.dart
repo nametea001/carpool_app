@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -85,7 +83,6 @@ class PostDetail {
         model: t['model'],
         vehicleRegistration: t['vehicle_registration'],
         color: t['color'],
-        
       );
 
       return postDetail;
