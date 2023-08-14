@@ -23,6 +23,7 @@ class PostScreen extends StatefulWidget {
   final Post? posts;
 
   const PostScreen({
+    super.key,
     this.user,
     this.posts,
   });
@@ -32,7 +33,7 @@ class PostScreen extends StatefulWidget {
 
 class _PostScreenState extends State<PostScreen> {
   User user = User();
-  GlobalData globalData = new GlobalData();
+  GlobalData globalData = GlobalData();
 
   bool _isLoading = true;
   List<Post> posts = [];
@@ -427,13 +428,13 @@ class _PostScreenState extends State<PostScreen> {
                                             .add(selectingDistrict);
                                         _isSelectedProvinceStart = true;
                                       });
-                                      districts.forEach((a) {
+                                      for (var a in districts) {
                                         if (a!.provinceID == p.id) {
                                           setState(() {
                                             stateDistrictsStart.add(a);
                                           });
                                         }
-                                      });
+                                      }
                                     },
                                   ),
                                 )
@@ -506,13 +507,13 @@ class _PostScreenState extends State<PostScreen> {
                                           stateDistrictsEnd
                                               .add(selectingDistrict);
                                         });
-                                        districts.forEach((a) {
+                                        for (var a in districts) {
                                           if (a!.provinceID == p.id) {
                                             setState(() {
                                               stateDistrictsEnd.add(a);
                                             });
                                           }
-                                        });
+                                        }
                                       } else {
                                         _isSelectedProvinceEnd = true;
                                       }
@@ -596,7 +597,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   Widget listView() {
-    if (posts.length > 0) {
+    if (posts.isNotEmpty) {
       return Expanded(
           child: RefreshIndicator(
         onRefresh: () async {
@@ -612,9 +613,9 @@ class _PostScreenState extends State<PostScreen> {
         ),
       ));
     } else {
-      return Row(
+      return const Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Text(
             "No data",
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
@@ -742,12 +743,19 @@ class _PostScreenState extends State<PostScreen> {
                 ListTile(
                   leading: const Icon(Icons.logout),
                   title: const Text("Logout"),
-                  onTap: () {
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    prefs.clear();
                     setState(() {
                       _isLogout = true;
                     });
                     Navigator.pop(context);
                     Navigator.pop(context);
+                    // Navigator.pushReplacement(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //       builder: (context) => const LoginScreen(),
+                    //     ));
                   },
                 ),
               ],
@@ -764,7 +772,7 @@ class _PostScreenState extends State<PostScreen> {
         await Province.getProvinces(prefs.getString('jwt') ?? "");
     provinces = tempDataProvinces ?? [];
     stateProvincesEnd.add(Province(id: 0, nameTH: "ทุกจังหวัด"));
-    stateProvincesEnd = new List.from(stateProvincesEnd)..addAll(provinces);
+    stateProvincesEnd = List.from(stateProvincesEnd)..addAll(provinces);
   }
 
   void getDistrict() async {
@@ -886,7 +894,7 @@ class _PostScreenState extends State<PostScreen> {
                   color: Colors.orange,
                 ),
                 Text(
-                  " " + dateTimeformat(DateTime.now()),
+                  " ${dateTimeformat(DateTime.now())}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -951,8 +959,8 @@ class _PostScreenState extends State<PostScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                if (reviews.length > 0) {
-                  return Container(
+                if (reviews.isNotEmpty) {
+                  return SizedBox(
                     // color: Colors.white, // Dialog background
                     width: MediaQuery.of(context).size.width, // Dialog width
                     height: MediaQuery.of(context).size.height -
@@ -1013,8 +1021,8 @@ class _PostScreenState extends State<PostScreen> {
                                             foregroundColor: Colors.white,
                                             backgroundColor: Colors.blue),
                                         onPressed: () {},
-                                        child: Row(
-                                          children: const [
+                                        child: const Row(
+                                          children: [
                                             Icon(Icons.message),
                                             SizedBox(
                                               width: 10,
@@ -1075,11 +1083,9 @@ class _PostScreenState extends State<PostScreen> {
                     ),
                   );
                 } else {
-                  return Container(
-                    child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [const Text("No review")]),
-                  );
+                  return const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [Text("No review")]);
                 }
               }),
               actions: [

@@ -11,8 +11,6 @@ import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
@@ -61,7 +59,7 @@ class PostDetailScreen extends StatefulWidget {
 }
 
 class _PostDetailScreenState extends State<PostDetailScreen> {
-  GlobalData globalData = new GlobalData();
+  GlobalData globalData = GlobalData();
   bool _isAdd = false;
   bool _isLoadingAdd = false;
   bool _myLocationEnable = false;
@@ -81,8 +79,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   // final bool _isShowmarker1 = false;
   // final bool _isShowmarker2 = false;
-  LatLng marker1 = LatLng(17.291925, 104.112884);
-  LatLng marker2 = LatLng(17.291925, 104.112884);
+  LatLng marker1 = const LatLng(17.291925, 104.112884);
+  LatLng marker2 = const LatLng(17.291925, 104.112884);
 
   Future<Position?> _getLocation() async {
     bool serviceEnabled = false;
@@ -127,16 +125,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final FocusNode _focusNodeVRegistration = FocusNode();
   final FocusNode _focusNodeColor = FocusNode();
   // datetime control
-  TextEditingController _dateTimeController = TextEditingController();
-  TextEditingController _dateTimeBackController = TextEditingController();
-  TextEditingController _seatController = TextEditingController();
-  TextEditingController _priceController = TextEditingController();
-  TextEditingController _brandController = TextEditingController();
-  TextEditingController _modelController = TextEditingController();
-  TextEditingController _vehicleRegistrationController =
+  final TextEditingController _dateTimeController = TextEditingController();
+  final TextEditingController _dateTimeBackController = TextEditingController();
+  final TextEditingController _seatController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _brandController = TextEditingController();
+  final TextEditingController _modelController = TextEditingController();
+  final TextEditingController _vehicleRegistrationController =
       TextEditingController();
-  TextEditingController _colorController = TextEditingController();
-  TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _colorController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
 
   int postCreatedUserID = 0;
 
@@ -171,12 +169,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     userID = widget.userID ?? 0;
     _isAdd = widget.isAdd ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
-    dateTimeStart = widget.dateTimeStart ?? null;
-    dateTimeEnd = widget.dateTimeEnd ?? null;
+    dateTimeStart = widget.dateTimeStart;
+    dateTimeEnd = widget.dateTimeEnd;
     location1 = widget.startName ?? location1;
     location2 = widget.endName ?? location2;
     postID = widget.postID ?? 0;
-    postStatus = widget.postStatus ?? null;
+    postStatus = widget.postStatus;
     postCreatedUserID = widget.postCreatedUserID ?? 0;
     getCar();
     updateUI();
@@ -235,7 +233,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
+                  SizedBox(
                     // padding: EdgeInsets.only(left: 20, right: 20),
                     height: (MediaQuery.of(context).size.height / 2) - 30,
                     child: Stack(children: [
@@ -899,52 +897,45 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             visible: !_isAdd,
                             child: GestureDetector(
                               onTap: () {},
-                              child: Container(
-                                // decoration: BoxDecoration(color: Colors.red),
-                                // width: MediaQuery.of(context).size.width,
-
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  // crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 40,
-                                      child: postUser.img != null
-                                          ? ClipOval(
-                                              child: Image.memory(
-                                                base64Decode(postUser.img!),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            )
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 15),
-                                    Column(
-                                      children: [
-                                        Text(
-                                          "${postUser.firstName} ${postUser.lastName}",
-                                          style: const TextStyle(
-                                              fontSize: 30,
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text(
-                                          "${postUser.email}",
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black),
-                                        ),
-                                        Text(
-                                          "${postUser.sex}",
-                                          style: const TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.black),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                // crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  CircleAvatar(
+                                    radius: 40,
+                                    child: postUser.img != null
+                                        ? ClipOval(
+                                            child: Image.memory(
+                                              base64Decode(postUser.img!),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          )
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 15),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        "${postUser.firstName} ${postUser.lastName}",
+                                        style: const TextStyle(
+                                            fontSize: 30,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        "${postUser.email}",
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                      ),
+                                      Text(
+                                        "${postUser.sex}",
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -1255,9 +1246,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Text("ไม่รถที่บันทึกไว้ "),
                         ],
                       ),
@@ -1276,7 +1267,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   MaterialPageRoute(
                                       builder: (context) => const CarScreen()));
                             },
-                            icon: Icon(Icons.add),
+                            icon: const Icon(Icons.add),
                             color: Colors.green,
                           )
                         ],
@@ -1308,9 +1299,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("กรุณาเลือกสถานที่ใน Map"),
                   ],
                 );
@@ -1337,9 +1328,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("คุณต้องการเพิ่มโพสต์นี้หรือไม่"),
                   ],
                 );
@@ -1393,9 +1384,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
                   ],
                 );
@@ -1422,9 +1413,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("ดำเดินการสำเร็จ"),
                   ],
                 );
@@ -1782,7 +1773,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         marker2 = tempData.endLatLng!;
 
         int countMember = 0;
-        bool _isMember = false;
+        bool isMember = false;
 
         if (postCreatedUserID != userID) {
           List<PostMember>? tempDataPostmember =
@@ -1797,11 +1788,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             for (var i in tempDataPostmember) {
               countMember++;
               if (i.userID == userID) {
-                _isMember = true;
+                isMember = true;
                 break;
               }
             }
-            if (_isMember == false && countMember < tempData.seat!) {
+            if (isMember == false && countMember < tempData.seat!) {
               setState(() {
                 _isJoin = true;
               });
@@ -1812,7 +1803,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             }
           }
         }
-        _seatController.text = "${countMember}/${tempData.seat}";
+        _seatController.text = "$countMember/${tempData.seat}";
       }
       setState(() {
         _isLoading = false;
@@ -1843,7 +1834,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Future routeDraw(LatLng l1, LatLng l2) async {
     route.routes.clear();
     var points = [l1, l2];
-    var color = const Color.fromRGBO(53, 237, 59, 1);
+    const color = Color.fromARGB(255, 0, 225, 255);
     // var color = Colors.green;
     try {
       await route.drawRoute(

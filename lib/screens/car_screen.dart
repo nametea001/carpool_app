@@ -32,6 +32,7 @@ class _CarScreenState extends State<CarScreen> {
     updateUI();
   }
 
+  @override
   void dispose() {
     super.dispose();
     modelTextController.dispose();
@@ -68,7 +69,7 @@ class _CarScreenState extends State<CarScreen> {
 
   Widget listViewCars() {
     // print(cars!.length);
-    if (cars!.length > 0) {
+    if (cars!.isNotEmpty) {
       var c = GetColor();
       int i = 0;
       List<ListTile> list = [];
@@ -137,9 +138,9 @@ class _CarScreenState extends State<CarScreen> {
         ),
       ));
     } else {
-      return Row(
+      return const Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Text(
             "No data",
             style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
@@ -149,6 +150,7 @@ class _CarScreenState extends State<CarScreen> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -614,9 +616,9 @@ class _CarScreenState extends State<CarScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
                   ],
                 );

@@ -46,6 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String sex = "Male";
 
+  User? userJWT = null;
+
   @override
   void initState() {
     super.initState();
@@ -66,8 +68,29 @@ class _LoginScreenState extends State<LoginScreen> {
     _focusNodeSingUpLastName.dispose();
   }
 
+  void checkLoginJWT() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? jwt = prefs.getString('jwt');
+    if (jwt != null) {
+      User? u = await User.checkLoginJWT(jwt);
+      setState(() {
+        userJWT = u;
+      });
+    } else {
+      setState(() {
+        userJWT = null;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    checkLoginJWT();
+    if (userJWT != null) {
+      return PostScreen(
+        user: userJWT,
+      );
+    }
     return GestureDetector(
       onTap: () {
         _focusNodeUsername.unfocus();
@@ -81,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ride Sharing v1.0.0'),
+          title: const Text('Ride Sharing v1.1.0'),
           backgroundColor: Colors.pink,
           actions: [
             // config Ip
@@ -91,116 +114,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   if (globals.serverIP == '') {
                     globals.serverIP = await ConfigSystem.getServer();
                   }
-                  await showDialog(
-                      context: context,
-                      builder: (BuildContext context) => AlertDialog(
-                            title: const Text('Config Server IP'),
-                            content: Row(
-                              children: <Widget>[
-                                const Icon(
-                                  Icons.important_devices,
-                                  color: Colors.pink,
-                                  size: 50.0,
-                                ),
-                                const SizedBox(
-                                  width: 10.0,
-                                ),
-                                Expanded(
-                                  child: TextFormField(
-                                    initialValue: globals.serverIP,
-                                    textAlign: TextAlign.center,
-                                    onChanged: (value) {
-                                      //Do something with the user input.
-                                      ip = value;
-                                    },
-                                    decoration: kTextFieldDecoration.copyWith(
-                                        hintText: "Enter Server IP"),
-                                  ),
-                                )
-                              ],
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: Colors.green,
-                                ),
-                                onPressed: () {
-                                  globals.serverIP = ip;
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Save'),
-                              ),
-                              TextButton(
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.white,
-                                    backgroundColor: Colors.blueGrey,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('Close')),
-                            ],
-                          ));
+                  // ignore: use_build_context_synchronously
+                  showSettingIP();
                 }),
             // about dev
             IconButton(
               icon: const Icon(Icons.info),
-              onPressed: () async {
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text('About developer'),
-                    content: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.account_box,
-                              color: Colors.pink,
-                              size: 50.0,
-                            ),
-                            SizedBox(
-                              width: 10.0,
-                            ),
-                            Expanded(
-                              child: Text("Nontakorn Konakin"),
-                            )
-                          ],
-                        ),
-                        Row(
-                          children: <Widget>[
-                            const Icon(
-                              Icons.email,
-                              color: Colors.pink,
-                              size: 50.0,
-                            ),
-                            const SizedBox(
-                              width: 10.0,
-                            ),
-                            const Expanded(
-                              child: Text("nontakorn.ko@ku.th"),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            primary: Colors.white,
-                            backgroundColor: Colors.blueGrey,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Close')),
-                    ],
-                  ),
-                );
+              onPressed: () {
+                showAboutDev();
               },
             ),
           ],
@@ -327,86 +248,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                                     backgroundColor:
                                                         Colors.pink,
                                                   ),
-                                                  onPressed: () async {
-                                                    setState(() {
-                                                      _isSignIn = true;
-                                                    });
-                                                    // check login
-                                                    User? u =
-                                                        await User.checkLogin(
-                                                            username, password);
-
-                                                    setState(() {
-                                                      _isSignIn = false;
-                                                    });
-                                                    // if success
-                                                    if (u != null) {
-                                                      final prefs =
-                                                          await SharedPreferences
-                                                              .getInstance();
-                                                      await prefs.setString(
-                                                          'jwt',
-                                                          u.jwt.toString());
-                                                      await prefs.setInt(
-                                                          "user_id", u.id ?? 0);
-                                                      await prefs.setInt(
-                                                          "start_province_id",
-                                                          prefs.getInt(
-                                                                  'start_province_id') ??
-                                                              1);
-
-                                                      _passwordController
-                                                          .clear();
-                                                      // ignore: use_build_context_synchronously
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                            builder:
-                                                                (context) =>
-                                                                    PostScreen(
-                                                                      user: u,
-                                                                    )),
-                                                      );
-                                                      // Navigator.pushReplacement(
-                                                      //     context,
-                                                      //     MaterialPageRoute(
-                                                      //       builder: (context) => PostScreen(
-                                                      //         user: u,
-                                                      //       ),
-                                                      //     ));
-                                                    } else {
-                                                      print("Login Fail");
-                                                      // ignore: use_build_context_synchronously
-                                                      await showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                                context) =>
-                                                            AlertDialog(
-                                                          title: const Text(
-                                                              'Error'),
-                                                          content: const Text(
-                                                              'Incorrect username or password'),
-                                                          actions: [
-                                                            TextButton(
-                                                                style: TextButton
-                                                                    .styleFrom(
-                                                                  foregroundColor:
-                                                                      Colors
-                                                                          .white,
-                                                                  backgroundColor:
-                                                                      Colors
-                                                                          .blueGrey,
-                                                                ),
-                                                                onPressed: () {
-                                                                  Navigator.pop(
-                                                                      context);
-                                                                },
-                                                                child: const Text(
-                                                                    'Close')),
-                                                          ],
-                                                        ),
-                                                      );
-                                                    }
+                                                  onPressed: () {
+                                                    showLogin();
                                                   },
                                                   child: const Padding(
                                                     padding:
@@ -787,17 +630,187 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void showAlerRegisterSuccess() async {
-    await showDialog(
+  void showSettingIP() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Config Server IP'),
+              content: Row(
+                children: <Widget>[
+                  const Icon(
+                    Icons.important_devices,
+                    color: Colors.pink,
+                    size: 50.0,
+                  ),
+                  const SizedBox(
+                    width: 10.0,
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      initialValue: globals.serverIP,
+                      textAlign: TextAlign.center,
+                      onChanged: (value) {
+                        //Do something with the user input.
+                        ip = value;
+                      },
+                      decoration: kTextFieldDecoration.copyWith(
+                          hintText: "Enter Server IP"),
+                    ),
+                  )
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: () {
+                    globals.serverIP = ip;
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Save'),
+                ),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAboutDev() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('About developer'),
+        content: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.account_box,
+                  color: Colors.pink,
+                  size: 50.0,
+                ),
+                SizedBox(
+                  width: 10.0,
+                ),
+                Expanded(
+                  child: Text("Nontakorn Konakin"),
+                )
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                Icon(
+                  Icons.email,
+                  color: Colors.pink,
+                  size: 50.0,
+                ),
+                SizedBox(
+                  width: 10.0,
+                ),
+                Expanded(
+                  child: Text("nontakorn.ko@ku.th"),
+                )
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              style: TextButton.styleFrom(
+                primary: Colors.white,
+                backgroundColor: Colors.blueGrey,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Close')),
+        ],
+      ),
+    );
+  }
+
+  void showLogin() async {
+    setState(() {
+      _isSignIn = true;
+    });
+    // check login
+    User? u = await User.checkLogin(username, password);
+
+    setState(() {
+      _isSignIn = false;
+    });
+    // if success
+    if (u != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt', u.jwt.toString());
+      await prefs.setInt("user_id", u.id ?? 0);
+      await prefs.setInt(
+          "start_province_id", prefs.getInt('start_province_id') ?? 1);
+
+      _passwordController.clear();
+      // ignore: use_build_context_synchronously
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PostScreen(
+                  user: u,
+                )),
+      );
+      // ignore: use_build_context_synchronously
+      // Navigator.pushReplacement(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => PostScreen(
+      //         user: u,
+      //       ),
+      //     ));
+    } else {
+      print("Login Fail");
+      // ignore: use_build_context_synchronously
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Incorrect username or password'),
+          actions: [
+            TextButton(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blueGrey,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Close')),
+          ],
+        ),
+      );
+    }
+  }
+
+  void showAlerRegisterSuccess() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Success'),
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("ดำเดินการสำเร็จ"),
                   ],
                 );
@@ -816,17 +829,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ));
   }
 
-  void showAlerRegisterFail() async {
-    await showDialog(
+  void showAlerRegisterFail() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Fail'),
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                return Column(
+                return const Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     Text("เกิดข้อพิพลาด"),
                   ],
                 );

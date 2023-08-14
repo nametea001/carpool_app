@@ -62,7 +62,6 @@ class Car {
         vehicleRegistration: t['vehicle_registration'],
         color: t['color'],
       );
-      ;
       return car;
     }
     return null;
@@ -90,7 +89,6 @@ class Car {
         vehicleRegistration: t['vehicle_registration'],
         color: t['color'],
       );
-      ;
       return car;
     }
     return null;

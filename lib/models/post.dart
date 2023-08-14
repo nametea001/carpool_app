@@ -4,6 +4,7 @@ import 'package:car_pool_project/models/post_detail.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+// ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
 
 class Post {

@@ -3,6 +3,7 @@ import 'dart:io';
 // import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart' show rootBundle;
+// ignore: depend_on_referenced_packages
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,7 @@ class ChatDetailScreen extends StatefulWidget {
 }
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  List<types.Message> _messages = [];
+  final List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
 
   @override
@@ -35,7 +36,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text("Chat"),
+          title: const Text("Chat"),
           backgroundColor: Colors.pink,
         ),
         body: Chat(

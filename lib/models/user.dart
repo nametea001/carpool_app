@@ -26,6 +26,30 @@ class User {
     this.sex,
   });
 
+  static Future<User?> checkLoginJWT(String token) async {
+    NetworkHelper networkHelper = NetworkHelper('user/checkLoginJWT', {
+      'device': "mobile",
+    });
+    var json = await networkHelper.postData("", token);
+
+    if (json != null && json['error'] == false && json['token'] != null) {
+      Map u = json['user'];
+      User user = User(
+        id: u["id"],
+        username: u["username"],
+        firstName: u["first_name"],
+        lastName: u["last_name"],
+        email: u["email"],
+        userRoleID: u["user_role_id"],
+        userRoleName: u["user_roles"]["user_role_name"],
+        img: u['img'],
+        jwt: json['token'] ?? "",
+      );
+      return user;
+    }
+    return null;
+  }
+
   static Future<User?> checkLogin(String username, String password) async {
     NetworkHelper networkHelper = NetworkHelper('login', {
       'device': "mobile",

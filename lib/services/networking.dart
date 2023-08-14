@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:car_pool_project/global.dart' as globals;
 
 class NetworkHelper {
-  String prefixUrl = '${globals.serverIP}';
+  String prefixUrl = globals.serverIP;
   String apiPath = "/api/";
   final String url;
   final Map<String, dynamic> params;
@@ -24,6 +24,7 @@ class NetworkHelper {
         return jsonDecode(data);
       }
     } catch (e) {
+      // ignore: avoid_print
       print(e);
     }
   }

@@ -66,27 +66,27 @@ class PostDetail {
 
   static Future<PostDetail?> getPostDetailByPostID(
       String token, int postID) async {
-    NetworkHelper networkHelper = NetworkHelper('post_details/${postID}', {});
+    NetworkHelper networkHelper = NetworkHelper('post_details/$postID', {});
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       Map t = json['post_detail'];
       PostDetail postDetail = PostDetail(
-        id: t['id'],
-        postID: t['post_id'],
-        startLatLng: t['lat_lng_start'] != null
-            ? LatLng(t['lat_lng_start'][0], t['lat_lng_start'][1])
-            : null,
-        endLatLng: t['lat_lng_end'] != null
-            ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
-            : null,
-        description: t['description'],
-        seat: t['seat'],
-        price: t['price'] != null ? double.parse(t['price']) : null,
-        brand: t['brand'],
-        model: t['model'],
-        vehicleRegistration: t['vehicle_registration'],
-        color: t['color'],
-      );
+          id: t['id'],
+          postID: t['post_id'],
+          startLatLng: t['lat_lng_start'] != null
+              ? LatLng(t['lat_lng_start'][0], t['lat_lng_start'][1])
+              : null,
+          endLatLng: t['lat_lng_end'] != null
+              ? LatLng(t['lat_lng_end'][0], t['lat_lng_end'][1])
+              : null,
+          description: t['description'],
+          seat: t['seat'],
+          price: t['price'] != null ? double.parse(t['price']) : null,
+          brand: t['brand'],
+          model: t['model'],
+          vehicleRegistration: t['vehicle_registration'],
+          color: t['color'],
+          posts: Post(status: t['posts']['status']));
 
       return postDetail;
     }
