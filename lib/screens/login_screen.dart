@@ -33,16 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isSignIn = false;
   bool _isSingUp = false;
 
-  FocusNode _focusNodeUsername = FocusNode();
-  FocusNode _focusNodePassword = FocusNode();
-  FocusNode _focusNodeSingUpUsername = FocusNode();
-  FocusNode _focusNodeSingUpPassword = FocusNode();
-  FocusNode _focusNodeSingUpConfirmPassword = FocusNode();
-  FocusNode _focusNodeSingUpEmail = FocusNode();
-  FocusNode _focusNodeSingUpFirstName = FocusNode();
-  FocusNode _focusNodeSingUpLastName = FocusNode();
+  final FocusNode _focusNodeUsername = FocusNode();
+  final FocusNode _focusNodePassword = FocusNode();
+  final FocusNode _focusNodeSingUpUsername = FocusNode();
+  final FocusNode _focusNodeSingUpPassword = FocusNode();
+  final FocusNode _focusNodeSingUpConfirmPassword = FocusNode();
+  final FocusNode _focusNodeSingUpEmail = FocusNode();
+  final FocusNode _focusNodeSingUpFirstName = FocusNode();
+  final FocusNode _focusNodeSingUpLastName = FocusNode();
 
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   String sex = "Male";
 
@@ -85,12 +85,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    checkLoginJWT();
-    if (userJWT != null) {
-      return PostScreen(
-        user: userJWT,
-      );
-    }
+    // checkLoginJWT();
+    // if (userJWT != null) {
+    //   return PostScreen(
+    //     user: userJWT,
+    //   );
+    // }
     return GestureDetector(
       onTap: () {
         _focusNodeUsername.unfocus();

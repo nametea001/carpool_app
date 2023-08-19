@@ -17,6 +17,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:intl/intl.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:car_pool_project/global.dart' as globals;
+// ignore: library_prefixes
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart';
 
 class PostScreen extends StatefulWidget {
   final User? user;
@@ -63,6 +67,9 @@ class _PostScreenState extends State<PostScreen> {
   List<Review> reviews = [];
   double avgReview = 0.0;
 
+  String chatNoti = "";
+  // bool _isChat = false;
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +80,25 @@ class _PostScreenState extends State<PostScreen> {
     getProvince();
     getDistrict();
     updateUI(); //loading posts
+    initSocketIO();
+  }
+
+// socket IO
+  void initSocketIO() async {
+    String pathSocket = "http://${globals.serverIP}/";
+    IO.Socket socket = IO.io(
+      pathSocket,
+      OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath("/api/socket/socket_io")
+          .build(),
+    );
+    socket.onConnect((_) {
+      print('Connected Socket IO');
+    });
+    socket.onConnectError((data) => print("Connect Error $data"));
+    socket.onDisconnect((data) => print("Disconnect"));
+    // socket.on('message', (data) => print(data));
   }
 
   // ListTile posts
@@ -229,6 +255,11 @@ class _PostScreenState extends State<PostScreen> {
       //     ],
       //   ),
       // ),
+      IconButton(
+          onPressed: () async {
+            initSocketIO();
+          },
+          icon: const Icon(Icons.abc)),
       IconButton(
           onPressed: () async {
             // stateDistrictsStart.clear();
@@ -579,14 +610,22 @@ class _PostScreenState extends State<PostScreen> {
           },
           icon: const Icon(Icons.search)),
 
-      IconButton(
-          onPressed: () async {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const ChatScreen()),
-            );
-          },
-          icon: const Icon(Icons.message)),
+      Stack(
+        children: [
+          const Text(
+            "",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          IconButton(
+              onPressed: () async {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                );
+              },
+              icon: const Icon(Icons.message)),
+        ],
+      ),
 
       // IconButton(
       //     onPressed: () async {
