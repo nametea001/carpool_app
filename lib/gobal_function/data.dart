@@ -44,6 +44,14 @@ class GlobalData {
   test() {
     return [
       {
+        "author": {"firstName": "Tae", "id": "5555", "lastName": "Tae"},
+        "createdAt": 1655648404000,
+        "id": "casdasdasdasd555",
+        "status": "seen",
+        "text": "WOW",
+        "type": "text"
+      },
+      {
         "author": {
           "firstName": "John",
           "id": "4c2307ba-3d40-442f-b1ff-b271f63904ca",

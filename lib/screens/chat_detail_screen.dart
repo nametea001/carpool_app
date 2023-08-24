@@ -14,17 +14,27 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../models/user.dart';
+
 import '../gobal_function/data.dart';
 
 class ChatDetailScreen extends StatefulWidget {
-  const ChatDetailScreen({super.key});
+  final User? user;
+  final int? sendToID;
+  final String? chatType;
+  ChatDetailScreen({
+    super.key,
+    this.user,
+    this.sendToID,
+    this.chatType,
+  });
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  final List<types.Message> _messages = [];
+  late List<types.Message> _messages = [];
   final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
 
   @override

@@ -176,7 +176,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     postID = widget.postID ?? 0;
     postStatus = widget.postStatus;
     postCreatedUserID = widget.postCreatedUserID ?? 0;
-    getCar();
+    if (_isAdd) {
+      getCar();
+    }
     updateUI();
   }
 
@@ -1622,8 +1624,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const ChatDetailScreen()),
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
               );
             },
           ),
@@ -1645,8 +1646,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const ChatDetailScreen()),
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
               );
             },
           ),
@@ -1677,8 +1677,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                    builder: (context) => const ChatDetailScreen()),
+                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
               );
             },
           ),

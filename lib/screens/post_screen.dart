@@ -9,6 +9,7 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/car_screen.dart';
 import 'package:car_pool_project/screens/chat_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
+import 'package:car_pool_project/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
@@ -21,6 +22,8 @@ import 'package:car_pool_project/global.dart' as globals;
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
+
+import 'chat_detail_screen.dart';
 
 class PostScreen extends StatefulWidget {
   final User? user;
@@ -122,7 +125,7 @@ class _PostScreenState extends State<PostScreen> {
                     avgReview =
                         tempData[1] != null ? tempData[1].toDouble() : 0.0;
                   });
-                  showDetailUserPost(post);
+                  showDetailReview(post);
                 },
                 child: CircleAvatar(
                   maxRadius: 30,
@@ -255,11 +258,6 @@ class _PostScreenState extends State<PostScreen> {
       //     ],
       //   ),
       // ),
-      IconButton(
-          onPressed: () async {
-            initSocketIO();
-          },
-          icon: const Icon(Icons.abc)),
       IconButton(
           onPressed: () async {
             // stateDistrictsStart.clear();
@@ -752,7 +750,14 @@ class _PostScreenState extends State<PostScreen> {
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: const Text("Profile"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ProfileScreen()),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.directions_car),
@@ -986,7 +991,7 @@ class _PostScreenState extends State<PostScreen> {
     return list;
   }
 
-  void showDetailUserPost(Post p) async {
+  void showDetailReview(Post p) async {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -998,134 +1003,147 @@ class _PostScreenState extends State<PostScreen> {
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                if (reviews.isNotEmpty) {
-                  return SizedBox(
-                    // color: Colors.white, // Dialog background
-                    width: MediaQuery.of(context).size.width, // Dialog width
-                    height: MediaQuery.of(context).size.height -
-                        200, // Dialog height
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          // color: Colors.pink,
-                          // padding: EdgeInsets.only(
-                          //   top: 24 + MediaQuery.of(context).padding.top,
-                          //   bottom: 24,
-                          // ),
-                          child: Column(
-                            children: [
-                              CircleAvatar(
-                                radius: 52,
-                                child: user.img != null
-                                    ? ClipOval(
-                                        child: Image.memory(
-                                          base64Decode(user.img!),
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              const SizedBox(
-                                height: 12,
-                              ),
-                              Text(
-                                "${p.user?.firstName} ${p.user?.lastName}",
-                                style: const TextStyle(
-                                    fontSize: 28,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w400),
-                              ),
-                              Text(
-                                "${p.user?.email}",
-                                style: const TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ),
-                              Text(
-                                "${p.user?.sex}",
-                                style: const TextStyle(
-                                    fontSize: 15, color: Colors.black),
-                              ),
-                              // const SizedBox(
-                              //   height: 10,
-                              // ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextButton(
-                                        style: TextButton.styleFrom(
-                                            foregroundColor: Colors.white,
-                                            backgroundColor: Colors.blue),
-                                        onPressed: () {},
-                                        child: const Row(
-                                          children: [
-                                            Icon(Icons.message),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            Text(
-                                              "Chat",
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                              ),
-                                            )
-                                          ],
-                                        )),
-                                  ],
-                                ),
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                // crossAxisAlignment: CrossAxisAlignment.baseline,
-                                children: [
-                                  RatingBarIndicator(
-                                    rating: avgReview,
-                                    itemCount: 5,
-                                    itemSize: 25,
-                                    physics: const BouncingScrollPhysics(),
-                                    itemBuilder: (context, _) => const Icon(
-                                      Icons.star,
-                                      color: Colors.amber,
+                return SizedBox(
+                  // color: Colors.white, // Dialog background
+                  width: MediaQuery.of(context).size.width, // Dialog width
+                  height:
+                      MediaQuery.of(context).size.height - 200, // Dialog height
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 52,
+                            child: user.img != null
+                                ? ClipOval(
+                                    child: Image.memory(
+                                      base64Decode(user.img!),
+                                      fit: BoxFit.cover,
                                     ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    "$avgReview",
-                                    style: const TextStyle(
-                                        fontSize: 18.0,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Text(
+                            "${p.user?.firstName} ${p.user?.lastName}",
+                            style: const TextStyle(
+                                fontSize: 28,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Text(
+                            "${p.user?.email}",
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.black),
+                          ),
+                          Text(
+                            "${p.user?.sex}",
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.black),
+                          ),
+                          // const SizedBox(
+                          //   height: 10,
+                          // ),
+                          Visibility(
+                            // false ,hide chat if p.userID == userID
+                            visible: !(p.createdUserID == user.id),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextButton(
+                                      style: TextButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: Colors.blue),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ChatDetailScreen(
+                                                      user: user,
+                                                      sendToID: p.createdUserID,
+                                                      chatType: "PRIVATE",
+                                                    )));
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.message),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Text(
+                                            "Chat",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          )
+                                        ],
+                                      )),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
+                          (reviews.isEmpty
+                              ? const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                      SizedBox(height: 30),
+                                      Text(
+                                        "No review",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20),
+                                      )
+                                    ])
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  // crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  children: [
+                                    RatingBarIndicator(
+                                      rating: avgReview,
+                                      itemCount: 5,
+                                      itemSize: 25,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemBuilder: (context, _) => const Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      "$avgReview",
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )),
+                        ],
+                      ),
+                      // SizedBox(
+                      //   height: 30,
+                      // ),
+                      // Divider(
+                      //   color: Colors.black,
+                      // ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          children: getListTileReviews(),
                         ),
-                        // SizedBox(
-                        //   height: 30,
-                        // ),
-                        // Divider(
-                        //   color: Colors.black,
-                        // ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        Expanded(
-                          child: ListView(
-                            physics: const BouncingScrollPhysics(),
-                            children: getListTileReviews(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text("No review")]);
-                }
+                      ),
+                    ],
+                  ),
+                );
               }),
               actions: [
                 TextButton(

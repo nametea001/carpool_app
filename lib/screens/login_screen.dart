@@ -705,7 +705,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 10.0,
                 ),
                 Expanded(
-                  child: Text("Nontakorn Konakin"),
+                  child: Text("Nontakorn Konkain"),
                 )
               ],
             ),
