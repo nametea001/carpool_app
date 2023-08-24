@@ -36,7 +36,7 @@ class Review {
           id: t['id'],
           score: t['score'],
           description: t['description'],
-          img: t['img'],
+          img: t['users_reviews_created']['img_path'],
           endName: t['posts']['end_district']['name_th'],
           user: User(
             firstName: t['users_reviews_created']['first_name'],

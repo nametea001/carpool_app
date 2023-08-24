@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
@@ -27,6 +25,7 @@ import 'package:google_maps_routes/google_maps_routes.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
 import '../models/user.dart';
+import 'package:car_pool_project/global.dart' as globals;
 
 class PostDetailScreen extends StatefulWidget {
   final bool? isAdd;
@@ -906,14 +905,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 children: [
                                   CircleAvatar(
                                     radius: 40,
-                                    child: postUser.img != null
-                                        ? ClipOval(
-                                            child: Image.memory(
-                                              base64Decode(postUser.img!),
-                                              fit: BoxFit.cover,
-                                            ),
-                                          )
-                                        : null,
+                                    child: ClipOval(
+                                      child: Image.network(
+                                        "http://${globals.serverIP}/profiles/${postUser.img!}",
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
                                   ),
                                   const SizedBox(width: 15),
                                   Column(

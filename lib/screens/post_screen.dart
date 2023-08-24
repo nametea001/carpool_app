@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:car_pool_project/gobal_function/color.dart';
 import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/district.dart';
@@ -130,7 +129,8 @@ class _PostScreenState extends State<PostScreen> {
                 child: CircleAvatar(
                   maxRadius: 30,
                   child: ClipOval(
-                    child: Image.memory(base64Decode(post.img!),
+                    child: Image.network(
+                        "http://${globals.serverIP}/profiles/${post.img!}",
                         fit: BoxFit.cover),
                   ),
                 ),
@@ -719,14 +719,12 @@ class _PostScreenState extends State<PostScreen> {
               children: [
                 CircleAvatar(
                   radius: 52,
-                  child: user.img != null
-                      ? ClipOval(
-                          child: Image.memory(
-                            base64Decode(user.img!),
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : null,
+                  child: ClipOval(
+                    child: Image.network(
+                      "http://${globals.serverIP}/profiles/${user.img!}",
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 12,
@@ -886,17 +884,15 @@ class _PostScreenState extends State<PostScreen> {
         // tileColor: getColor.colorListTile(i),
         contentPadding:
             const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
-        leading: (review.img != null
-            ? CircleAvatar(
-                maxRadius: 30,
-                child: ClipOval(
-                  child: Image.memory(
-                    base64Decode(review.img!),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              )
-            : null),
+        leading: (CircleAvatar(
+          maxRadius: 30,
+          child: ClipOval(
+            child: Image.network(
+              "http://${globals.serverIP}/profiles/${review.img!}",
+              fit: BoxFit.cover,
+            ),
+          ),
+        )),
         // tileColor: getColor.colorListTile(i),
         title: Column(
           children: [
@@ -1017,8 +1013,8 @@ class _PostScreenState extends State<PostScreen> {
                             radius: 52,
                             child: user.img != null
                                 ? ClipOval(
-                                    child: Image.memory(
-                                      base64Decode(user.img!),
+                                    child: Image.network(
+                                      "http://${globals.serverIP}/profiles/${p.img!}",
                                       fit: BoxFit.cover,
                                     ),
                                   )

@@ -78,7 +78,7 @@ class Post {
             endDistrictID: t['end_district_id'],
             // endProvinceID: t['end_district']['provinces']['id'],
             postMemberSeat: t['_count']['post_members'],
-            img: t['img'],
+            img: t['users']['img_path'],
             status: t['status'],
             createdUserID: t['created_user_id'],
             dateTimeStart: t['date_time_start'] != null
