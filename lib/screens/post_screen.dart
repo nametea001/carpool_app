@@ -1,5 +1,6 @@
 import 'package:car_pool_project/gobal_function/color.dart';
 import 'package:car_pool_project/gobal_function/data.dart';
+import 'package:car_pool_project/models/chat_user_log.dart';
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/province.dart';
@@ -21,7 +22,7 @@ import 'package:car_pool_project/global.dart' as globals;
 // ignore: library_prefixes
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
-
+import 'package:badges/badges.dart' as badges;
 import '../models/chat.dart';
 import 'chat_detail_screen.dart';
 
@@ -82,6 +83,7 @@ class _PostScreenState extends State<PostScreen> {
     getProvince();
     getDistrict();
     updateUI(); //loading posts
+    updateChatNoti();
     initSocketIO();
   }
 
@@ -98,6 +100,7 @@ class _PostScreenState extends State<PostScreen> {
     socket.onConnect((_) {
       print('Connected Socket IO');
     });
+    socket.on('user${user.id}', (data) {});
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
     // socket.on('message', (data) => print(data));
@@ -258,374 +261,418 @@ class _PostScreenState extends State<PostScreen> {
       //     ],
       //   ),
       // ),
-      IconButton(
-          onPressed: () async {
-            // stateDistrictsStart.clear();
-            // stateDistrictsEnd.clear();
-            provinceStartID = 0;
-            provinceEndtID = 0;
-            districtStartID = 0;
-            districtEndID = 0;
-            setState(() {
-              dateTimeBackController.text = "";
-              dateTimeController.text = "";
-              _isSelectedProvinceStart = false;
-              _isSelectedProvinceEnd = false;
-            });
-            await showDialog(
-                context: context,
-                builder: (BuildContext context) => AlertDialog(
-                      title: const Text('Search'),
-                      content: StatefulBuilder(builder:
-                          (BuildContext context, StateSetter setState) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // select dateitme
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 30,
-                                  child: RadioListTile(
-                                      value: "go",
-                                      groupValue: _stateGoBack,
-                                      onChanged: ((value) {
-                                        setState(() {
-                                          _stateGoBack = value.toString();
-                                          _isBackSearch = false;
 
-                                          dateTimeBackController.text = "";
-                                        });
-                                      })),
-                                ),
-                                const Text("ไปอย่างเดียว"),
-                                SizedBox(
-                                  width: 30,
-                                  child: RadioListTile(
-                                      value: "back",
-                                      groupValue: _stateGoBack,
-                                      onChanged: ((value) {
-                                        setState(() {
-                                          _stateGoBack = value.toString();
-                                          _isBackSearch = true;
-                                        });
-                                      })),
-                                ),
-                                const Text("ไปและกลับ"),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width:
-                                      (MediaQuery.of(context).size.width / 2) +
-                                          50,
-                                  child: TextFormField(
-                                    showCursor: false,
-                                    readOnly: true,
-                                    focusNode:
-                                        FocusNode(canRequestFocus: false),
-                                    keyboardType: TextInputType.none,
-                                    controller: dateTimeController,
-                                    onTap: () {
-                                      FocusScope.of(context).unfocus();
-                                      DatePicker.showDateTimePicker(
-                                        context,
-                                        showTitleActions: true,
-                                        minTime: DateTime.now(),
-                                        currentTime: DateTime.now(),
-                                        locale: LocaleType.th,
-                                        onConfirm: (time) {
-                                          datetimeSelected = time;
-                                          dateTimeController.text =
-                                              dateTimeformat(time);
-                                        },
-                                      );
-                                    },
-                                    decoration: InputDecoration(
-                                        labelText: "เวลาเดินทาง",
-                                        filled: true,
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10.0),
-                                          // borderSide: BorderSide.none,
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.schedule,
-                                          color: Colors.pink,
-                                        )),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            IconButton(
+                onPressed: () async {
+                  // stateDistrictsStart.clear();
+                  // stateDistrictsEnd.clear();
+                  provinceStartID = 0;
+                  provinceEndtID = 0;
+                  districtStartID = 0;
+                  districtEndID = 0;
+                  setState(() {
+                    dateTimeBackController.text = "";
+                    dateTimeController.text = "";
+                    _isSelectedProvinceStart = false;
+                    _isSelectedProvinceEnd = false;
+                  });
+                  await showDialog(
+                      context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Search'),
+                            content: StatefulBuilder(builder:
+                                (BuildContext context, StateSetter setState) {
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  // select dateitme
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width: 30,
+                                        child: RadioListTile(
+                                            value: "go",
+                                            groupValue: _stateGoBack,
+                                            onChanged: ((value) {
+                                              setState(() {
+                                                _stateGoBack = value.toString();
+                                                _isBackSearch = false;
+
+                                                dateTimeBackController.text =
+                                                    "";
+                                              });
+                                            })),
+                                      ),
+                                      const Text("ไปอย่างเดียว"),
+                                      SizedBox(
+                                        width: 30,
+                                        child: RadioListTile(
+                                            value: "back",
+                                            groupValue: _stateGoBack,
+                                            onChanged: ((value) {
+                                              setState(() {
+                                                _stateGoBack = value.toString();
+                                                _isBackSearch = true;
+                                              });
+                                            })),
+                                      ),
+                                      const Text("ไปและกลับ"),
+                                    ],
                                   ),
-                                )
-                              ],
-                            ),
-                            const SizedBox(
-                              height: 10,
-                            ),
-                            Visibility(
-                                visible: _isBackSearch,
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      children: [
-                                        SizedBox(
-                                          width: (MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  2) +
-                                              50,
-                                          child: TextFormField(
-                                            showCursor: false,
-                                            readOnly: true,
-                                            focusNode: FocusNode(
-                                                canRequestFocus: false),
-                                            keyboardType: TextInputType.none,
-                                            controller: dateTimeBackController,
-                                            onTap: () {
-                                              FocusScope.of(context).unfocus();
-                                              DatePicker.showDateTimePicker(
-                                                context,
-                                                showTitleActions: true,
-                                                minTime: datetimeSelected ??
-                                                    DateTime.now(),
-                                                currentTime: datetimeSelected ??
-                                                    DateTime.now(),
-                                                locale: LocaleType.th,
-                                                onConfirm: (time) {
-                                                  datetimeBackSelected = time;
-                                                  dateTimeBackController.text =
-                                                      dateTimeformat(time);
-                                                },
-                                              );
-                                            },
-                                            decoration: InputDecoration(
-                                                labelText:
-                                                    "เวลาเดินทางกลับ ทุกเวลา",
-                                                filled: true,
-                                                border: OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          10.0),
-                                                  // borderSide: BorderSide.none,
+                                  Row(
+                                    children: [
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width /
+                                                    2) +
+                                                50,
+                                        child: TextFormField(
+                                          showCursor: false,
+                                          readOnly: true,
+                                          focusNode:
+                                              FocusNode(canRequestFocus: false),
+                                          keyboardType: TextInputType.none,
+                                          controller: dateTimeController,
+                                          onTap: () {
+                                            FocusScope.of(context).unfocus();
+                                            DatePicker.showDateTimePicker(
+                                              context,
+                                              showTitleActions: true,
+                                              minTime: DateTime.now(),
+                                              currentTime: DateTime.now(),
+                                              locale: LocaleType.th,
+                                              onConfirm: (time) {
+                                                datetimeSelected = time;
+                                                dateTimeController.text =
+                                                    dateTimeformat(time);
+                                              },
+                                            );
+                                          },
+                                          decoration: InputDecoration(
+                                              labelText: "เวลาเดินทาง",
+                                              filled: true,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                                // borderSide: BorderSide.none,
+                                              ),
+                                              prefixIcon: const Icon(
+                                                Icons.schedule,
+                                                color: Colors.pink,
+                                              )),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 10,
+                                  ),
+                                  Visibility(
+                                      visible: _isBackSearch,
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: (MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        2) +
+                                                    50,
+                                                child: TextFormField(
+                                                  showCursor: false,
+                                                  readOnly: true,
+                                                  focusNode: FocusNode(
+                                                      canRequestFocus: false),
+                                                  keyboardType:
+                                                      TextInputType.none,
+                                                  controller:
+                                                      dateTimeBackController,
+                                                  onTap: () {
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                    DatePicker
+                                                        .showDateTimePicker(
+                                                      context,
+                                                      showTitleActions: true,
+                                                      minTime:
+                                                          datetimeSelected ??
+                                                              DateTime.now(),
+                                                      currentTime:
+                                                          datetimeSelected ??
+                                                              DateTime.now(),
+                                                      locale: LocaleType.th,
+                                                      onConfirm: (time) {
+                                                        datetimeBackSelected =
+                                                            time;
+                                                        dateTimeBackController
+                                                                .text =
+                                                            dateTimeformat(
+                                                                time);
+                                                      },
+                                                    );
+                                                  },
+                                                  decoration: InputDecoration(
+                                                      labelText:
+                                                          "เวลาเดินทางกลับ ทุกเวลา",
+                                                      filled: true,
+                                                      border:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10.0),
+                                                        // borderSide: BorderSide.none,
+                                                      ),
+                                                      prefixIcon: const Icon(
+                                                        Icons.schedule,
+                                                        color: Colors.pink,
+                                                      )),
                                                 ),
-                                                prefixIcon: const Icon(
-                                                  Icons.schedule,
-                                                  color: Colors.pink,
-                                                )),
+                                              )
+                                            ],
+                                          ),
+                                          const SizedBox(
+                                            height: 10,
+                                          ),
+                                        ],
+                                      )),
+                                  // Select provin end
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownSearch<Province?>(
+                                          popupProps: const PopupProps.menu(
+                                            showSearchBox: true,
+                                            // showSelectedItems: true,
+                                            // disabledItemFn: (String s) {
+                                            //   return s.startsWith('I');
+                                            // },
+                                          ),
+                                          items: provinces,
+                                          itemAsString: (Province? p) =>
+                                              p!.nameTH.toString(),
+                                          dropdownDecoratorProps:
+                                              const DropDownDecoratorProps(
+                                            dropdownSearchDecoration:
+                                                InputDecoration(
+                                              labelText: "จังหวัดต้นทาง",
+                                              // hintText: "country in menu mode",
+                                            ),
+                                          ),
+                                          onChanged: (Province? p) {
+                                            stateDistrictsStart.clear();
+                                            provinceStartID = p!.id;
+                                            districtStartID = 0;
+                                            District selectingDistrict =
+                                                District(
+                                                    id: 0,
+                                                    provinceID: 0,
+                                                    nameTH: "ทุกอำเภอ");
+                                            // print(selectingDistrict.nameTH);
+                                            setState(() {
+                                              stateDistrictsStart
+                                                  .add(selectingDistrict);
+                                              _isSelectedProvinceStart = true;
+                                            });
+                                            for (var a in districts) {
+                                              if (a!.provinceID == p.id) {
+                                                setState(() {
+                                                  stateDistrictsStart.add(a);
+                                                });
+                                              }
+                                            }
+                                          },
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  // Select district start
+                                  Visibility(
+                                    visible: _isSelectedProvinceStart,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: DropdownSearch<District?>(
+                                            popupProps: const PopupProps.menu(
+                                              showSearchBox: true,
+                                            ),
+                                            items: stateDistrictsStart,
+                                            itemAsString: (District? a) =>
+                                                a!.nameTH.toString(),
+                                            dropdownDecoratorProps:
+                                                const DropDownDecoratorProps(
+                                              dropdownSearchDecoration:
+                                                  InputDecoration(
+                                                labelText: "อำเภอต้นทาง",
+                                              ),
+                                            ),
+                                            onChanged: (District? a) {
+                                              districtStartID = a?.id;
+                                            },
                                           ),
                                         )
                                       ],
                                     ),
-                                    const SizedBox(
-                                      height: 10,
-                                    ),
-                                  ],
-                                )),
-                            // Select provin end
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownSearch<Province?>(
-                                    popupProps: const PopupProps.menu(
-                                      showSearchBox: true,
-                                      // showSelectedItems: true,
-                                      // disabledItemFn: (String s) {
-                                      //   return s.startsWith('I');
-                                      // },
-                                    ),
-                                    items: provinces,
-                                    itemAsString: (Province? p) =>
-                                        p!.nameTH.toString(),
-                                    dropdownDecoratorProps:
-                                        const DropDownDecoratorProps(
-                                      dropdownSearchDecoration: InputDecoration(
-                                        labelText: "จังหวัดต้นทาง",
-                                        // hintText: "country in menu mode",
-                                      ),
-                                    ),
-                                    onChanged: (Province? p) {
-                                      stateDistrictsStart.clear();
-                                      provinceStartID = p!.id;
-                                      districtStartID = 0;
-                                      District selectingDistrict = District(
-                                          id: 0,
-                                          provinceID: 0,
-                                          nameTH: "ทุกอำเภอ");
-                                      // print(selectingDistrict.nameTH);
-                                      setState(() {
-                                        stateDistrictsStart
-                                            .add(selectingDistrict);
-                                        _isSelectedProvinceStart = true;
-                                      });
-                                      for (var a in districts) {
-                                        if (a!.provinceID == p.id) {
-                                          setState(() {
-                                            stateDistrictsStart.add(a);
-                                          });
-                                        }
-                                      }
-                                    },
                                   ),
-                                )
-                              ],
-                            ),
-                            // Select district start
-                            Visibility(
-                              visible: _isSelectedProvinceStart,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: DropdownSearch<District?>(
-                                      popupProps: const PopupProps.menu(
-                                        showSearchBox: true,
-                                      ),
-                                      items: stateDistrictsStart,
-                                      itemAsString: (District? a) =>
-                                          a!.nameTH.toString(),
-                                      dropdownDecoratorProps:
-                                          const DropDownDecoratorProps(
-                                        dropdownSearchDecoration:
-                                            InputDecoration(
-                                          labelText: "อำเภอต้นทาง",
+                                  // Select provin end
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: DropdownSearch<Province?>(
+                                          popupProps: const PopupProps.menu(
+                                            showSearchBox: true,
+
+                                            // showSelectedItems: true,
+                                            // disabledItemFn: (String s) {
+                                            //   return s.startsWith('I');
+                                            // },
+                                          ),
+                                          items: stateProvincesEnd,
+                                          itemAsString: (Province? p) =>
+                                              p!.nameTH.toString(),
+                                          dropdownDecoratorProps:
+                                              const DropDownDecoratorProps(
+                                            dropdownSearchDecoration:
+                                                InputDecoration(
+                                              labelText: "จังหวัดปลายทาง",
+                                              // hintText: "country in menu mode",
+                                            ),
+                                          ),
+                                          onChanged: (Province? p) {
+                                            stateDistrictsEnd.clear();
+                                            if (p!.id != 0) {
+                                              provinceStartID = p.id;
+                                              districtStartID = 0;
+
+                                              District selectingDistrict =
+                                                  District(
+                                                      id: 0,
+                                                      provinceID: 0,
+                                                      nameTH: "ทุกอำเภอ");
+                                              // print(selectingDistrict.nameTH);
+                                              setState(() {
+                                                _isSelectedProvinceEnd = true;
+                                                stateDistrictsEnd
+                                                    .add(selectingDistrict);
+                                              });
+                                              for (var a in districts) {
+                                                if (a!.provinceID == p.id) {
+                                                  setState(() {
+                                                    stateDistrictsEnd.add(a);
+                                                  });
+                                                }
+                                              }
+                                            } else {
+                                              _isSelectedProvinceEnd = true;
+                                            }
+                                          },
                                         ),
-                                      ),
-                                      onChanged: (District? a) {
-                                        districtStartID = a?.id;
-                                      },
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                            // Select provin end
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: DropdownSearch<Province?>(
-                                    popupProps: const PopupProps.menu(
-                                      showSearchBox: true,
-
-                                      // showSelectedItems: true,
-                                      // disabledItemFn: (String s) {
-                                      //   return s.startsWith('I');
-                                      // },
-                                    ),
-                                    items: stateProvincesEnd,
-                                    itemAsString: (Province? p) =>
-                                        p!.nameTH.toString(),
-                                    dropdownDecoratorProps:
-                                        const DropDownDecoratorProps(
-                                      dropdownSearchDecoration: InputDecoration(
-                                        labelText: "จังหวัดปลายทาง",
-                                        // hintText: "country in menu mode",
-                                      ),
-                                    ),
-                                    onChanged: (Province? p) {
-                                      stateDistrictsEnd.clear();
-                                      if (p!.id != 0) {
-                                        provinceStartID = p.id;
-                                        districtStartID = 0;
-
-                                        District selectingDistrict = District(
-                                            id: 0,
-                                            provinceID: 0,
-                                            nameTH: "ทุกอำเภอ");
-                                        // print(selectingDistrict.nameTH);
-                                        setState(() {
-                                          _isSelectedProvinceEnd = true;
-                                          stateDistrictsEnd
-                                              .add(selectingDistrict);
-                                        });
-                                        for (var a in districts) {
-                                          if (a!.provinceID == p.id) {
-                                            setState(() {
-                                              stateDistrictsEnd.add(a);
-                                            });
-                                          }
-                                        }
-                                      } else {
-                                        _isSelectedProvinceEnd = true;
-                                      }
-                                    },
+                                      )
+                                    ],
                                   ),
-                                )
-                              ],
-                            ),
-                            // Select district end
-                            Visibility(
-                              visible: _isSelectedProvinceEnd,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: DropdownSearch<District?>(
-                                      popupProps: const PopupProps.menu(
-                                        showSearchBox: true,
-                                      ),
-                                      items: stateDistrictsEnd,
-                                      itemAsString: (District? a) =>
-                                          a!.nameTH.toString(),
-                                      dropdownDecoratorProps:
-                                          const DropDownDecoratorProps(
-                                        dropdownSearchDecoration:
-                                            InputDecoration(
-                                          labelText: "อำเภอปลายทาง",
-                                        ),
-                                      ),
-                                      // selectedItem: District(nameTH: "ทุกอำเภอ"),
-                                      onChanged: (District? a) {
-                                        districtStartID = a?.id;
-                                      },
+                                  // Select district end
+                                  Visibility(
+                                    visible: _isSelectedProvinceEnd,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: DropdownSearch<District?>(
+                                            popupProps: const PopupProps.menu(
+                                              showSearchBox: true,
+                                            ),
+                                            items: stateDistrictsEnd,
+                                            itemAsString: (District? a) =>
+                                                a!.nameTH.toString(),
+                                            dropdownDecoratorProps:
+                                                const DropDownDecoratorProps(
+                                              dropdownSearchDecoration:
+                                                  InputDecoration(
+                                                labelText: "อำเภอปลายทาง",
+                                              ),
+                                            ),
+                                            // selectedItem: District(nameTH: "ทุกอำเภอ"),
+                                            onChanged: (District? a) {
+                                              districtStartID = a?.id;
+                                            },
+                                          ),
+                                        )
+                                      ],
                                     ),
-                                  )
+                                  ),
                                 ],
+                              );
+                            }),
+                            actions: [
+                              TextButton(
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: Colors.green,
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Search'),
                               ),
-                            ),
-                          ],
-                        );
-                      }),
-                      actions: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.white,
-                            backgroundColor: Colors.green,
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Search'),
-                        ),
-                        TextButton(
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.white,
-                              backgroundColor: Colors.blueGrey,
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Close')),
-                      ],
-                    ));
-          },
-          icon: const Icon(Icons.search)),
-
-      Stack(
-        children: [
-          const Text(
-            "",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          IconButton(
-              onPressed: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                            user: user,
-                          )),
-                );
-              },
-              icon: const Icon(Icons.message)),
-        ],
+                              TextButton(
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    backgroundColor: Colors.blueGrey,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text('Close')),
+                            ],
+                          ));
+                },
+                icon: const Icon(Icons.search)),
+            // Chat
+            badges.Badge(
+              position: badges.BadgePosition.custom(top: 0, end: 3, bottom: 16),
+              showBadge: chatNoti != "",
+              ignorePointer: false,
+              badgeContent: Text(
+                chatNoti,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold),
+              ),
+              badgeAnimation: const badges.BadgeAnimation.rotation(
+                animationDuration: Duration(seconds: 1),
+                colorChangeAnimationDuration: Duration(seconds: 1),
+                loopAnimation: false,
+                curve: Curves.fastOutSlowIn,
+                colorChangeAnimationCurve: Curves.easeInCubic,
+              ),
+              badgeStyle: badges.BadgeStyle(
+                // shape: badges.BadgeShape.square,
+                badgeColor: Colors.blue,
+                padding: EdgeInsets.all(5),
+                borderRadius: BorderRadius.circular(4),
+                borderSide: BorderSide(color: Colors.white, width: 1),
+              ),
+              child: IconButton(
+                onPressed: () async {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                              user: user,
+                            )),
+                  );
+                },
+                icon: Icon(Icons.message),
+              ),
+            ),
+          ],
+        ),
       ),
 
       // IconButton(
@@ -809,6 +856,19 @@ class _PostScreenState extends State<PostScreen> {
         ],
       )),
     );
+  }
+
+  void updateChatNoti() async {
+    final prefs = await SharedPreferences.getInstance();
+    ChatUserLog? tempData =
+        await ChatUserLog.getCountChatUserLog(prefs.getString('jwt') ?? "");
+    if (tempData!.count! > 99) {
+      chatNoti = "99+";
+    } else if (tempData.count! > 0) {
+      chatNoti = "${tempData.count}";
+    } else {
+      chatNoti = "";
+    }
   }
 
   void getProvince() async {

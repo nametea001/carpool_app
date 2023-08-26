@@ -17,6 +17,7 @@ import 'package:uuid/uuid.dart';
 import '../models/chat.dart' as c;
 import '../models/user.dart';
 import '../gobal_function/data.dart';
+import 'package:car_pool_project/global.dart' as globals;
 
 // ignore: must_be_immutable
 class ChatDetailScreen extends StatefulWidget {
@@ -62,6 +63,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         appBar: AppBar(
           title: Row(
             children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    (InkWell(
+                      onTap: () {},
+                      child: CircleAvatar(
+                        maxRadius: 20,
+                        child: (img != ""
+                            ? ClipOval(
+                                child: Image.network(
+                                  img,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : null),
+                      ),
+                    )),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
               Text("$firstName $lastName"),
             ],
           ),
@@ -281,11 +304,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       setState(() {
         firstName = chatDB.sendUser!.firstName ?? "FristName";
         lastName = chatDB.sendUser!.lastName ?? "FristName";
+        img = "http://${globals.serverIP}/profiles/${chatDB.sendUser!.img}";
       });
     } else {
       setState(() {
         firstName = chatDB.createdUser!.firstName ?? "FristName";
         lastName = chatDB.createdUser!.lastName ?? "FristName";
+        img = "http://${globals.serverIP}/profiles/${chatDB.createdUser!.img}";
       });
     }
   }

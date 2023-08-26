@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:car_pool_project/models/chat_detail.dart';
+import 'package:car_pool_project/models/chat_user_log.dart';
 import 'package:car_pool_project/models/user.dart';
 
 import '../services/networking.dart';
@@ -13,7 +12,7 @@ class Chat {
   int? sendPostID;
   // String? img;
   int? createdUserID;
-  int? coutChatDetailLog;
+  ChatUserLog? chatUserLog;
   User? sendUser;
   User? createdUser;
   Post? post;
@@ -27,7 +26,7 @@ class Chat {
     this.sendPostID,
     // this.img,
     this.createdUserID,
-    this.coutChatDetailLog,
+    this.chatUserLog,
     this.sendUser,
     this.createdUser,
     this.post,
@@ -67,7 +66,7 @@ class Chat {
             msgType: c['chat_details'][0]['msg_type'],
             msg: c['chat_details'][0]['msg'],
           ),
-          coutChatDetailLog: c['_count']['chat_user_logs'],
+          chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
           createdAt:
               c['created_at'] != null ? DateTime.parse(c['created_at']) : null,
         );
@@ -78,16 +77,4 @@ class Chat {
     return null;
   }
 
-  static Future<Chat?> startChat(String token, Chat chat) async {
-    NetworkHelper networkHelper = NetworkHelper('chats/start_chat', {});
-    var json =
-        await networkHelper.postData(jsonEncode(<String, dynamic>{}), token);
-
-    if (json != null && json['error'] == false) {
-      Map t = json['chat'];
-      Chat chat = Chat(id: t['id']);
-      return chat;
-    }
-    return null;
-  }
 }

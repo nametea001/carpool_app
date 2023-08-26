@@ -78,7 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 18,
-              color: chat.coutChatDetailLog == 0 ? null : Colors.black,
+              color: chat.chatUserLog!.count == 0 ? null : Colors.black,
             )),
         // trailing: Text(dateTimeformat(DateTime.now())),
         trailing:
