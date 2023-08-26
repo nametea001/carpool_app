@@ -92,7 +92,7 @@ class _PostScreenState extends State<PostScreen> {
       pathSocket,
       OptionBuilder()
           .setTransports(['websocket'])
-          .setPath("/api/socket/socket_io")
+          .setPath("/api/socket_io")
           .build(),
     );
     socket.onConnect((_) {
@@ -618,7 +618,10 @@ class _PostScreenState extends State<PostScreen> {
               onPressed: () async {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ChatScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => ChatScreen(
+                            user: user,
+                          )),
                 );
               },
               icon: const Icon(Icons.message)),

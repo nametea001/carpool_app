@@ -1,5 +1,4 @@
 import 'dart:io';
-
 // import 'package:file_picker/file_picker.dart';
 import 'package:car_pool_project/models/chat_detail.dart';
 import 'package:flutter/material.dart';
@@ -15,12 +14,11 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:prefs/prefs.dart';
 import 'package:uuid/uuid.dart';
-
 import '../models/chat.dart' as c;
 import '../models/user.dart';
-
 import '../gobal_function/data.dart';
 
+// ignore: must_be_immutable
 class ChatDetailScreen extends StatefulWidget {
   User? user;
   String? pushFrom;
@@ -52,7 +50,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void initState() {
     super.initState();
     user = widget.user;
-    chatDB = widget.chatDB!;
+    chatDB = widget.chatDB ?? c.Chat();
     pushFrom = widget.pushFrom;
     _userChat = types.User(id: (user!.id.toString()));
     updateUI();
@@ -267,11 +265,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         setState(() {
           chatDB = tempData[0];
         });
-        _messages = tempData[1];
+        _messages = tempData[1] ?? [];
+
         // for (var message in tempData[1]) {
         //   _messages.insert(0, message);
         // }
       }
+    } else {
+      _messages = await ChatDetail.getChatDetails(
+              prefs.getString('jwt') ?? "", chatDB) ??
+          [];
+    }
+
+    if (chatDB.sendUserID != user!.id) {
+      setState(() {
+        firstName = chatDB.sendUser!.firstName ?? "FristName";
+        lastName = chatDB.sendUser!.lastName ?? "FristName";
+      });
+    } else {
+      setState(() {
+        firstName = chatDB.createdUser!.firstName ?? "FristName";
+        lastName = chatDB.createdUser!.lastName ?? "FristName";
+      });
     }
   }
 }

@@ -894,48 +894,49 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           const SizedBox(
                             height: 5,
                           ),
-                          Visibility(
-                            visible: !_isAdd,
-                            child: GestureDetector(
-                              onTap: () {},
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                // crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 40,
-                                    child: ClipOval(
-                                      child: Image.network(
-                                        "http://${globals.serverIP}/profiles/${postUser.img!}",
-                                        fit: BoxFit.cover,
+                          GestureDetector(
+                            onTap: () {},
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              // crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: _isAdd
+                                  ? []
+                                  : [
+                                      CircleAvatar(
+                                        radius: 40,
+                                        child: ClipOval(
+                                          child: Image.network(
+                                            "http://${globals.serverIP}/profiles/${postUser.img!}",
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 15),
-                                  Column(
-                                    children: [
-                                      Text(
-                                        "${postUser.firstName} ${postUser.lastName}",
-                                        style: const TextStyle(
-                                            fontSize: 30,
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        "${postUser.email}",
-                                        style: const TextStyle(
-                                            fontSize: 16, color: Colors.black),
-                                      ),
-                                      Text(
-                                        "${postUser.sex}",
-                                        style: const TextStyle(
-                                            fontSize: 16, color: Colors.black),
+                                      const SizedBox(width: 15),
+                                      Column(
+                                        children: [
+                                          Text(
+                                            "${postUser.firstName} ${postUser.lastName}",
+                                            style: const TextStyle(
+                                                fontSize: 30,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            "${postUser.email}",
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            "${postUser.sex}",
+                                            style: const TextStyle(
+                                                fontSize: 16,
+                                                color: Colors.black),
+                                          ),
+                                        ],
                                       ),
                                     ],
-                                  ),
-                                ],
-                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
