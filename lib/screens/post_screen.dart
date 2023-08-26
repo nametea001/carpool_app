@@ -22,6 +22,7 @@ import 'package:car_pool_project/global.dart' as globals;
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
 
+import '../models/chat.dart';
 import 'chat_detail_screen.dart';
 
 class PostScreen extends StatefulWidget {
@@ -40,7 +41,6 @@ class PostScreen extends StatefulWidget {
 class _PostScreenState extends State<PostScreen> {
   User user = User();
   GlobalData globalData = GlobalData();
-
   bool _isLoading = true;
   List<Post> posts = [];
   bool _isLogout = false;
@@ -1063,8 +1063,11 @@ class _PostScreenState extends State<PostScreen> {
                                                 builder: (context) =>
                                                     ChatDetailScreen(
                                                       user: user,
-                                                      sendToID: p.createdUserID,
-                                                      chatType: "PRIVATE",
+                                                      chatDB: Chat(
+                                                        chatType: "PRIVATE",
+                                                        sendUserID:
+                                                            p.createdUserID,
+                                                      ),
                                                     )));
                                       },
                                       child: const Row(

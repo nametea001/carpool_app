@@ -1,6 +1,7 @@
 import 'dart:io';
 
 // import 'package:file_picker/file_picker.dart';
+import 'package:car_pool_project/models/chat_detail.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart' show rootBundle;
 // ignore: depend_on_referenced_packages
@@ -12,21 +13,23 @@ import 'package:http/http.dart' as http;
 // import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:prefs/prefs.dart';
 import 'package:uuid/uuid.dart';
 
+import '../models/chat.dart' as c;
 import '../models/user.dart';
 
 import '../gobal_function/data.dart';
 
 class ChatDetailScreen extends StatefulWidget {
-  final User? user;
-  final int? sendToID;
-  final String? chatType;
+  User? user;
+  String? pushFrom;
+  c.Chat? chatDB;
   ChatDetailScreen({
     super.key,
     this.user,
-    this.sendToID,
-    this.chatType,
+    this.pushFrom,
+    this.chatDB,
   });
 
   @override
@@ -35,18 +38,35 @@ class ChatDetailScreen extends StatefulWidget {
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   late List<types.Message> _messages = [];
-  final _user = const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
+  types.User _userChat = types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
+
+  User? user = User();
+  c.Chat chatDB = c.Chat();
+  String? pushFrom = "Chat";
+
+  String firstName = "Fristname";
+  String lastName = "Lastname";
+  String img = "";
 
   @override
   void initState() {
     super.initState();
-    _loadMessages();
+    user = widget.user;
+    chatDB = widget.chatDB!;
+    pushFrom = widget.pushFrom;
+    _userChat = types.User(id: (user!.id.toString()));
+    updateUI();
+    // _loadMessages();
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: const Text("Chat"),
+          title: Row(
+            children: [
+              Text("$firstName $lastName"),
+            ],
+          ),
           backgroundColor: Colors.pink,
         ),
         body: Chat(
@@ -57,7 +77,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           onSendPressed: _handleSendPressed,
           showUserAvatars: true,
           showUserNames: true,
-          user: _user,
+          user: _userChat,
         ),
       );
 
@@ -117,7 +137,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   //   if (result != null && result.files.single.path != null) {
   //     final message = types.FileMessage(
-  //       author: _user,
+  //       author: _userChat,
   //       createdAt: DateTime.now().millisecondsSinceEpoch,
   //       id: const Uuid().v4(),
   //       mimeType: lookupMimeType(result.files.single.path!),
@@ -142,7 +162,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   //     final image = await decodeImageFromList(bytes);
 
   //     final message = types.ImageMessage(
-  //       author: _user,
+  //       author: _userChat,
   //       createdAt: DateTime.now().millisecondsSinceEpoch,
   //       height: image.height.toDouble(),
   //       id: const Uuid().v4(),
@@ -216,7 +236,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _handleSendPressed(types.PartialText message) {
     final textMessage = types.TextMessage(
-      author: _user,
+      author: _userChat,
       createdAt: DateTime.now().millisecondsSinceEpoch,
       id: const Uuid().v4(),
       text: message.text,
@@ -234,6 +254,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     for (var message in messages) {
       _messages.add(message);
+    }
+  }
+
+  void updateUI() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (pushFrom != "Chat") {
+      var tempData = await ChatDetail.startChatDetails(
+          prefs.getString('jwt') ?? "", chatDB);
+      if (tempData != null) {
+        setState(() {
+          chatDB = tempData[0];
+        });
+        _messages = tempData[1];
+        // for (var message in tempData[1]) {
+        //   _messages.insert(0, message);
+        // }
+      }
     }
   }
 }

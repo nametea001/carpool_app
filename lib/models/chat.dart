@@ -8,8 +8,16 @@ class Chat {
   int? sendUserID;
   int? sendPostID;
   String? img;
+  int? createdUserID;
 
-  Chat({this.id, this.chatType, this.sendUserID, this.sendPostID, this.img});
+  Chat({
+    this.id,
+    this.chatType,
+    this.sendUserID,
+    this.sendPostID,
+    this.img,
+    this.createdUserID,
+  });
 
   static Future<List<Chat>?> getChats(
     String token,
