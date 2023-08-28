@@ -10,6 +10,7 @@ class ChatDetail {
   int? chatID;
   String? msgType;
   String? msg;
+  int? createdUserID;
   // LatLng? latLng;
 
   ChatDetail({
@@ -17,6 +18,7 @@ class ChatDetail {
     this.chatID,
     this.msgType,
     this.msg,
+    this.createdUserID,
     // this.latLng,
   });
 
@@ -49,7 +51,7 @@ class ChatDetail {
 
   static Future<dynamic> startChatDetails(String token, Chat chat) async {
     NetworkHelper networkHelper = NetworkHelper('chat_details/start_chat', {
-      "chat_type": chat.chatType,
+      "chat_type": chat.chatType.toString(),
       "send_user_id": chat.sendUserID.toString(),
       "send_post_id": chat.sendPostID.toString(),
     });

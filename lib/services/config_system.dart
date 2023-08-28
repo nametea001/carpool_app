@@ -16,7 +16,7 @@ class ConfigSystem {
     //   setServer('192.168.1.2');
     //   return '192.168.1.2';
     // }
-    return '192.168.1.4:3000';
+    return '10.0.2.2:3000'; // 10.0.3.2 if fisrt not work
   }
 
   // static void setServer(String serverIP) async {

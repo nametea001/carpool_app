@@ -151,6 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           Tab(
                             text: 'Sing up',
+                            
                           ),
                         ],
                       ),

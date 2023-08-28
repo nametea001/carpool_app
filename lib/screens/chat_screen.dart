@@ -7,6 +7,7 @@ import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:intl/intl.dart';
 import 'package:prefs/prefs.dart';
 import 'package:car_pool_project/global.dart' as globals;
+import 'package:skeleton_loader/skeleton_loader.dart';
 
 // ignore: must_be_immutable
 class ChatScreen extends StatefulWidget {
@@ -25,21 +26,33 @@ class _ChatScreenState extends State<ChatScreen> {
   User user = User();
   List<Chat> chats = [];
 
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    user = (widget.user)!;
+    updateUI();
+    // _isLoading = false;
+  }
+
   List checkChatType(Chat chat) {
     String name = "";
     String? img = "";
+    bool isYou = chat.chatDetail?.createdUserID == user.id ? true : false;
     if (chat.chatType == "PRIVATE") {
-      name = chat.sendUserID != user.id
-          ? "${chat.sendUser!.firstName ?? 'Firstname'} ${chat.sendUser!.lastName ?? 'Lastname'}"
-          : "${chat.createdUser!.firstName ?? 'Firstname'} ${chat.createdUser!.lastName ?? 'Lastname'}";
       img = chat.sendUserID != user.id
           ? "http://${globals.serverIP}/profiles/${chat.sendUser!.img}"
           : "http://${globals.serverIP}/profiles/${chat.createdUser!.img}";
+      name = chat.sendUserID != user.id
+          ? "${chat.sendUser!.firstName ?? 'Firstname'} ${chat.sendUser!.lastName ?? 'Lastname'}"
+          : "${chat.createdUser!.firstName ?? 'Firstname'} ${chat.createdUser!.lastName ?? 'Lastname'}";
     } else {
-      name = "${chat.post!.endName}";
       img = chat.post!.endName;
+      name = "${chat.post!.endName}";
     }
-    return [name, img];
+
+    return [img, name, isYou];
   }
 
   List<ListTile> getListTile() {
@@ -56,7 +69,7 @@ class _ChatScreenState extends State<ChatScreen> {
           maxRadius: 30,
           child: ClipOval(
             child: Image.network(
-              name[1],
+              name[0],
               fit: BoxFit.cover,
             ),
           ),
@@ -66,7 +79,7 @@ class _ChatScreenState extends State<ChatScreen> {
             Row(
               children: [
                 Text(
-                  " ${name[0]}",
+                  " ${name[1]}",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 23),
                 ),
@@ -74,16 +87,19 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        subtitle: Text(" ${chat.chatDetail!.msg}",
+        subtitle: Text(" ${name[2] ? 'คุณ:' : ''}${chat.chatDetail!.msg}",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 18,
+              fontSize: 16,
               color: chat.chatUserLog!.count == 0 ? null : Colors.black,
             )),
         // trailing: Text(dateTimeformat(DateTime.now())),
         trailing:
             Text(DateFormat("HH:mm:").format(chat.createdAt ?? DateTime.now())),
         onTap: () {
+          setState(() {
+            chat.chatUserLog!.count = 0;
+          });
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -102,19 +118,13 @@ class _ChatScreenState extends State<ChatScreen> {
     return list;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    user = (widget.user)!;
-    updateUI();
-  }
-
   updateUI() async {
     final prefs = await SharedPreferences.getInstance();
     List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
 
     setState(() {
       chats = tempData ?? [];
+      _isLoading = false;
     });
   }
 
@@ -154,14 +164,66 @@ class _ChatScreenState extends State<ChatScreen> {
         title: const Text("Chat"),
         backgroundColor: Colors.pink,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Container(
-            child: listView(),
-          ),
-        ],
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _isLoading
+                ? listLoader()
+                : Container(
+                    child: listView(),
+                  ),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget listLoader() {
+    var loader = Expanded(
+      child: RefreshIndicator(
+        onRefresh: () async {
+          // updateUI();
+        },
+        child: SingleChildScrollView(
+          child: SkeletonLoader(
+            builder: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              child: Row(
+                children: <Widget>[
+                  const CircleAvatar(
+                    backgroundColor: Colors.white,
+                    radius: 30,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      children: <Widget>[
+                        Container(
+                          width: double.infinity,
+                          height: 10,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          width: double.infinity,
+                          height: 12,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            items: 10,
+            period: const Duration(seconds: 2),
+            highlightColor: Colors.pink,
+            direction: SkeletonDirection.ltr,
+          ),
+        ),
+      ),
+    );
+    return loader;
   }
 }

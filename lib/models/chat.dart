@@ -45,8 +45,8 @@ class Chat {
         Chat chat = Chat(
           id: c['id'],
           chatType: c['chat_type'],
-          sendUserID: c['send_user_id'] ?? null,
-          sendPostID: c['send_post_id'] ?? null,
+          sendUserID: c['send_user_id'],
+          sendPostID: c['send_post_id'],
           createdUserID: c['created_user_id'],
           sendUser: c['send_user'] == null
               ? User()
@@ -65,6 +65,7 @@ class Chat {
           chatDetail: ChatDetail(
             msgType: c['chat_details'][0]['msg_type'],
             msg: c['chat_details'][0]['msg'],
+            createdUserID: c['chat_details'][0]['created_user_id'],
           ),
           chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
           createdAt:
@@ -76,5 +77,4 @@ class Chat {
     }
     return null;
   }
-
 }

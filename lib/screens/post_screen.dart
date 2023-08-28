@@ -100,7 +100,7 @@ class _PostScreenState extends State<PostScreen> {
     socket.onConnect((_) {
       print('Connected Socket IO');
     });
-    socket.on('user${user.id}', (data) {});
+    socket.on('user_${user.id}', (data) {});
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
     // socket.on('message', (data) => print(data));
