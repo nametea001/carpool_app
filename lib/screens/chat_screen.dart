@@ -8,13 +8,15 @@ import 'package:intl/intl.dart';
 import 'package:prefs/prefs.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:skeleton_loader/skeleton_loader.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart';
 
 // ignore: must_be_immutable
 class ChatScreen extends StatefulWidget {
-  User? user;
+  User user;
   ChatScreen({
     super.key,
-    this.user,
+    required this.user,
   });
 
   @override
@@ -28,22 +30,59 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _isLoading = true;
 
+  late IO.Socket socket;
+
   @override
   void initState() {
     super.initState();
-    user = (widget.user)!;
+    user = (widget.user);
+    initSocketIO();
     updateUI();
     // _isLoading = false;
+  }
+
+  @override
+  void dispose() {
+    socket.disconnect();
+    socket.dispose();
+    super.dispose();
+  }
+
+  void initSocketIO() {
+    String pathSocket = "${globals.webSocketProtocol}${globals.serverIP}/";
+    socket = IO.io(
+      pathSocket,
+      OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath("/api/socket_io")
+          // .setQuery({"user_id": user.id})
+          .build(),
+    );
+    socket.onConnect((_) {
+      print('Connected Socket IO');
+    });
+    socket.on('chat_user_${user.id}', (data) {
+      if (data == "Update_UI") {}
+    });
+    socket.onConnectError((data) => print("Connect Error $data"));
+    socket.onDisconnect((data) => print("Disconnect"));
+    // socket.on('message', (data) => print(data));
+  }
+
+  String dateTimeChatFormat(DateTime dateTime) {
+    return "";
   }
 
   List checkChatType(Chat chat) {
     String name = "";
     String? img = "";
+    String? nameUser = "";
     bool isYou = chat.chatDetail?.createdUserID == user.id ? true : false;
     if (chat.chatType == "PRIVATE") {
       img = chat.sendUserID != user.id
-          ? "http://${globals.serverIP}/profiles/${chat.sendUser!.img}"
-          : "http://${globals.serverIP}/profiles/${chat.createdUser!.img}";
+          ? "${globals.protocol}${globals.serverIP}/profiles/${chat.sendUser!.img}"
+          : "${globals.protocol}${globals.serverIP}/profiles/${chat.createdUser!.img}";
+      nameUser = isYou ? "คุณ:" : " ";
       name = chat.sendUserID != user.id
           ? "${chat.sendUser!.firstName ?? 'Firstname'} ${chat.sendUser!.lastName ?? 'Lastname'}"
           : "${chat.createdUser!.firstName ?? 'Firstname'} ${chat.createdUser!.lastName ?? 'Lastname'}";
@@ -52,7 +91,9 @@ class _ChatScreenState extends State<ChatScreen> {
       name = "${chat.post!.endName}";
     }
 
-    return [img, name, isYou];
+    if (chat.chatDetail?.createdUserID == user.id) {}
+
+    return [img, name, nameUser];
   }
 
   List<ListTile> getListTile() {
@@ -87,12 +128,15 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
-        subtitle: Text(" ${name[2] ? 'คุณ:' : ''}${chat.chatDetail!.msg}",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: chat.chatUserLog!.count == 0 ? null : Colors.black,
-            )),
+        subtitle: Flexible(
+          child: Text(" ${name[2]}${chat.chatDetail!.msg}",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: chat.chatUserLog!.count == 0 ? null : Colors.black,
+              )),
+        ),
         // trailing: Text(dateTimeformat(DateTime.now())),
         trailing:
             Text(DateFormat("HH:mm:").format(chat.createdAt ?? DateTime.now())),
@@ -100,7 +144,7 @@ class _ChatScreenState extends State<ChatScreen> {
           setState(() {
             chat.chatUserLog!.count = 0;
           });
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
@@ -116,16 +160,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     return list;
-  }
-
-  updateUI() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
-
-    setState(() {
-      chats = tempData ?? [];
-      _isLoading = false;
-    });
   }
 
   Widget listView() {
@@ -157,12 +191,30 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  updateUI() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
+
+    setState(() {
+      chats = tempData ?? [];
+      _isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chat"),
         backgroundColor: Colors.pink,
+        // actions: [
+        //   IconButton(
+        //       onPressed: () {
+        //         DateTime d = DateTime.now();
+        //         print(d);
+        //       },
+        //       icon: Icon(Icons.abc))
+        // ],
       ),
       body: SafeArea(
         child: Column(

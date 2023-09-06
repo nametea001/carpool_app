@@ -63,9 +63,15 @@ class Chat {
                   img: c['created_user']['img_path'],
                 ),
           chatDetail: ChatDetail(
-            msgType: c['chat_details'][0]['msg_type'],
-            msg: c['chat_details'][0]['msg'],
-            createdUserID: c['chat_details'][0]['created_user_id'],
+            msgType: c['chat_details'].isEmpty
+                ? null
+                : c['chat_details'][0]['msg_type'],
+            msg: c['chat_details'].isEmpty
+                ? "เริ่มการสนทนา"
+                : c['chat_details'][0]['msg'],
+            createdUserID: c['chat_details'].isEmpty
+                ? null
+                : c['chat_details'][0]['created_user_id'],
           ),
           chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
           createdAt:

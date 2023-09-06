@@ -27,12 +27,12 @@ import '../models/chat.dart';
 import 'chat_detail_screen.dart';
 
 class PostScreen extends StatefulWidget {
-  final User? user;
+  final User user;
   final Post? posts;
 
   const PostScreen({
     super.key,
-    this.user,
+    required this.user,
     this.posts,
   });
   @override
@@ -72,11 +72,12 @@ class _PostScreenState extends State<PostScreen> {
 
   String chatNoti = "";
   // bool _isChat = false;
+  late IO.Socket socket;
 
   @override
   void initState() {
     super.initState();
-    user = (widget.user)!;
+    user = (widget.user);
     setState(() {
       _isLoading = true;
     });
@@ -87,20 +88,32 @@ class _PostScreenState extends State<PostScreen> {
     initSocketIO();
   }
 
+  @override
+  void dispose() {
+    socket.disconnect();
+    socket.dispose();
+    super.dispose();
+  }
+
 // socket IO
-  void initSocketIO() async {
-    String pathSocket = "http://${globals.serverIP}/";
-    IO.Socket socket = IO.io(
+  void initSocketIO() {
+    String pathSocket = "${globals.webSocketProtocol}${globals.serverIP}/";
+    socket = IO.io(
       pathSocket,
       OptionBuilder()
           .setTransports(['websocket'])
           .setPath("/api/socket_io")
+          // .setQuery({"user_id": user.id})
           .build(),
     );
     socket.onConnect((_) {
       print('Connected Socket IO');
     });
-    socket.on('user_${user.id}', (data) {});
+    socket.on('user_${user.id}', (data) {
+      if (data == "Update_UI") {
+        updateChatNoti();
+      }
+    });
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
     // socket.on('message', (data) => print(data));
@@ -133,7 +146,7 @@ class _PostScreenState extends State<PostScreen> {
                   maxRadius: 30,
                   child: ClipOval(
                     child: Image.network(
-                        "http://${globals.serverIP}/profiles/${post.img!}",
+                        "${globals.protocol}${globals.serverIP}/profiles/${post.img!}",
                         fit: BoxFit.cover),
                   ),
                 ),
@@ -654,9 +667,9 @@ class _PostScreenState extends State<PostScreen> {
               badgeStyle: badges.BadgeStyle(
                 // shape: badges.BadgeShape.square,
                 badgeColor: Colors.blue,
-                padding: EdgeInsets.all(5),
+                padding: const EdgeInsets.all(5),
                 borderRadius: BorderRadius.circular(4),
-                borderSide: BorderSide(color: Colors.white, width: 1),
+                borderSide: const BorderSide(color: Colors.white, width: 1),
               ),
               child: IconButton(
                 onPressed: () async {
@@ -668,7 +681,7 @@ class _PostScreenState extends State<PostScreen> {
                             )),
                   );
                 },
-                icon: Icon(Icons.message),
+                icon: const Icon(Icons.message),
               ),
             ),
           ],
@@ -771,7 +784,7 @@ class _PostScreenState extends State<PostScreen> {
                   radius: 52,
                   child: ClipOval(
                     child: Image.network(
-                      "http://${globals.serverIP}/profiles/${user.img!}",
+                      "${globals.protocol}${globals.serverIP}/profiles/${user.img!}",
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -862,13 +875,15 @@ class _PostScreenState extends State<PostScreen> {
     final prefs = await SharedPreferences.getInstance();
     ChatUserLog? tempData =
         await ChatUserLog.getCountChatUserLog(prefs.getString('jwt') ?? "");
-    if (tempData!.count! > 99) {
-      chatNoti = "99+";
-    } else if (tempData.count! > 0) {
-      chatNoti = "${tempData.count}";
-    } else {
-      chatNoti = "";
-    }
+    setState(() {
+      if (tempData!.count! > 99) {
+        chatNoti = "99+";
+      } else if (tempData.count! > 0) {
+        chatNoti = "${tempData.count}";
+      } else {
+        chatNoti = "";
+      }
+    });
   }
 
   void getProvince() async {
@@ -951,7 +966,7 @@ class _PostScreenState extends State<PostScreen> {
           maxRadius: 30,
           child: ClipOval(
             child: Image.network(
-              "http://${globals.serverIP}/profiles/${review.img!}",
+              "${globals.protocol}${globals.serverIP}/profiles/${review.img!}",
               fit: BoxFit.cover,
             ),
           ),
@@ -1077,7 +1092,7 @@ class _PostScreenState extends State<PostScreen> {
                             child: user.img != null
                                 ? ClipOval(
                                     child: Image.network(
-                                      "http://${globals.serverIP}/profiles/${p.img!}",
+                                      "${globals.protocol}${globals.serverIP}/profiles/${p.img!}",
                                       fit: BoxFit.cover,
                                     ),
                                   )

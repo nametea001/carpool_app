@@ -1620,10 +1620,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             label: "Chat",
             child: const Icon(Icons.message),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              // );
             },
           ),
         ],
@@ -1642,10 +1642,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             label: "Chat",
             child: const Icon(Icons.message),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              // );
             },
           ),
           // cancel
@@ -1673,10 +1673,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             label: "Chat",
             child: const Icon(Icons.message),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
+              // );
             },
           ),
           // done

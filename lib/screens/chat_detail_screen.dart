@@ -18,15 +18,19 @@ import '../models/chat.dart' as c;
 import '../models/user.dart';
 import '../gobal_function/data.dart';
 import 'package:car_pool_project/global.dart' as globals;
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart';
+
+import 'chat_screen.dart';
 
 // ignore: must_be_immutable
 class ChatDetailScreen extends StatefulWidget {
-  User? user;
+  User user;
   String? pushFrom;
   c.Chat? chatDB;
   ChatDetailScreen({
     super.key,
-    this.user,
+    required this.user,
     this.pushFrom,
     this.chatDB,
   });
@@ -37,9 +41,10 @@ class ChatDetailScreen extends StatefulWidget {
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   late List<types.Message> _messages = [];
-  types.User _userChat = types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
+  types.User _userChat =
+      const types.User(id: '82091008-a484-4a89-ae75-a22bf8d6f3ac');
 
-  User? user = User();
+  User user = User();
   c.Chat chatDB = c.Chat();
   String? pushFrom = "Chat";
 
@@ -47,60 +52,114 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String lastName = "Lastname";
   String img = "";
 
+  bool showBackBt = false;
+
+  late IO.Socket socket;
+
   @override
   void initState() {
     super.initState();
     user = widget.user;
     chatDB = widget.chatDB ?? c.Chat();
     pushFrom = widget.pushFrom;
-    _userChat = types.User(id: (user!.id.toString()));
+    _userChat = types.User(id: (user.id.toString()));
+    initSocketIO();
     updateUI();
     // _loadMessages();
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  children: [
-                    (InkWell(
-                      onTap: () {},
-                      child: CircleAvatar(
-                        maxRadius: 20,
-                        child: (img != ""
-                            ? ClipOval(
-                                child: Image.network(
-                                  img,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : null),
-                      ),
-                    )),
-                  ],
-                ),
+  void dispose() {
+    socket.disconnect();
+    socket.dispose();
+    super.dispose();
+  }
+
+  void initSocketIO() {
+    String pathSocket = "${globals.webSocketProtocol}${globals.serverIP}/";
+    socket = IO.io(
+      pathSocket,
+      OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath("/api/socket_io")
+          // .setQuery(query)
+          .build(),
+    );
+    socket.onConnect((_) {
+      print('Connected Chat Detail');
+      // socket.emit('active_chat_${chatDB.id}', 'active');
+    });
+    socket.on('active_chat_detail_${chatDB.id}', (data) async {
+      var acceptMessage = await ChatDetail.acceptMessage(user.id!, data);
+      if (acceptMessage != null) {
+        _addMessage(acceptMessage);
+      }
+    });
+    // socket.on('user_${user.id}', (data) {});
+    socket.onConnectError((data) => print("Connect Chat Detail Error $data"));
+    socket.onDisconnect((data) => print("Disconnect Chat Detail"));
+    // socket.on('message', (data) => print(data));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                children: [
+                  (InkWell(
+                    onTap: () {},
+                    child: CircleAvatar(
+                      maxRadius: 20,
+                      child: (img != ""
+                          ? ClipOval(
+                              child: Image.network(
+                                img,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : null),
+                    ),
+                  )),
+                ],
               ),
-              const SizedBox(width: 10),
-              Text("$firstName $lastName"),
-            ],
-          ),
-          backgroundColor: Colors.pink,
+            ),
+            const SizedBox(width: 10),
+            Text("$firstName $lastName"),
+          ],
         ),
-        body: Chat(
-          messages: _messages,
-          onAttachmentPressed: _handleAttachmentPressed,
-          onMessageTap: _handleMessageTap,
-          onPreviewDataFetched: _handlePreviewDataFetched,
-          onSendPressed: _handleSendPressed,
-          showUserAvatars: true,
-          showUserNames: true,
-          user: _userChat,
-        ),
-      );
+        backgroundColor: Colors.pink,
+        leading: showBackBt
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChatScreen(
+                              user: user,
+                            )),
+                  );
+                },
+              )
+            : null,
+      ),
+      body: Chat(
+        messages: _messages,
+        onAttachmentPressed: _handleAttachmentPressed,
+        onMessageTap: _handleMessageTap,
+        onPreviewDataFetched: _handlePreviewDataFetched,
+        onSendPressed: _handleSendPressed,
+        showUserAvatars: true,
+        showUserNames: true,
+        user: _userChat,
+      ),
+    );
+  }
 
   void _addMessage(types.Message message) {
     setState(() {
@@ -255,15 +314,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     });
   }
 
-  void _handleSendPressed(types.PartialText message) {
-    final textMessage = types.TextMessage(
-      author: _userChat,
-      createdAt: DateTime.now().millisecondsSinceEpoch,
-      id: const Uuid().v4(),
-      text: message.text,
+  Future<void> _handleSendPressed(types.PartialText message) async {
+    // final textMessage = types.TextMessage(
+    //   author: _userChat,
+    //   createdAt: DateTime.now().millisecondsSinceEpoch,
+    //   id: const Uuid().v4(),
+    //   text: message.text,
+    // );
+    final prefs = await SharedPreferences.getInstance();
+    var textMessage = await ChatDetail.sendMessage(
+      prefs.getString('jwt') ?? "",
+      ChatDetail(
+        chatID: chatDB.id,
+        msgType: "MSG",
+        msg: message.text,
+      ),
+      chatDB,
     );
-
-    _addMessage(textMessage);
+    if (textMessage != null) {
+      _addMessage(textMessage);
+    } 
   }
 
   void _loadMessages() async {
@@ -300,18 +370,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           [];
     }
 
-    if (chatDB.sendUserID != user!.id) {
+    if (chatDB.sendUserID != user.id) {
       setState(() {
         firstName = chatDB.sendUser!.firstName ?? "FristName";
         lastName = chatDB.sendUser!.lastName ?? "FristName";
-        img = "http://${globals.serverIP}/profiles/${chatDB.sendUser!.img}";
+        img =
+            "${globals.protocol}${globals.serverIP}/profiles/${chatDB.sendUser!.img}";
       });
     } else {
       setState(() {
         firstName = chatDB.createdUser!.firstName ?? "FristName";
         lastName = chatDB.createdUser!.lastName ?? "FristName";
-        img = "http://${globals.serverIP}/profiles/${chatDB.createdUser!.img}";
+        img =
+            "${globals.protocol}${globals.serverIP}/profiles/${chatDB.createdUser!.img}";
       });
     }
+    setState(() {
+      showBackBt = true;
+    });
   }
 }
