@@ -109,10 +109,11 @@ class _PostScreenState extends State<PostScreen> {
     socket.onConnect((_) {
       print('Connected Socket IO');
     });
-    socket.on('user_${user.id}', (data) {
-      if (data == "Update_UI") {
+    socket.on('user_${user.id}', (data) async {
+      if (data == "Update_Noti") {
         updateChatNoti();
       }
+      // print(data);
     });
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
@@ -221,24 +222,10 @@ class _PostScreenState extends State<PostScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => PostDetailScreen(
-                userID: user.id,
+                user: user,
                 isAdd: false,
                 isback: post.isBack,
-                postID: post.id,
-                dateTimeStart: post.dateTimeStart,
-                dateTimeEnd: post.dateTimeBack,
-                startName: post.startName,
-                endName: post.endName,
-                postStatus: post.status,
-                postCreatedUserID: post.createdUserID,
-                postUser: User(
-                  id: post.createdUserID,
-                  firstName: post.user?.firstName,
-                  lastName: post.user?.lastName,
-                  img: post.img,
-                  sex: post.user?.sex,
-                  email: post.user?.email,
-                ),
+                post: post,
               ),
             ),
           );
@@ -688,10 +675,11 @@ class _PostScreenState extends State<PostScreen> {
         ),
       ),
 
-      // IconButton(
-      //     onPressed: () async {
-      //     },
-      //     icon: const Icon(Icons.textsms_sharp)),
+      IconButton(
+          onPressed: () async {
+            socket.emit('test', 'user_id:${user.id}');
+          },
+          icon: const Icon(Icons.textsms_sharp)),
     ];
     return bt;
   }
@@ -755,8 +743,10 @@ class _PostScreenState extends State<PostScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const PostDetailScreen(
+                    builder: (context) => PostDetailScreen(
                           isAdd: true,
+                          user: user,
+                          post: Post(),
                         )),
               );
             },
@@ -1140,6 +1130,7 @@ class _PostScreenState extends State<PostScreen> {
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     ChatDetailScreen(
+                                                      showBackbt: false,
                                                       user: user,
                                                       chatDB: Chat(
                                                         chatType: "PRIVATE",

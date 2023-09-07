@@ -13,7 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:prefs/prefs.dart';
-import 'package:uuid/uuid.dart';
+// import 'package:uuid/uuid.dart';
 import '../models/chat.dart' as c;
 import '../models/user.dart';
 import '../gobal_function/data.dart';
@@ -28,8 +28,10 @@ class ChatDetailScreen extends StatefulWidget {
   User user;
   String? pushFrom;
   c.Chat? chatDB;
+  bool showBackbt;
   ChatDetailScreen({
     super.key,
+    required this.showBackbt,
     required this.user,
     this.pushFrom,
     this.chatDB,
@@ -63,6 +65,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     chatDB = widget.chatDB ?? c.Chat();
     pushFrom = widget.pushFrom;
     _userChat = types.User(id: (user.id.toString()));
+    setState(() {
+      showBackBt = widget.showBackbt;
+    });
     initSocketIO();
     updateUI();
     // _loadMessages();
@@ -129,7 +134,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            Text("$firstName $lastName"),
+            Flexible(
+                child: Text(
+              "$firstName $lastName",
+              overflow: TextOverflow.ellipsis,
+            )),
           ],
         ),
         backgroundColor: Colors.pink,
@@ -333,7 +342,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
     if (textMessage != null) {
       _addMessage(textMessage);
-    } 
+    }
   }
 
   void _loadMessages() async {
@@ -370,23 +379,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           [];
     }
 
-    if (chatDB.sendUserID != user.id) {
-      setState(() {
-        firstName = chatDB.sendUser!.firstName ?? "FristName";
-        lastName = chatDB.sendUser!.lastName ?? "FristName";
-        img =
-            "${globals.protocol}${globals.serverIP}/profiles/${chatDB.sendUser!.img}";
-      });
+    if (chatDB.chatType == "PRIVATE") {
+      if (chatDB.sendUserID != user.id) {
+        setState(() {
+          firstName = chatDB.sendUser!.firstName ?? "FristName";
+          lastName = chatDB.sendUser!.lastName ?? "LastName";
+          img =
+              "${globals.protocol}${globals.serverIP}/profiles/${chatDB.sendUser!.img}";
+        });
+      } else {
+        setState(() {
+          firstName = chatDB.createdUser!.firstName ?? "FristName";
+          lastName = chatDB.createdUser!.lastName ?? "LastName";
+          img =
+              "${globals.protocol}${globals.serverIP}/profiles/${chatDB.createdUser!.img}";
+        });
+      }
     } else {
       setState(() {
-        firstName = chatDB.createdUser!.firstName ?? "FristName";
-        lastName = chatDB.createdUser!.lastName ?? "FristName";
-        img =
-            "${globals.protocol}${globals.serverIP}/profiles/${chatDB.createdUser!.img}";
+        firstName = chatDB.post!.startName ?? "FristName";
+        lastName = "";
+        img = "${globals.protocol}${globals.serverIP}/profiles/${chatDB.img}";
       });
     }
-    setState(() {
-      showBackBt = true;
-    });
   }
 }

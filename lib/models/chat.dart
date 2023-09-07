@@ -18,6 +18,7 @@ class Chat {
   Post? post;
   ChatDetail? chatDetail;
   DateTime? createdAt;
+  String? img;
 
   Chat({
     this.id,
@@ -32,6 +33,7 @@ class Chat {
     this.post,
     this.chatDetail,
     this.createdAt,
+    this.img,
   });
 
   static Future<List<Chat>?> getChats(
@@ -42,43 +44,72 @@ class Chat {
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       for (Map c in json['chats']) {
-        Chat chat = Chat(
-          id: c['id'],
-          chatType: c['chat_type'],
-          sendUserID: c['send_user_id'],
-          sendPostID: c['send_post_id'],
-          createdUserID: c['created_user_id'],
-          sendUser: c['send_user'] == null
-              ? User()
-              : User(
-                  firstName: c['send_user']['first_name'],
-                  lastName: c['send_user']['last_name'],
-                  img: c['send_user']['img_path'],
-                ),
-          createdUser: c['created_user'] == null
-              ? null
-              : User(
-                  firstName: c['created_user']['first_name'],
-                  lastName: c['created_user']['last_name'],
-                  img: c['created_user']['img_path'],
-                ),
-          chatDetail: ChatDetail(
-            msgType: c['chat_details'].isEmpty
-                ? null
-                : c['chat_details'][0]['msg_type'],
-            msg: c['chat_details'].isEmpty
-                ? "เริ่มการสนทนา"
-                : c['chat_details'][0]['msg'],
-            createdUserID: c['chat_details'].isEmpty
-                ? null
-                : c['chat_details'][0]['created_user_id'],
-          ),
-          chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
-          createdAt:
-              c['created_at'] != null ? DateTime.parse(c['created_at']) : null,
-        );
-        chats.add(chat);
+        if (c['chat_type'] == "PRIVATE") {
+          Chat chat = Chat(
+            id: c['id'],
+            chatType: c['chat_type'],
+            sendUserID: c['send_user_id'],
+            sendPostID: c['send_post_id'],
+            createdUserID: c['created_user_id'],
+            sendUser: User(
+              firstName: c['send_user']['first_name'],
+              lastName: c['send_user']['last_name'],
+              img: c['send_user']['img_path'],
+            ),
+            createdUser: User(
+              firstName: c['created_user']['first_name'],
+              lastName: c['created_user']['last_name'],
+              img: c['created_user']['img_path'],
+            ),
+            chatDetail: ChatDetail(
+              msgType: c['chat_details'].isEmpty
+                  ? null
+                  : c['chat_details'][0]['msg_type'],
+              msg: c['chat_details'].isEmpty
+                  ? "เริ่มการสนทนา"
+                  : c['chat_details'][0]['msg'],
+              createdUserID: c['chat_details'].isEmpty
+                  ? null
+                  : c['chat_details'][0]['created_user_id'],
+            ),
+            chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
+            createdAt: c['created_at'] != null
+                ? DateTime.parse(c['created_at'])
+                : null,
+          );
+          chats.add(chat);
+        } else {
+          Chat chat = Chat(
+            id: c['id'],
+            chatType: c['chat_type'],
+            sendUserID: c['send_user_id'],
+            sendPostID: c['send_post_id'],
+            createdUserID: c['created_user_id'],
+            chatDetail: ChatDetail(
+              msgType: c['chat_details'].isEmpty
+                  ? null
+                  : c['chat_details'][0]['msg_type'],
+              msg: c['chat_details'].isEmpty
+                  ? "เริ่มการสนทนา"
+                  : c['chat_details'][0]['msg'],
+              createdUserID: c['chat_details'].isEmpty
+                  ? null
+                  : c['chat_details'][0]['created_user_id'],
+            ),
+            chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
+            createdAt: c['created_at'] != null
+                ? DateTime.parse(c['created_at'])
+                : null,
+            post: Post(
+              startName: c['posts']['name_start'],
+              endName: c['posts']['name_end'],
+            ),
+            img: "non_img.png",
+          );
+          chats.add(chat);
+        }
       }
+
       return chats;
     }
     return null;

@@ -169,6 +169,13 @@ class Post {
                   t['post_details'][0]['lat_lng_end'][1])
               : null,
         ),
+        user: User(
+          firstName: t['users']['first_name'],
+          lastName: t['users']['last_name'],
+          sex: t['users']['sex'],
+          email: t['users']['email'],
+          img: t['users']['img_path'],
+        ),
       );
       return post;
     }

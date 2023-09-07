@@ -104,7 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ride Sharing v1.1.0'),
+          title: const Text('Ride Sharing v1.4.0'),
           backgroundColor: Colors.pink,
           actions: [
             // config Ip
@@ -151,7 +151,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           Tab(
                             text: 'Sing up',
-                            
                           ),
                         ],
                       ),
@@ -214,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                         Container(
                                           child: Padding(
                                             padding: const EdgeInsets.fromLTRB(
-                                                179.7, 0, 0, 0),
+                                                150, 0, 0, 0),
                                             child: Column(
                                               mainAxisAlignment:
                                                   MainAxisAlignment.start,

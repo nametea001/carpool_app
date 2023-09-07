@@ -52,7 +52,7 @@ dependencies:
   flutter_launcher_icons: ^0.13.1
   prefs: ^4.0.0
   flutter_chat_ui: ^1.6.9
-  uuid: ^3.0.7
+  uuid: ^4.0.0
   # image_picker: ^0.8.7
   # file_picker: ^5.2.6
   # mime: ^1.0.4

@@ -7,6 +7,8 @@ import 'package:car_pool_project/models/user.dart';
 import '../services/networking.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
+import 'post.dart';
+
 class ChatDetail {
   int? id;
   int? chatID;
@@ -77,29 +79,40 @@ class ChatDetail {
         chatDetails.add(chatDetail);
       }
       Map c = json['chat'];
-      Chat chat = Chat(
-        id: c['id'],
-        chatType: c['chat_type'],
-        sendUserID: c['send_user_id'] ?? null,
-        sendPostID: c['send_post_id'] ?? null,
-        createdUserID: c['created_user_id'],
-        sendUser: c['send_user'] == null
-            ? User()
-            : User(
-                firstName: c['send_user']['first_name'],
-                lastName: c['send_user']['last_name'],
-                img: c['send_user']['img_path'],
-              ),
-        createdUser: c['created_user'] == null
-            ? null
-            : User(
-                firstName: c['created_user']['first_name'],
-                lastName: c['created_user']['last_name'],
-                img: c['created_user']['img_path'],
-              ),
-      );
+      if (c['chat_type'] == "PRIVATE") {
+        Chat chat = Chat(
+          id: c['id'],
+          chatType: c['chat_type'],
+          sendUserID: c['send_user_id'],
+          sendPostID: c['send_post_id'],
+          createdUserID: c['created_user_id'],
+          sendUser: User(
+            firstName: c['send_user']['first_name'],
+            lastName: c['send_user']['last_name'],
+            img: c['send_user']['img_path'],
+          ),
+          createdUser: User(
+            firstName: c['created_user']['first_name'],
+            lastName: c['created_user']['last_name'],
+            img: c['created_user']['img_path'],
+          ),
+        );
 
-      return [chat, chatDetails];
+        return [chat, chatDetails];
+      } else {
+        Chat chat = Chat(
+          id: c['id'],
+          chatType: c['chat_type'],
+          sendPostID: c['send_post_id'],
+          post: Post(
+            startName: c['posts']['name_start'],
+            endName: c['posts']['name_end'],
+          ),
+          img: "non_img.png",
+        );
+
+        return [chat, chatDetails];
+      }
     }
     return null;
   }

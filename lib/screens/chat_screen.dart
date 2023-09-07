@@ -59,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
           .build(),
     );
     socket.onConnect((_) {
-      print('Connected Socket IO');
+      print('Connected Socket IO Chat');
     });
     socket.on('chat_user_${user.id}', (data) {
       if (data == "Update_UI") {}
@@ -87,8 +87,8 @@ class _ChatScreenState extends State<ChatScreen> {
           ? "${chat.sendUser!.firstName ?? 'Firstname'} ${chat.sendUser!.lastName ?? 'Lastname'}"
           : "${chat.createdUser!.firstName ?? 'Firstname'} ${chat.createdUser!.lastName ?? 'Lastname'}";
     } else {
-      img = chat.post!.endName;
-      name = "${chat.post!.endName}";
+      img = "${globals.protocol}${globals.serverIP}/profiles/${chat.img}";
+      name = chat.post!.endName!;
     }
 
     if (chat.chatDetail?.createdUserID == user.id) {}
@@ -119,10 +119,13 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             Row(
               children: [
-                Text(
-                  " ${name[1]}",
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 23),
+                Flexible(
+                  child: Text(
+                    " ${name[1]}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 23),
+                  ),
                 ),
               ],
             ),
@@ -148,6 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) => ChatDetailScreen(
+                      showBackbt: true,
                       user: user,
                       chatDB: chat,
                       pushFrom: "Chat",

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 // import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:geolocator/geolocator.dart';
@@ -24,35 +25,25 @@ import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
+import '../models/chat.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
+import 'package:car_pool_project/models/review.dart' as re;
 
 class PostDetailScreen extends StatefulWidget {
+  final User user;
   final bool? isAdd;
   final bool? isback;
-  final int? postID;
-  final DateTime? dateTimeStart;
-  final DateTime? dateTimeEnd;
-  final String? startName;
-  final String? endName;
-  final int? postCreatedUserID;
-  final String? postStatus;
-  final int? userID;
-  final User? postUser;
 
-  const PostDetailScreen(
-      {super.key,
-      this.isAdd,
-      this.isback,
-      this.postID,
-      this.dateTimeStart,
-      this.dateTimeEnd,
-      this.startName,
-      this.endName,
-      this.postCreatedUserID,
-      this.postStatus,
-      this.userID,
-      this.postUser});
+  final Post post;
+
+  const PostDetailScreen({
+    super.key,
+    required this.user,
+    this.isAdd,
+    this.isback,
+    required this.post,
+  });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
 }
@@ -143,38 +134,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isLoading = false;
   bool _isJoin = false;
 
-  DateTime? dateTimeStart;
-  DateTime? dateTimeEnd;
-  int? postID = 0;
-  String? postStatus = "";
-
   MapsRoutes route = MapsRoutes();
   DistanceCalculator distanceCalculator = DistanceCalculator();
   String totalDistance = 'No route';
-
-  int userID = 0;
-
-  User postUser = User();
+  Post? post = Post();
+  User user = User();
+  User? postUser;
 
   List<Car>? cars = [];
   Car? car = Car();
 
-  List<Review> reviews = [];
+  List<re.Review> reviews = [];
+  double avgReview = 0.0;
 
   @override
   void initState() {
     super.initState();
-    postUser = widget.postUser ?? User();
-    userID = widget.userID ?? 0;
+    // postUser = widget.postUser ?? User();
+    user = widget.user;
     _isAdd = widget.isAdd ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
-    dateTimeStart = widget.dateTimeStart;
-    dateTimeEnd = widget.dateTimeEnd;
-    location1 = widget.startName ?? location1;
-    location2 = widget.endName ?? location2;
-    postID = widget.postID ?? 0;
-    postStatus = widget.postStatus;
-    postCreatedUserID = widget.postCreatedUserID ?? 0;
+    post = widget.post;
+    location1 = widget.post.startName ?? "";
+    location2 = widget.post.endName ?? "";
     if (_isAdd) {
       getCar();
     }
@@ -216,17 +198,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: (_isAdd ? const Text('Add') : const Text('Detail')),
+          title: (_isAdd ? const Text('Add ') : const Text('Detail')),
           backgroundColor: Colors.pink,
-          // actions: [
-          //   IconButton(
-          //       onPressed: () async {
-          //         setState(() {
-          //           _isJoin = !_isJoin;
-          //         });
-          //       },
-          //       icon: Icon(Icons.abc))
-          // ],
+          actions: [
+            IconButton(
+                onPressed: () async {
+                  print(_isLoadingAdd);
+                  setState(() {
+                    _isLoadingAdd = !_isLoadingAdd;
+                  });
+                },
+                icon: Icon(Icons.abc))
+          ],
         ),
         body: _isLoading
             ? _loadingDetail()
@@ -255,7 +238,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         initialCameraPosition: _kGooglePlex,
                         mapType: MapType.normal, //map type
                         onMapCreated: _onMapCreated,
-                        markers: _showMarkerStartToEnd
+                        markers: (_showMarkerStartToEnd
                             ? {
                                 Marker(
                                     draggable: false,
@@ -271,7 +254,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     draggable: false,
                                     markerId: const MarkerId("marker2"),
                                     position: marker2),
-                              },
+                              }),
                       ),
 
                       //search autoconplete input
@@ -313,17 +296,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             _showMarkerStartToEnd = false;
                                             _myLocationEnable = true;
                                           });
+                                          route.routes.clear();
                                           Position? l = await _getLocation();
                                           if (l != null) {
                                             LatLng latLngTemp =
                                                 LatLng(l.latitude, l.longitude);
-                                            await _mapController?.animateCamera(
-                                              CameraUpdate.newLatLngZoom(
-                                                  latLngTemp, 15),
-                                            );
-                                            route.routes.clear();
-                                            await Future.delayed(
-                                                const Duration(seconds: 2));
+                                            // await _mapController?.animateCamera(
+                                            //   CameraUpdate.newLatLngZoom(
+                                            //       latLngTemp, 15),
+                                            // );
+                                            // await Future.delayed(
+                                            //     const Duration(seconds: 2));
                                             await routeDraw(
                                                 latLngTemp, marker2);
                                             updateCameraLocation(latLngTemp,
@@ -355,8 +338,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             _myLocationEnable = false;
                                           });
                                           route.routes.clear();
-                                          await Future.delayed(
-                                              const Duration(seconds: 2));
+                                          // await Future.delayed(
+                                          //     const Duration(seconds: 2));
                                           await routeDraw(marker1, marker2);
                                           await updateCameraLocation(marker1,
                                               marker2, _mapController!);
@@ -435,7 +418,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     RequiredValidator(
                                         errorText: "Please Slect DateTime")
                                   ]),
-                                  enabled: _isAdd,
                                   showCursor: false,
                                   readOnly: true,
                                   focusNode: FocusNode(canRequestFocus: false),
@@ -443,18 +425,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   controller: _dateTimeController,
                                   onTap: () {
                                     FocusScope.of(context).unfocus();
-                                    DatePicker.showDateTimePicker(
-                                      context,
-                                      showTitleActions: true,
-                                      minTime: DateTime.now(),
-                                      currentTime: DateTime.now(),
-                                      locale: LocaleType.th,
-                                      onConfirm: (time) {
-                                        postData!.dateTimeStart = time;
-                                        _dateTimeController.text =
-                                            dateTimeformat(time);
-                                      },
-                                    );
+                                    if (_isAdd) {
+                                      DatePicker.showDateTimePicker(
+                                        context,
+                                        showTitleActions: true,
+                                        minTime: DateTime.now(),
+                                        currentTime: DateTime.now(),
+                                        locale: LocaleType.th,
+                                        onConfirm: (time) {
+                                          postData!.dateTimeStart = time;
+                                          _dateTimeController.text =
+                                              dateTimeformat(time);
+                                        },
+                                      );
+                                    }
                                   },
                                   decoration: InputDecoration(
                                       labelText: "เวลาเดินทาง",
@@ -493,7 +477,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             }
                                             return null;
                                           },
-                                          enabled: _isAdd,
                                           showCursor: false,
                                           readOnly: true,
                                           focusNode:
@@ -502,22 +485,24 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                           controller: _dateTimeBackController,
                                           onTap: () {
                                             FocusScope.of(context).unfocus();
-                                            DatePicker.showDateTimePicker(
-                                              context,
-                                              showTitleActions: true,
-                                              minTime:
-                                                  postData!.dateTimeStart ??
-                                                      DateTime.now(),
-                                              currentTime:
-                                                  postData!.dateTimeStart ??
-                                                      DateTime.now(),
-                                              locale: LocaleType.th,
-                                              onConfirm: (time) {
-                                                postData!.dateTimeBack = time;
-                                                _dateTimeBackController.text =
-                                                    dateTimeformat(time);
-                                              },
-                                            );
+                                            if (_isAdd) {
+                                              DatePicker.showDateTimePicker(
+                                                context,
+                                                showTitleActions: true,
+                                                minTime:
+                                                    postData!.dateTimeStart ??
+                                                        DateTime.now(),
+                                                currentTime:
+                                                    postData!.dateTimeStart ??
+                                                        DateTime.now(),
+                                                locale: LocaleType.th,
+                                                onConfirm: (time) {
+                                                  postData!.dateTimeBack = time;
+                                                  _dateTimeBackController.text =
+                                                      dateTimeformat(time);
+                                                },
+                                              );
+                                            }
                                           },
                                           decoration: InputDecoration(
                                               labelText: "เวลาเดินทางกลับ",
@@ -555,14 +540,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         postDetailData!.seat =
                                             int.parse(newValue!);
                                       },
-                                      validator: MultiValidator([
-                                        RequiredValidator(
-                                            errorText: "Please Input Seat")
-                                      ]),
-                                      enabled: _isAdd,
+                                      validator: (String? value) {
+                                        if (value!.isEmpty) {
+                                          return "Please input seat";
+                                        }
+                                        try {
+                                          int.parse(value);
+                                        } catch (err) {
+                                          return "Please specify the correct";
+                                        }
+                                        return null;
+                                      },
+                                      // enabled: _isAdd,
+                                      readOnly: !_isAdd,
+                                      // showCursor: _isAdd,
                                       focusNode: _focusNodeSeat,
                                       controller: _seatController,
                                       keyboardType: TextInputType.number,
+                                      onChanged: (value) {},
+                                      onTap: () {
+                                        if (!_isAdd) {
+                                          _focusNodeSeat.unfocus();
+                                        }
+                                      },
                                       decoration: InputDecoration(
                                           labelText: "จำนวนที่นั่ง",
                                           filled: true,
@@ -595,17 +595,21 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       },
                                       validator: (String? str) {
                                         if (str!.isEmpty) {
-                                          return "Please Input Price";
+                                          return "Please input price";
                                         }
                                         if (int.parse(str) < 0) {
-                                          return "Please Input Price more";
+                                          return "Please input price more";
                                         }
                                         return null;
                                       },
-                                      enabled: _isAdd,
                                       focusNode: _focusNodePrice,
                                       controller: _priceController,
                                       keyboardType: TextInputType.number,
+                                      onTap: () {
+                                        if (!_isAdd) {
+                                          _focusNodePrice.unfocus();
+                                        }
+                                      },
                                       decoration: InputDecoration(
                                           labelText: "ราคาต่อที่นั่ง",
                                           filled: true,
@@ -642,17 +646,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       },
                                       validator: MultiValidator([
                                         RequiredValidator(
-                                            errorText: "Please Input model")
+                                            errorText: "Please input model")
                                       ]),
                                       onTap: () {
                                         if (_isAdd) {
                                           selectCar();
+                                        } else {
+                                          _focusNodemodel.unfocus();
                                         }
                                       },
                                       // enabled: false,
                                       readOnly: true,
                                       showCursor: false,
-                                      enabled: _isAdd,
                                       focusNode: _focusNodemodel,
                                       controller: _modelController,
                                       decoration: InputDecoration(
@@ -686,17 +691,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       },
                                       validator: MultiValidator([
                                         RequiredValidator(
-                                            errorText: "Please Input Brand")
+                                            errorText: "Please input brand")
                                       ]),
                                       onTap: () {
                                         if (_isAdd) {
                                           selectCar();
+                                        } else {
+                                          _focusNodeBrand.unfocus();
                                         }
                                       },
                                       readOnly: true,
                                       showCursor: false,
-                                      // enabled: false,
-                                      enabled: _isAdd,
                                       focusNode: _focusNodeBrand,
                                       controller: _brandController,
                                       decoration: InputDecoration(
@@ -742,12 +747,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       onTap: () {
                                         if (_isAdd) {
                                           selectCar();
+                                        } else {
+                                          _focusNodeVRegistration.unfocus();
                                         }
                                       },
                                       readOnly: true,
                                       showCursor: false,
-                                      // enabled: false,
-                                      enabled: _isAdd,
                                       focusNode: _focusNodeVRegistration,
                                       controller:
                                           _vehicleRegistrationController,
@@ -787,13 +792,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       onTap: () {
                                         if (_isAdd) {
                                           selectCar();
+                                        } else {
+                                          _focusNodeColor.unfocus();
                                         }
                                       },
                                       readOnly: true,
                                       showCursor: false,
-                                      // enabled: false,
-                                      enabled: _isAdd,
-                                      // focusNode: _focusNodeColor,
+                                      focusNode: _focusNodeColor,
                                       controller: _colorController,
                                       decoration: InputDecoration(
                                           labelText: "สี",
@@ -829,9 +834,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       postDetailData!.description = newValue;
                                     }
                                   },
-                                  enabled: _isAdd,
                                   focusNode: _focusNodeDescription,
                                   controller: _descriptionController,
+                                  onTap: () {
+                                    if (!_isAdd) {
+                                      _focusNodeDescription.unfocus();
+                                    }
+                                  },
                                   maxLines: 3,
                                   decoration: InputDecoration(
                                       labelText: "รายระเอียดเพิ่มเติม",
@@ -876,10 +885,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                             formKey.currentState!.save();
                                             postData!.isBack = _isBack;
                                             // postData!.status = "NEW";
-                                            showDetailAdd();
+                                            showAlertAdd();
                                           }
                                         }
-                                        // showDetailAdd();
                                       },
                                       child: const Text(
                                         "ยืนยัน",
@@ -895,7 +903,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             height: 5,
                           ),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              var tempData = await re.Review.getReviews(
+                                  prefs.getString('jwt') ?? "",
+                                  post!.createdUserID!);
+                              setState(() {
+                                reviews = tempData![0] ?? [];
+                                avgReview = tempData[1] != null
+                                    ? tempData[1].toDouble()
+                                    : 0.0;
+                              });
+                              showDetailReview(post!);
+                            },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
@@ -906,30 +927,32 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       CircleAvatar(
                                         radius: 40,
                                         child: ClipOval(
-                                          child: Image.network(
-                                            "http://${globals.serverIP}/profiles/${postUser.img!}",
-                                            fit: BoxFit.cover,
-                                          ),
+                                          child: postUser != null
+                                              ? Image.network(
+                                                  "http://${globals.serverIP}/profiles/${postUser?.img}",
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : null,
                                         ),
                                       ),
                                       const SizedBox(width: 15),
                                       Column(
                                         children: [
                                           Text(
-                                            "${postUser.firstName} ${postUser.lastName}",
+                                            "${postUser?.firstName} ${postUser?.lastName}",
                                             style: const TextStyle(
                                                 fontSize: 30,
                                                 color: Colors.black,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                           Text(
-                                            "${postUser.email}",
+                                            "${postUser?.email}",
                                             style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.black),
                                           ),
                                           Text(
-                                            "${postUser.sex}",
+                                            "${postUser?.sex}",
                                             style: const TextStyle(
                                                 fontSize: 16,
                                                 color: Colors.black),
@@ -953,101 +976,99 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   List<Widget> searchMapButton() {
     void searchMap(int searchNumber) async {
-      {
-        Prediction? place = await PlacesAutocomplete.show(
-            context: context,
-            apiKey: globalData.googleApiKey(),
-            mode: Mode.overlay,
-            types: [],
-            strictbounds: false,
-            components: [Component(Component.country, 'th')],
-            decoration: InputDecoration(
-              hintText: 'Search',
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(20),
-                borderSide: const BorderSide(
-                  color: Colors.white,
-                ),
+      Prediction? place = await PlacesAutocomplete.show(
+          context: context,
+          apiKey: globalData.googleApiKey(),
+          mode: Mode.overlay,
+          types: [],
+          strictbounds: false,
+          components: [Component(Component.country, 'th')],
+          decoration: InputDecoration(
+            hintText: 'Search',
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(
+                color: Colors.white,
               ),
             ),
-            //google_map_webservice package
-            onError: (err) {
-              print(err);
-            });
+          ),
+          //google_map_webservice package
+          onError: (err) {
+            print(err);
+          });
 
-        if (place != null) {
-          //form google_maps_webservice package
-          final plist = GoogleMapsPlaces(
-            apiKey: globalData.googleApiKey(),
-            apiHeaders: await const GoogleApiHeaders().getHeaders(),
-            //from google_api_headers package
-          );
-          String placeid = place.placeId ?? "0";
-          final detail = await plist.getDetailsByPlaceId(placeid);
-          final geometry = detail.result.geometry!;
-          final lat = geometry.location.lat;
-          final lang = geometry.location.lng;
-          var newlatlang = LatLng(lat, lang);
-          // split address for district
-          String name = detail.result.name;
-          String district = detail.result.formattedAddress!;
-          bool searchProvin = false;
-          if (district.contains("District")) {
-            district = district.split(" District")[0].split(", ")[1];
-          } else if (district.contains("Amphoe")) {
-            district = district.split("Amphoe ")[1].split(", ")[0];
-          } else {
-            searchProvin = true;
-            district = name;
-          }
-          final prefs = await SharedPreferences.getInstance();
-          int? tempDistrictID = 0;
-          if (searchProvin == false) {
-            District? tempDistrict = await District.getDistrictByNameEN(
-                prefs.getString('jwt') ?? "", district);
+      if (place != null) {
+        //form google_maps_webservice package
+        final plist = GoogleMapsPlaces(
+          apiKey: globalData.googleApiKey(),
+          apiHeaders: await const GoogleApiHeaders().getHeaders(),
+          //from google_api_headers package
+        );
+        String placeid = place.placeId ?? "0";
+        final detail = await plist.getDetailsByPlaceId(placeid);
+        final geometry = detail.result.geometry!;
+        final lat = geometry.location.lat;
+        final lang = geometry.location.lng;
+        var newlatlang = LatLng(lat, lang);
+        // split address for district
+        String name = detail.result.name;
+        String district = detail.result.formattedAddress!;
+        bool searchProvin = false;
+        if (district.contains("District")) {
+          district = district.split(" District")[0].split(", ")[1];
+        } else if (district.contains("Amphoe")) {
+          district = district.split("Amphoe ")[1].split(", ")[0];
+        } else {
+          searchProvin = true;
+          district = name;
+        }
+        final prefs = await SharedPreferences.getInstance();
+        int? tempDistrictID = 0;
+        if (searchProvin == false) {
+          District? tempDistrict = await District.getDistrictByNameEN(
+              prefs.getString('jwt') ?? "", district);
 
-            if (tempDistrict != null) {
-              tempDistrictID = tempDistrict.id;
-            }
-          } else {
-            District? tempDistrict = await District.getDistrictByProvinceNameEN(
-                prefs.getString('jwt') ?? "", district);
-            if (tempDistrict != null) {
-              tempDistrictID = tempDistrict.id;
-            }
-          }
-
-          if (searchNumber == 1) {
-            postData!.startDistrictID = tempDistrictID;
-            postData!.startName = name;
-            postDetailData!.startLatLng = newlatlang;
-            setState(() {
-              location1 = place.description.toString();
-              marker1 = newlatlang;
-            });
-          } else if (searchNumber == 2) {
-            postData!.endDistrictID = tempDistrictID;
-            postData!.endName = name;
-            postDetailData!.endLatLng = newlatlang;
-            setState(() {
-              location2 = place.description.toString();
-              marker2 = newlatlang;
-            });
-          }
-          //move map camera to selected place with animation
-          _mapController?.animateCamera(CameraUpdate.newCameraPosition(
-              CameraPosition(target: newlatlang, zoom: 15)));
-          if (postData!.startDistrictID != 0 &&
-              postData!.endDistrictID != 0 &&
-              postData!.endDistrictID != null &&
-              postData!.startDistrictID != null) {
-            await Future.delayed(const Duration(seconds: 2));
-            await routeDraw(marker1, marker2);
-            await updateCameraLocation(marker1, marker2, _mapController!);
+          if (tempDistrict != null) {
+            tempDistrictID = tempDistrict.id;
           }
         } else {
-          print(null);
+          District? tempDistrict = await District.getDistrictByProvinceNameEN(
+              prefs.getString('jwt') ?? "", district);
+          if (tempDistrict != null) {
+            tempDistrictID = tempDistrict.id;
+          }
         }
+
+        if (searchNumber == 1) {
+          postData!.startDistrictID = tempDistrictID;
+          postData!.startName = name;
+          postDetailData!.startLatLng = newlatlang;
+          setState(() {
+            location1 = place.description.toString();
+            marker1 = newlatlang;
+          });
+        } else if (searchNumber == 2) {
+          postData!.endDistrictID = tempDistrictID;
+          postData!.endName = name;
+          postDetailData!.endLatLng = newlatlang;
+          setState(() {
+            location2 = place.description.toString();
+            marker2 = newlatlang;
+          });
+        }
+        //move map camera to selected place with animation
+        _mapController?.animateCamera(CameraUpdate.newCameraPosition(
+            CameraPosition(target: newlatlang, zoom: 15)));
+        if (postData!.startDistrictID != 0 &&
+            postData!.endDistrictID != 0 &&
+            postData!.endDistrictID != null &&
+            postData!.startDistrictID != null) {
+          await Future.delayed(const Duration(seconds: 2));
+          await routeDraw(marker1, marker2);
+          await updateCameraLocation(marker1, marker2, _mapController!);
+        }
+      } else {
+        print(null);
       }
     }
 
@@ -1320,7 +1341,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showDetailAdd() async {
+  void showAlertAdd() async {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -1356,9 +1377,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         _isLoadingAdd = false;
                       });
                       if (post != null) {
+                        countSeat(post.postDetail!.seat!);
+                        postUser = post.user;
                         showAlerSuccess();
                       } else {
-                        Navigator.pop(context);
                         showAlerError();
                       }
                     },
@@ -1457,7 +1479,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       final prefs = await SharedPreferences.getInstance();
 
                       PostMember? postMemberJoin = await PostMember.joinPost(
-                          prefs.getString('jwt') ?? "", postID!);
+                          prefs.getString('jwt') ?? "", post!.id!);
                       if (postMemberJoin != null) {
                         setState(() {
                           _isJoin = false;
@@ -1503,11 +1525,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       Navigator.pop(context);
                       final prefs = await SharedPreferences.getInstance();
                       Post? tempData = await Post.updateStatusPost(
-                          prefs.getString('jwt') ?? "", postID!, "CANCEL");
+                          prefs.getString('jwt') ?? "", post!.id!, "CANCEL");
                       if (tempData != null) {
                         showAlerSuccess();
                         setState(() {
-                          postStatus = tempData.status;
+                          post!.status = tempData.status;
                         });
                         updateUI();
                       } else {
@@ -1551,11 +1573,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       Navigator.pop(context);
                       final prefs = await SharedPreferences.getInstance();
                       Post? tempData = await Post.updateStatusPost(
-                          prefs.getString('jwt') ?? "", postID!, "DONE");
+                          prefs.getString('jwt') ?? "", post!.id!, "DONE");
                       if (tempData != null) {
                         showAlerSuccess();
                         setState(() {
-                          postStatus = tempData.status;
+                          post!.status = tempData.status;
                         });
                         updateUI();
                       } else {
@@ -1586,49 +1608,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return dateTimeFormat;
   }
 
-  SpeedDial flotButton() {
-    if (postCreatedUserID != userID && postStatus == "NEW" && _isJoin == true) {
-      return SpeedDial(
-        icon: Icons.expand_less,
-        activeIcon: Icons.expand_more,
-        backgroundColor: Colors.green,
-        activeBackgroundColor: Colors.red,
-        spacing: 12,
-        children: [
-          SpeedDialChild(
-            backgroundColor: Colors.greenAccent,
-            label: "Join",
-            child: const Icon(Icons.add),
-            onTap: () {
-              showJoinPost();
-            },
-          )
-        ],
+  void pushChatDetailScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => ChatDetailScreen(
+                showBackbt: false,
+                user: user,
+                chatDB: Chat(
+                  chatType: "GROUP",
+                  sendPostID: post!.id,
+                ),
+              )),
+    );
+  }
+
+  dynamic flotButton() {
+    if (postCreatedUserID != user.id && post!.status == "NEW" && _isJoin) {
+      return FloatingActionButton(
+        onPressed: () {
+          showJoinPost();
+        },
+        child: const Icon(Icons.add),
       );
-    } else if ((postCreatedUserID != userID && _isJoin == false) ||
-        (postCreatedUserID == userID &&
-            (postStatus == "DONE" || postStatus == "CANCEL"))) {
-      return SpeedDial(
-        icon: Icons.expand_less,
-        activeIcon: Icons.expand_more,
-        backgroundColor: Colors.green,
-        activeBackgroundColor: Colors.red,
-        spacing: 12,
-        children: [
-          SpeedDialChild(
-            backgroundColor: Colors.blue,
-            label: "Chat",
-            child: const Icon(Icons.message),
-            onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              // );
-            },
-          ),
-        ],
+    } else if ((postCreatedUserID != user.id && _isJoin == false) ||
+        (postCreatedUserID == user.id &&
+            (post!.status == "DONE" || post!.status == "CANCEL"))) {
+      return FloatingActionButton(
+        onPressed: () {
+          pushChatDetailScreen();
+        },
+        child: const Icon(Icons.message),
       );
-    } else if (postCreatedUserID == userID && postStatus == "NEW") {
+    } else if (postCreatedUserID == user.id &&
+        (post!.status == "NEW" || post!.status == "IN_PROGRESS")) {
       return SpeedDial(
         icon: Icons.expand_less,
         activeIcon: Icons.expand_more,
@@ -1642,10 +1655,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             label: "Chat",
             child: const Icon(Icons.message),
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              // );
+              pushChatDetailScreen();
             },
           ),
           // cancel
@@ -1659,102 +1669,58 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           ),
         ],
       );
-    } else if (postCreatedUserID == userID && (postStatus == "IN_PROGRESS")) {
-      return SpeedDial(
-        icon: Icons.expand_less,
-        activeIcon: Icons.expand_more,
-        backgroundColor: Colors.green,
-        activeBackgroundColor: Colors.red,
-        spacing: 12,
-        children: [
-          // chat
-          SpeedDialChild(
-            backgroundColor: Colors.blue,
-            label: "Chat",
-            child: const Icon(Icons.message),
-            onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => ChatDetailScreen()),
-              // );
-            },
-          ),
-          // done
-          SpeedDialChild(
-            backgroundColor: Colors.green,
-            label: "Done",
-            child: const Icon(Icons.check_circle_outline),
-            onTap: () {
-              showDonePost();
-            },
-          ),
-          // cancel
-          SpeedDialChild(
-            backgroundColor: Colors.red,
-            label: "Cancel",
-            child: const Icon(Icons.cancel_outlined),
-            onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                        title: const Text('Cancel'),
-                        // insetPadding: EdgeInsets.zero,
-                        insetPadding: const EdgeInsets.only(
-                            left: 20, right: 20, bottom: 30, top: 30),
-                        content: StatefulBuilder(builder:
-                            (BuildContext context, StateSetter setState) {
-                          // return Column(mainAxisSize: MainAxisSize.max, children: []);
-                          return const Text(
-                              "คุณต้องการ ยกเลิกการเดินทางนี้หรือไม่");
-                        }),
-                        actions: [
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.red,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('Yes')),
-                          TextButton(
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                backgroundColor: Colors.green,
-                              ),
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('No')),
-                        ],
-                      ));
-            },
-          ),
-        ],
-      );
     }
-    return const SpeedDial(
-      icon: Icons.expand_less,
-      activeIcon: Icons.expand_more,
-      backgroundColor: Colors.green,
-      activeBackgroundColor: Colors.red,
-      spacing: 12,
-      children: [],
-    );
+    return null;
+  }
+
+  void countSeat(int seat) async {
+    final prefs = await SharedPreferences.getInstance();
+    int countMember = 0;
+    bool isMember = false;
+
+    List<PostMember>? tempDataPostmember =
+        await PostMember.getPostMembersForCheckJoin(
+            prefs.getString('jwt') ?? "", post!.id!);
+
+    if (tempDataPostmember == null) {
+      setState(() {
+        _isJoin = true;
+      });
+    } else {
+      for (var i in tempDataPostmember) {
+        countMember++;
+        if (i.userID == user.id) {
+          countMember--;
+          isMember = true;
+          break;
+        }
+      }
+      if (isMember == false && countMember < seat) {
+        setState(() {
+          _isJoin = true;
+        });
+      } else {
+        setState(() {
+          _isJoin = false;
+        });
+      }
+    }
   }
 
   void updateUI() async {
     final prefs = await SharedPreferences.getInstance();
-    // userID = prefs.getInt("user_id") ?? 0;
     if (!_isAdd) {
       setState(() {
         _isLoading = true;
       });
       PostDetail? tempData = await PostDetail.getPostDetailByPostID(
-          prefs.getString('jwt') ?? "", postID!);
+          prefs.getString('jwt') ?? "", post!.id!, post!.createdUserID!);
       if (tempData != null) {
+        setState(() {
+          postUser = tempData.post!.user!;
+        });
         // postDetailTemp = tempData;
-        _dateTimeController.text = dateTimeformat(dateTimeStart);
+        _dateTimeController.text = dateTimeformat(post!.dateTimeStart);
         // _seatController.text = tempData.seat.toString();
         _priceController.text = tempData.price.toString();
         _brandController.text = tempData.brand!;
@@ -1764,50 +1730,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _descriptionController.text =
             tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
         if (_isBack) {
-          _dateTimeBackController.text = dateTimeformat(dateTimeEnd);
+          _dateTimeBackController.text = dateTimeformat(post!.dateTimeBack);
         }
         marker1 = tempData.startLatLng!;
         marker2 = tempData.endLatLng!;
 
-        int countMember = 0;
-        bool isMember = false;
-
-        if (postCreatedUserID != userID) {
-          List<PostMember>? tempDataPostmember =
-              await PostMember.getPostMembersForCheckJoin(
-                  prefs.getString('jwt') ?? "", postID!);
-
-          if (tempDataPostmember == null) {
-            setState(() {
-              _isJoin = true;
-            });
-          } else {
-            for (var i in tempDataPostmember) {
-              countMember++;
-              if (i.userID == userID) {
-                isMember = true;
-                break;
-              }
-            }
-            if (isMember == false && countMember < tempData.seat!) {
-              setState(() {
-                _isJoin = true;
-              });
-            } else {
-              setState(() {
-                _isJoin = false;
-              });
-            }
-          }
-        }
-        _seatController.text = "$countMember/${tempData.seat}";
+        _seatController.text =
+            "${tempData.post!.postMemberSeat}/${tempData.seat}";
       }
       setState(() {
         _isLoading = false;
-        postStatus = tempData?.posts!.status;
+        post!.status = tempData?.post!.status;
       });
 
-      await Future.delayed(const Duration(seconds: 2));
+      // await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
     }
@@ -1828,15 +1764,311 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  List<ListTile> getListTileReviews() {
+    List<ListTile> list = [];
+    // int i = 0;
+    for (var review in reviews) {
+      double score = review.score != null ? review.score!.toDouble() : 0.0;
+      var l = ListTile(
+        // tileColor: getColor.colorListTile(i),
+        contentPadding:
+            const EdgeInsets.only(top: 5.0, left: 5.0, right: 5.0, bottom: 5.0),
+        leading: (CircleAvatar(
+          maxRadius: 30,
+          child: ClipOval(
+            child: Image.network(
+              "${globals.protocol}${globals.serverIP}/profiles/${review.img!}",
+              fit: BoxFit.cover,
+            ),
+          ),
+        )),
+        // tileColor: getColor.colorListTile(i),
+        title: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.person,
+                  color: Colors.green,
+                ),
+                Text(
+                  " ${review.user?.firstName} ${review.user?.lastName} ",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.golf_course,
+                  color: Colors.green,
+                ),
+                Flexible(
+                  child: Text(
+                    " ${review.endName}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        subtitle: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.alarm_rounded,
+                  color: Colors.orange,
+                ),
+                Text(
+                  " ${dateTimeformat(DateTime.now())}",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                // RatingBar.builder(
+                //   initialRating: 1,
+                //   minRating: 1,
+                //   direction: Axis.horizontal,
+                //   allowHalfRating: true,
+                //   itemCount: 5,
+                //   itemPadding:
+                //       EdgeInsets.symmetric(horizontal: 0.3, vertical: 0.2),
+                //   itemBuilder: (context, _) => Icon(
+                //     Icons.star,
+                //     color: Colors.amber,
+                //   ),
+                //   onRatingUpdate: (rating) {
+                //     print(rating);
+                //   },
+                // ),
+                RatingBarIndicator(
+                  rating: score,
+                  itemCount: 5,
+                  itemSize: 25,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  "  ${review.description}",
+                ),
+              ],
+            ),
+          ],
+        ),
+        // trailing: const Text("10"),
+        // onTap: () {},
+      );
+      list.add(l);
+    }
+
+    return list;
+  }
+
+  void showDetailReview(Post p) async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Reviews'),
+              // insetPadding: EdgeInsets.zero,
+
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return SizedBox(
+                  // color: Colors.white, // Dialog background
+                  width: MediaQuery.of(context).size.width, // Dialog width
+                  height:
+                      MediaQuery.of(context).size.height - 200, // Dialog height
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 52,
+                            child: user.img != null
+                                ? ClipOval(
+                                    child: Image.network(
+                                      "${globals.protocol}${globals.serverIP}/profiles/${p.img!}",
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Text(
+                            "${p.user?.firstName} ${p.user?.lastName}",
+                            style: const TextStyle(
+                                fontSize: 28,
+                                color: Colors.black,
+                                fontWeight: FontWeight.w400),
+                          ),
+                          Text(
+                            "${p.user?.email}",
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.black),
+                          ),
+                          Text(
+                            "${p.user?.sex}",
+                            style: const TextStyle(
+                                fontSize: 15, color: Colors.black),
+                          ),
+                          // const SizedBox(
+                          //   height: 10,
+                          // ),
+                          Visibility(
+                            // false ,hide chat if p.userID == userID
+                            visible: !(p.createdUserID == user.id),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextButton(
+                                      style: TextButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          backgroundColor: Colors.blue),
+                                      onPressed: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    ChatDetailScreen(
+                                                      showBackbt: false,
+                                                      user: user,
+                                                      chatDB: Chat(
+                                                        chatType: "PRIVATE",
+                                                        sendUserID:
+                                                            p.createdUserID,
+                                                      ),
+                                                    )));
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.message),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          Text(
+                                            "Chat",
+                                            style: TextStyle(
+                                              fontSize: 20,
+                                            ),
+                                          )
+                                        ],
+                                      )),
+                                ],
+                              ),
+                            ),
+                          ),
+                          (reviews.isEmpty
+                              ? const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                      SizedBox(height: 30),
+                                      Text(
+                                        "No review",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 20),
+                                      )
+                                    ])
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  // crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  children: [
+                                    RatingBarIndicator(
+                                      rating: avgReview,
+                                      itemCount: 5,
+                                      itemSize: 25,
+                                      physics: const BouncingScrollPhysics(),
+                                      itemBuilder: (context, _) => const Icon(
+                                        Icons.star,
+                                        color: Colors.amber,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      "$avgReview",
+                                      style: const TextStyle(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                )),
+                        ],
+                      ),
+                      // SizedBox(
+                      //   height: 30,
+                      // ),
+                      // Divider(
+                      //   color: Colors.black,
+                      // ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          children: getListTileReviews(),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+    // await showGeneralDialog(
+    //   context: context,
+    //   pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
+    //       backgroundColor: Colors.black87,
+    //       body: Column(
+    //         children: [],
+    //       )),
+    // );
+  }
+
   Future routeDraw(LatLng l1, LatLng l2) async {
     route.routes.clear();
     var points = [l1, l2];
-    const color = Color.fromARGB(255, 0, 225, 255);
-    // var color = Colors.green;
+    // const color = Color.fromARGB(255, 0, 0, 255);
+    var color = Colors.blue.shade800;
     try {
       await route.drawRoute(
-          points, 'Test routes', color, GlobalData().googleApiKey(),
-          travelMode: TravelModes.walking);
+        points,
+        'Test routes',
+        color,
+        GlobalData().googleApiKey(),
+        travelMode: TravelModes.driving,
+      );
       setState(() {
         totalDistance =
             distanceCalculator.calculateRouteDistance(points, decimals: 1);
