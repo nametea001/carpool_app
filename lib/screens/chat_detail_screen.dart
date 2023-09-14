@@ -15,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:prefs/prefs.dart';
 // import 'package:uuid/uuid.dart';
 import '../models/chat.dart' as c;
+import '../models/chat_user_log.dart';
 import '../models/user.dart';
 import '../gobal_function/data.dart';
 import 'package:car_pool_project/global.dart' as globals;
@@ -94,11 +95,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       print('Connected Chat Detail');
       // socket.emit('active_chat_${chatDB.id}', 'active');
     });
-    socket.on('active_chat_detail_${chatDB.id}', (data) async {
-      var acceptMessage = await ChatDetail.acceptMessage(user.id!, data);
-      if (acceptMessage != null) {
-        _addMessage(acceptMessage);
-      }
+    socket.on('active_chat_detail_${chatDB.id}', (data) {
+      _acceptMessage(data);
     });
     // socket.on('user_${user.id}', (data) {});
     socket.onConnectError((data) => print("Connect Chat Detail Error $data"));
@@ -321,6 +319,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     setState(() {
       _messages[index] = updatedMessage;
     });
+  }
+
+  void _acceptMessage(data) async {
+    var acceptMessage = await ChatDetail.acceptMessage(user.id!, data);
+    if (acceptMessage != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await ChatUserLog.deleteChatUserLog(
+          prefs.getString('jwt') ?? "", chatDB.id!);
+      _addMessage(acceptMessage);
+    }
   }
 
   Future<void> _handleSendPressed(types.PartialText message) async {

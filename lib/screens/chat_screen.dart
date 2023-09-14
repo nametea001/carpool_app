@@ -195,7 +195,9 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  updateUI() async {
+  _acceptChat() async {}
+
+  void updateUI() async {
     final prefs = await SharedPreferences.getInstance();
     List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
 

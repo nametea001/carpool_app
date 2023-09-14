@@ -112,9 +112,12 @@ class _PostScreenState extends State<PostScreen> {
     socket.on('user_${user.id}', (data) async {
       if (data == "Update_Noti") {
         updateChatNoti();
+      } else {
+        print(data);
       }
       // print(data);
     });
+
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
     // socket.on('message', (data) => print(data));
@@ -674,12 +677,6 @@ class _PostScreenState extends State<PostScreen> {
           ],
         ),
       ),
-
-      IconButton(
-          onPressed: () async {
-            socket.emit('test', 'user_id:${user.id}');
-          },
-          icon: const Icon(Icons.textsms_sharp)),
     ];
     return bt;
   }
@@ -721,7 +718,7 @@ class _PostScreenState extends State<PostScreen> {
       },
       child: Scaffold(
           appBar: AppBar(
-            title: const Text("Post"),
+            title: const Text("Posts"),
             backgroundColor: Colors.pink,
             actions: appBarBt(),
           ),

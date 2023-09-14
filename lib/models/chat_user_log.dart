@@ -75,4 +75,14 @@ class ChatUserLog {
     }
     return null;
   }
+
+  static Future<bool?> deleteChatUserLog(String token, int chatID) async {
+    NetworkHelper networkHelper =
+        NetworkHelper('chat_user_logs/delete_chat_log/$chatID', {});
+    var json = await networkHelper.deleteData(token);
+    if (json != null && json['error'] == false) {
+      return true;
+    }
+    return null;
+  }
 }
