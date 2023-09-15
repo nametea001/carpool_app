@@ -16,7 +16,7 @@ class Post {
   int? endDistrictID;
   int? endProvinceID;
   String? img;
-  int? postMemberSeat;
+  int? countPostMember;
   int? createdUserID;
   DateTime? dateTimeStart;
   DateTime? dateTimeBack;
@@ -35,7 +35,7 @@ class Post {
     this.endDistrictID,
     this.endProvinceID,
     this.img,
-    this.postMemberSeat,
+    this.countPostMember,
     this.createdUserID,
     this.dateTimeStart,
     this.dateTimeBack,
@@ -77,7 +77,7 @@ class Post {
             // startProvinceID: t['start_district']['provinces']['id'],
             endDistrictID: t['end_district_id'],
             // endProvinceID: t['end_district']['provinces']['id'],
-            postMemberSeat: t['_count']['post_members'],
+            countPostMember: t['_count']['post_members'],
             img: t['users']['img_path'],
             status: t['status'],
             createdUserID: t['created_user_id'],

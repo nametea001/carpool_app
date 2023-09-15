@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:car_pool_project/models/district.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_detail.dart';
@@ -33,8 +35,8 @@ import 'package:car_pool_project/models/review.dart' as re;
 class PostDetailScreen extends StatefulWidget {
   final User user;
   final bool? isAdd;
+  final bool? isView;
   final bool? isback;
-
   final Post post;
 
   const PostDetailScreen({
@@ -42,6 +44,7 @@ class PostDetailScreen extends StatefulWidget {
     required this.user,
     this.isAdd,
     this.isback,
+    this.isView,
     required this.post,
   });
   @override
@@ -51,6 +54,7 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   GlobalData globalData = GlobalData();
   bool _isAdd = false;
+  bool _isView = false;
   bool _isLoadingAdd = false;
   bool _myLocationEnable = false;
   bool _showMarkerStartToEnd = true;
@@ -126,8 +130,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   final TextEditingController _colorController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  int postCreatedUserID = 0;
-
   PostDetail? postDetailData = PostDetail();
   Post? postData = Post(startDistrictID: 0, endDistrictID: 0);
   // PostDetail? postDetailTemp = PostDetail();
@@ -153,10 +155,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     // postUser = widget.postUser ?? User();
     user = widget.user;
     _isAdd = widget.isAdd ?? false;
+    _isView = widget.isView ?? false;
     stateGoBack = _isBack == false ? "go" : "back";
     post = widget.post;
-    location1 = widget.post.startName ?? "";
-    location2 = widget.post.endName ?? "";
+    location1 = widget.post.startName ?? "Search Start";
+    location2 = widget.post.endName ?? "Search End";
     if (_isAdd) {
       getCar();
     }
@@ -200,16 +203,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? const Text('Add ') : const Text('Detail')),
           backgroundColor: Colors.pink,
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  print(_isLoadingAdd);
-                  setState(() {
-                    _isLoadingAdd = !_isLoadingAdd;
-                  });
-                },
-                icon: Icon(Icons.abc))
-          ],
+          // actions: [
+          //   IconButton(
+          //       onPressed: () async {
+          //         print(_isLoadingAdd);
+          //         setState(() {
+          //           _isLoadingAdd = !_isLoadingAdd;
+          //         });
+          //       },
+          //       icon: Icon(Icons.abc))
+          // ],
         ),
         body: _isLoading
             ? _loadingDetail()
@@ -1377,7 +1380,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         _isLoadingAdd = false;
                       });
                       if (post != null) {
-                        countSeat(post.postDetail!.seat!);
                         postUser = post.user;
                         showAlerSuccess();
                       } else {
@@ -1624,56 +1626,58 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   dynamic flotButton() {
-    if (postCreatedUserID != user.id && post!.status == "NEW" && _isJoin) {
-      return FloatingActionButton(
-        onPressed: () {
-          showJoinPost();
-        },
-        child: const Icon(Icons.add),
-      );
-    } else if ((postCreatedUserID != user.id && _isJoin == false) ||
-        (postCreatedUserID == user.id &&
-            (post!.status == "DONE" || post!.status == "CANCEL"))) {
-      return FloatingActionButton(
-        onPressed: () {
-          pushChatDetailScreen();
-        },
-        child: const Icon(Icons.message),
-      );
-    } else if (postCreatedUserID == user.id &&
-        (post!.status == "NEW" || post!.status == "IN_PROGRESS")) {
-      return SpeedDial(
-        icon: Icons.expand_less,
-        activeIcon: Icons.expand_more,
-        backgroundColor: Colors.green,
-        activeBackgroundColor: Colors.red,
-        spacing: 12,
-        children: [
-          // chat
-          SpeedDialChild(
-            backgroundColor: Colors.blue,
-            label: "Chat",
-            child: const Icon(Icons.message),
-            onTap: () {
-              pushChatDetailScreen();
-            },
-          ),
-          // cancel
-          SpeedDialChild(
-            backgroundColor: Colors.red,
-            label: "Cancel",
-            child: const Icon(Icons.cancel_outlined),
-            onTap: () {
-              showCancelPost();
-            },
-          ),
-        ],
-      );
+    if (!_isView) {
+      if (post!.createdUserID != user.id && post!.status == "NEW" && _isJoin) {
+        return FloatingActionButton(
+          onPressed: () {
+            showJoinPost();
+          },
+          child: const Icon(Icons.add),
+        );
+      } else if ((post!.createdUserID != user.id && _isJoin == false) ||
+          (post!.createdUserID == user.id &&
+              (post!.status == "DONE" || post!.status == "CANCEL"))) {
+        return FloatingActionButton(
+          onPressed: () {
+            pushChatDetailScreen();
+          },
+          child: const Icon(Icons.message),
+        );
+      } else if (post!.createdUserID == user.id &&
+          (post!.status == "NEW" || post!.status == "IN_PROGRESS")) {
+        return SpeedDial(
+          icon: Icons.expand_less,
+          activeIcon: Icons.expand_more,
+          backgroundColor: Colors.green,
+          activeBackgroundColor: Colors.red,
+          spacing: 12,
+          children: [
+            // chat
+            SpeedDialChild(
+              backgroundColor: Colors.blue,
+              label: "Chat",
+              child: const Icon(Icons.message),
+              onTap: () {
+                pushChatDetailScreen();
+              },
+            ),
+            // cancel
+            SpeedDialChild(
+              backgroundColor: Colors.red,
+              label: "Cancel",
+              child: const Icon(Icons.cancel_outlined),
+              onTap: () {
+                showCancelPost();
+              },
+            ),
+          ],
+        );
+      }
     }
     return null;
   }
 
-  void countSeat(int seat) async {
+  void checkJoin(int seat) async {
     final prefs = await SharedPreferences.getInstance();
     int countMember = 0;
     bool isMember = false;
@@ -1714,7 +1718,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _isLoading = true;
       });
       PostDetail? tempData = await PostDetail.getPostDetailByPostID(
-          prefs.getString('jwt') ?? "", post!.id!, post!.createdUserID!);
+          prefs.getString('jwt') ?? "", post!.id!);
       if (tempData != null) {
         setState(() {
           postUser = tempData.post!.user!;
@@ -1736,11 +1740,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         marker2 = tempData.endLatLng!;
 
         _seatController.text =
-            "${tempData.post!.postMemberSeat}/${tempData.seat}";
+            "${tempData.post!.countPostMember}/${tempData.seat}";
       }
+      checkJoin(tempData!.seat!);
       setState(() {
         _isLoading = false;
-        post!.status = tempData?.post!.status;
+        post!.status = tempData.post!.status;
       });
 
       // await Future.delayed(const Duration(seconds: 2));

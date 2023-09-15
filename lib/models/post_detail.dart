@@ -67,9 +67,10 @@ class PostDetail {
   }
 
   static Future<PostDetail?> getPostDetailByPostID(
-      String token, int postID, int userID) async {
-    NetworkHelper networkHelper = NetworkHelper('post_details',
-        {"post_id": postID.toString(), "user_id": userID.toString()});
+      String token, int postID) async {
+    NetworkHelper networkHelper = NetworkHelper('post_details', {
+      "post_id": postID.toString(),
+    });
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       Map t = json['post_detail'];
@@ -91,7 +92,7 @@ class PostDetail {
           color: t['color'],
           post: Post(
             status: t['posts']['status'],
-            postMemberSeat: t['posts']['_count']['post_members'],
+            countPostMember: t['posts']['_count']['post_members'],
             user: User(
               firstName: t['posts']['users']['first_name'],
               lastName: t['posts']['users']['last_name'],

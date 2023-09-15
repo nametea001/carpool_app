@@ -1,4 +1,6 @@
-import 'package:car_pool_project/gobal_function/color.dart';
+// import 'package:car_pool_project/gobal_function/color.dart';
+// ignore_for_file: avoid_print, library_prefixes
+
 import 'package:car_pool_project/models/chat.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
@@ -61,8 +63,10 @@ class _ChatScreenState extends State<ChatScreen> {
     socket.onConnect((_) {
       print('Connected Socket IO Chat');
     });
-    socket.on('chat_user_${user.id}', (data) {
-      if (data == "Update_UI") {}
+    socket.on('chat_user_${user.id}', (data) async {
+      if (data == "Update_UI") {
+        _acceptChat();
+      }
     });
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect"));
@@ -97,15 +101,15 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   List<ListTile> getListTile() {
-    var c = GetColor();
+    // var c = GetColor();
     List<ListTile> list = [];
-    int i = 0;
+    // int i = 0;
     for (var chat in chats) {
       var name = checkChatType(chat);
       var l = ListTile(
-        tileColor: c.colorListTile(i),
+        // tileColor: c.colorListTile(i),
         contentPadding: const EdgeInsets.only(
-            top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
+            top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
         leading: CircleAvatar(
           maxRadius: 30,
           child: ClipOval(
@@ -123,8 +127,13 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Text(
                     " ${name[1]}",
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 23),
+                    style: TextStyle(
+                      fontWeight: chat.chatUserLog!.count == 0
+                          ? FontWeight.normal
+                          : FontWeight.bold,
+                      fontSize: 23,
+                      color: chat.chatUserLog!.count == 0 ? null : Colors.black,
+                    ),
                   ),
                 ),
               ],
@@ -135,7 +144,9 @@ class _ChatScreenState extends State<ChatScreen> {
           child: Text(" ${name[2]}${chat.chatDetail!.msg}",
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: chat.chatUserLog!.count == 0
+                    ? FontWeight.normal
+                    : FontWeight.bold,
                 fontSize: 16,
                 color: chat.chatUserLog!.count == 0 ? null : Colors.black,
               )),
@@ -159,7 +170,7 @@ class _ChatScreenState extends State<ChatScreen> {
           );
         },
       );
-      i++;
+      // i++;
       list.add(l);
     }
 
@@ -195,7 +206,16 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  _acceptChat() async {}
+  void _acceptChat() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
+
+    setState(() {
+      chats.removeWhere(
+          (chat1) => tempData!.any((chat2) => chat1.id == chat2.id));
+      chats.addAll(tempData!);
+    });
+  }
 
   void updateUI() async {
     final prefs = await SharedPreferences.getInstance();
@@ -216,8 +236,15 @@ class _ChatScreenState extends State<ChatScreen> {
         // actions: [
         //   IconButton(
         //       onPressed: () {
-        //         DateTime d = DateTime.now();
-        //         print(d);
+        //         {
+        //           // Map<int, String> data2Map = Map.fromIterable(data2,
+        //           //     key: (user) => user.id, value: (u) => u.firstName);
+        //           // for (User user1 in data1) {
+        //           //   if (data2Map.containsKey(user1.id)) {
+        //           //     user1.firstName = data2Map[user1.id]!;
+        //           //   }
+        //           // }
+        //         }
         //       },
         //       icon: Icon(Icons.abc))
         // ],

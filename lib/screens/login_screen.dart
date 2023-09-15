@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:car_pool_project/screens/post_screen.dart';
 import 'package:car_pool_project/services/config_system.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +15,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -46,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String sex = "Male";
 
-  User? userJWT = null;
+  // User? userJWT = null;
 
   @override
   void initState() {
@@ -68,20 +71,20 @@ class _LoginScreenState extends State<LoginScreen> {
     _focusNodeSingUpLastName.dispose();
   }
 
-  void checkLoginJWT() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? jwt = prefs.getString('jwt');
-    if (jwt != null) {
-      User? u = await User.checkLoginJWT(jwt);
-      setState(() {
-        userJWT = u;
-      });
-    } else {
-      setState(() {
-        userJWT = null;
-      });
-    }
-  }
+  // void checkLoginJWT() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   String? jwt = prefs.getString('jwt');
+  //   if (jwt != null) {
+  //     User? u = await User.checkLoginJWT(jwt);
+  //     setState(() {
+  //       userJWT = u;
+  //     });
+  //   } else {
+  //     setState(() {
+  //       userJWT = null;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ride Sharing v1.4.0'),
+          title: const Text('Ride Sharing v1.5'),
           backgroundColor: Colors.pink,
           actions: [
             // config Ip
@@ -154,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
-                      Container(
+                      SizedBox(
                         height: MediaQuery.of(context).size.height - 100,
                         // padding: EdgeInsets.only(top: 30),
                         child: TabBarView(
@@ -210,37 +213,35 @@ class _LoginScreenState extends State<LoginScreen> {
                                               )),
                                         ),
                                         // forget pass bt
-                                        Container(
-                                          child: Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                                150, 0, 0, 0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: [
-                                                TextButton(
-                                                    onPressed: () {},
-                                                    child: Text(
-                                                      "Forget your password ?",
-                                                      style: TextStyle(
-                                                          color: Colors
-                                                              .red.shade900,
-                                                          decoration:
-                                                              TextDecoration
-                                                                  .underline,
-                                                          fontStyle:
-                                                              FontStyle.italic),
-                                                    ))
-                                              ],
-                                            ),
+                                        Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              150, 0, 0, 0),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.end,
+                                            children: [
+                                              TextButton(
+                                                  onPressed: () {},
+                                                  child: Text(
+                                                    "Forget your password ?",
+                                                    style: TextStyle(
+                                                        color:
+                                                            Colors.red.shade900,
+                                                        decoration:
+                                                            TextDecoration
+                                                                .underline,
+                                                        fontStyle:
+                                                            FontStyle.italic),
+                                                  ))
+                                            ],
                                           ),
                                         ),
                                         //  login button
                                         _isSignIn
                                             ? _loadingSingin()
-                                            : Container(
+                                            : SizedBox(
                                                 width: double.infinity,
                                                 child: ElevatedButton(
                                                   style:
@@ -729,7 +730,7 @@ class _LoginScreenState extends State<LoginScreen> {
         actions: [
           TextButton(
               style: TextButton.styleFrom(
-                primary: Colors.white,
+                foregroundColor: Colors.white,
                 backgroundColor: Colors.blueGrey,
               ),
               onPressed: () {

@@ -1,4 +1,6 @@
-import 'package:car_pool_project/gobal_function/color.dart';
+// import 'package:car_pool_project/gobal_function/color.dart';
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/chat_user_log.dart';
 import 'package:car_pool_project/models/district.dart';
@@ -126,13 +128,13 @@ class _PostScreenState extends State<PostScreen> {
   // ListTile posts
   List<ListTile> getListTile() {
     List<ListTile> list = [];
-    var c = GetColor();
-    int i = 0;
+    // var c = GetColor();
+    // int i = 0;
     for (var post in posts) {
       var l = ListTile(
-        tileColor: c.colorListTile(i),
+        // tileColor: c.colorListTile(i),
         contentPadding: const EdgeInsets.only(
-            top: 15.0, left: 15.0, right: 10.0, bottom: 5.0),
+            top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
         leading: (post.img != null
             ? GestureDetector(
                 onTap: () async {
@@ -206,10 +208,10 @@ class _PostScreenState extends State<PostScreen> {
                 Icon(
                   Icons.airline_seat_recline_normal,
                   color:
-                      colorSeat(post.postMemberSeat!, post.postDetail!.seat!),
+                      colorSeat(post.countPostMember!, post.postDetail!.seat!),
                 ),
                 Text(
-                  "${post.postMemberSeat}/${post.postDetail!.seat}",
+                  "${post.countPostMember}/${post.postDetail!.seat}",
                   // style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -234,7 +236,7 @@ class _PostScreenState extends State<PostScreen> {
           );
         },
       );
-      i++;
+      // i++;
       list.add(l);
     }
 

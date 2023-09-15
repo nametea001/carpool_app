@@ -1,3 +1,5 @@
+// ignore_for_file: library_prefixes, avoid_print
+
 import 'dart:io';
 // import 'package:file_picker/file_picker.dart';
 import 'package:car_pool_project/models/chat_detail.dart';
@@ -353,6 +355,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
+  // ignore: unused_element
   void _loadMessages() async {
     var data = GlobalData();
     final response = data.test();

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:car_pool_project/global.dart' as globals;
@@ -24,7 +26,6 @@ class NetworkHelper {
         return jsonDecode(data);
       }
     } catch (e) {
-      // ignore: avoid_print
       print(e);
     }
   }

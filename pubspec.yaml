@@ -32,6 +32,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.5
+  intl: ^0.18.1
   shared_preferences: ^2.0.17
   cupertino_icons: ^1.0.2
   path_provider: ^2.0.11

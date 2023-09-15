@@ -1,4 +1,6 @@
 // import 'dart:convert';
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
 
 import 'package:car_pool_project/models/chat.dart';
