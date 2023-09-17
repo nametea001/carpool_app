@@ -6,7 +6,6 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/gobal_function/data.dart';
-import 'package:intl/intl.dart';
 import 'package:prefs/prefs.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:skeleton_loader/skeleton_loader.dart';
@@ -152,8 +151,7 @@ class _ChatScreenState extends State<ChatScreen> {
               )),
         ),
         // trailing: Text(dateTimeformat(DateTime.now())),
-        trailing:
-            Text(DateFormat("HH:mm:").format(chat.createdAt ?? DateTime.now())),
+        trailing: Text(globalData.dateTimeFormatForChat(chat.createdAt)),
         onTap: () {
           setState(() {
             chat.chatUserLog!.count = 0;

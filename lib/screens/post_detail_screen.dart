@@ -21,16 +21,18 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
+import 'package:socket_io_client/socket_io_client.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
 import '../models/chat.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:car_pool_project/models/review.dart' as re;
+// ignore: library_prefixes
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class PostDetailScreen extends StatefulWidget {
   final User user;
@@ -149,6 +151,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   List<re.Review> reviews = [];
   double avgReview = 0.0;
 
+  late IO.Socket socket;
+
   @override
   void initState() {
     super.initState();
@@ -185,6 +189,29 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _colorController.dispose();
     _descriptionController.dispose();
     // route.routes.clear();
+  }
+
+// socket IO
+  void initSocketIO() {
+    String pathSocket = "${globals.webSocketProtocol}${globals.serverIP}/";
+    socket = IO.io(
+      pathSocket,
+      OptionBuilder()
+          .setTransports(['websocket'])
+          .setPath("/api/socket_io")
+          // .setQuery({"user_id": user.id})
+          .build(),
+    );
+    socket.onConnect((_) {
+      print('Connected Socket IO Chat Detail');
+    });
+
+    socket.on('server_post', (data) async {
+      updatePostDettail(data);
+    });
+    socket.onConnectError((data) => print("Connect Error $data"));
+    socket.onDisconnect((data) => print("Disconnect Chat Detail"));
+    // socket.on('message', (data) => print(data));
   }
 
   @override
@@ -437,8 +464,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         locale: LocaleType.th,
                                         onConfirm: (time) {
                                           postData!.dateTimeStart = time;
-                                          _dateTimeController.text =
-                                              dateTimeformat(time);
+                                          _dateTimeController.text = globalData
+                                              .dateTimeFormatForPost(time);
                                         },
                                       );
                                     }
@@ -502,7 +529,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                 onConfirm: (time) {
                                                   postData!.dateTimeBack = time;
                                                   _dateTimeBackController.text =
-                                                      dateTimeformat(time);
+                                                      globalData
+                                                          .dateTimeFormatForPost(
+                                                              time);
                                                 },
                                               );
                                             }
@@ -1600,16 +1629,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  String dateTimeformat(DateTime? time) {
-    int mount = int.parse(DateFormat.M().format(time!));
-    String dayWeek = DateFormat.E().format(time);
-    // String dateTimeFormat =
-    //     "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${time.year}  ${DateFormat.Hm().format(time)}";
-    String dateTimeFormat =
-        "${globalData.getDay(dayWeek)} ${time.day} ${globalData.getMonth(mount)} ${DateFormat.Hm().format(time)}";
-    return dateTimeFormat;
-  }
-
   void pushChatDetailScreen() {
     Navigator.push(
       context,
@@ -1724,7 +1743,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           postUser = tempData.post!.user!;
         });
         // postDetailTemp = tempData;
-        _dateTimeController.text = dateTimeformat(post!.dateTimeStart);
+        _dateTimeController.text =
+            globalData.dateTimeFormatForPost(post!.dateTimeStart);
         // _seatController.text = tempData.seat.toString();
         _priceController.text = tempData.price.toString();
         _brandController.text = tempData.brand!;
@@ -1734,13 +1754,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         _descriptionController.text =
             tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
         if (_isBack) {
-          _dateTimeBackController.text = dateTimeformat(post!.dateTimeBack);
+          _dateTimeBackController.text =
+              globalData.dateTimeFormatForPost(post!.dateTimeBack);
         }
         marker1 = tempData.startLatLng!;
         marker2 = tempData.endLatLng!;
-
         _seatController.text =
             "${tempData.post!.countPostMember}/${tempData.seat}";
+        checkJoin(tempData.seat!);
       }
       checkJoin(tempData!.seat!);
       setState(() {
@@ -1751,6 +1772,40 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       // await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
+    }
+  }
+
+  void updatePostDettail(data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      int tempID = int.parse(data);
+      if (tempID == post!.id) {
+        PostDetail? tempData = await PostDetail.getPostDetailByPostID(
+            prefs.getString('jwt') ?? "", tempID);
+        if (tempData != null) {
+          setState(() {
+            postUser = tempData.post!.user!;
+          });
+          _dateTimeController.text =
+              globalData.dateTimeFormatForPost(post!.dateTimeStart);
+          _priceController.text = tempData.price.toString();
+          _brandController.text = tempData.brand!;
+          _modelController.text = tempData.model!;
+          _vehicleRegistrationController.text = tempData.vehicleRegistration!;
+          _colorController.text = tempData.color!;
+          _descriptionController.text =
+              tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
+          if (_isBack) {
+            _dateTimeBackController.text =
+                globalData.dateTimeFormatForPost(post!.dateTimeBack);
+          }
+          _seatController.text =
+              "${tempData.post!.countPostMember}/${tempData.seat}";
+          checkJoin(tempData.seat!);
+        }
+      }
+    } catch (err) {
+      print(err);
     }
   }
 
@@ -1810,7 +1865,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ),
                 Flexible(
                   child: Text(
-                    " ${review.endName}",
+                    " ${review.post!.endName}",
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -1828,7 +1883,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                   color: Colors.orange,
                 ),
                 Text(
-                  " ${dateTimeformat(DateTime.now())}",
+                  " ${globalData.dateTimeFormatForPost(DateTime.now())}",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ],

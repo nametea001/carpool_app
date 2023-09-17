@@ -1,6 +1,41 @@
+import 'package:intl/intl.dart';
+
 class GlobalData {
   String googleApiKey() {
     return "AIzaSyCwp3of0o28LsZ6PiLtKkIM9tAo8xG8xh0";
+  }
+
+  String dateTimeFormatForChat(DateTime? dateTime) {
+    int mount = int.parse(DateFormat.M().format(dateTime!));
+    String dayWeek = DateFormat.E().format(dateTime);
+    DateTime now = DateTime.now();
+    // return DateFormat('y').format(dateTime);
+    if (dateTime.day == now.day) {
+      return DateFormat.Hm().format(dateTime);
+    } else if (dateTime.isAfter(now.subtract(const Duration(days: 3))) ||
+        dateTime.weekday == now.weekday) {
+      return getDay(dayWeek);
+    }
+    //else if (dateTime.year == now.year ||
+    //     dateTime.isBefore(now.add(const Duration(days: 365))))
+    else if (dateTime.year == now.year) {
+      // return DateFormat('dd MMM').format(dateTime);
+      return "${DateFormat('d').format(dateTime)} ${getMonth(mount)}";
+    } else {
+      return "${DateFormat('d').format(dateTime)} ${getMonth(mount)} ${DateFormat('y').format(dateTime)} ";
+    }
+  }
+
+  String dateTimeFormatForPost(DateTime? dateTime) {
+    int mount = int.parse(DateFormat.M().format(dateTime!));
+    String dayWeek = DateFormat.E().format(dateTime);
+    DateTime now = DateTime.now();
+    if (dateTime.year == now.year ||
+        dateTime.isBefore(now.add(const Duration(days: 365)))) {
+      return "${getDay(dayWeek)} ${dateTime.day} ${getMonth(mount)} ${DateFormat.Hm().format(dateTime)}";
+    } else {
+      return "${getDay(dayWeek)} ${dateTime.day} ${getMonth(mount)} ${dateTime.year} ${DateFormat.Hm().format(dateTime)}";
+    }
   }
 
   String getMonth(int month) {
@@ -18,7 +53,7 @@ class GlobalData {
       "พ.ย.",
       "ธ.ค.",
     ];
-    return months[month];
+    return months[month - 1];
   }
 
   String getDay(String day) {
@@ -190,5 +225,4 @@ class GlobalData {
       }
     ];
   }
-
 }

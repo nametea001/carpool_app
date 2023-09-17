@@ -45,25 +45,22 @@ class Post {
     this.user,
   });
 
-  static Future<List<Post>?> getPost(
-    String token,
-    int provinceStartID,
-    int districtStartID,
-    int provinceEndtID,
-    int districtEndID,
-    String datetimeSelected,
-    String datetimeBackSelected,
-    bool isBack,
-  ) async {
+  static Future<List<Post>?> getPost(String token, Post post) async {
+    String strDatetimeStart = post.dateTimeStart == null
+        ? DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now())
+        : DateFormat("yyyy-MM-dd HH:mm:ss").format(post.dateTimeStart!);
+    String? strDatetimeEnd = post.dateTimeBack != null
+        ? DateFormat("yyyy-MM-dd HH:mm:ss").format(post.dateTimeBack!)
+        : null;
+
     NetworkHelper networkHelper = NetworkHelper('posts', {
-      "device": "mobile",
-      "start_province_id": provinceStartID.toString(),
-      "start_district_id": districtStartID.toString(),
-      "end_province_id": provinceEndtID.toString(),
-      "end_district_id": districtEndID.toString(),
-      "date_time_start": datetimeSelected,
-      "date_time_back": datetimeBackSelected,
-      "is_back": isBack.toString()
+      "start_province_id": post.startProvinceID.toString(),
+      "start_district_id": post.startDistrictID.toString(),
+      "end_province_id": post.endProvinceID.toString(),
+      "end_district_id": post.endDistrictID.toString(),
+      "date_time_start": strDatetimeStart.toString(),
+      "date_time_back": strDatetimeEnd.toString(),
+      "is_back": post.isBack.toString()
     });
     List<Post> posts = [];
     var json = await networkHelper.getData(token);
@@ -99,6 +96,43 @@ class Post {
         posts.add(post);
       }
       return posts;
+    }
+    return null;
+  }
+
+  static Future<Post?>? getPostByID(String token, int postID) async {
+    NetworkHelper networkHelper =
+        NetworkHelper('get_post_by_id', {"post_id": postID.toString()});
+    var json = await networkHelper.getData(token);
+    if (json != null && json['error'] == false) {
+      Map t = json['posts'];
+      Post post = Post(
+          id: t['id'],
+          startName: t['name_start'],
+          endName: t['name_end'],
+          startDistrictID: t['start_district_id'],
+          endDistrictID: t['end_district_id'],
+          countPostMember: t['_count']['post_members'],
+          img: t['users']['img_path'],
+          status: t['status'],
+          createdUserID: t['created_user_id'],
+          dateTimeStart: t['date_time_start'] != null
+              ? DateTime.parse(t['date_time_start'])
+              : null,
+          dateTimeBack: t['date_time_back'] != null
+              ? DateTime.parse(t['date_time_back'])
+              : null,
+          postDetail: PostDetail(
+              price: double.parse(t['post_details'][0]['price']),
+              seat: t['post_details'][0]['seat']),
+          user: User(
+            firstName: t['users']['first_name'],
+            lastName: t['users']['last_name'],
+            email: t['users']['email'],
+            sex: t['users']['sex'],
+          ));
+
+      return post;
     }
     return null;
   }

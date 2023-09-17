@@ -756,9 +756,8 @@ class _LoginScreenState extends State<LoginScreen> {
     if (u != null) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt', u.jwt.toString());
-      await prefs.setInt("user_id", u.id ?? 0);
       await prefs.setInt(
-          "start_province_id", prefs.getInt('start_province_id') ?? 1);
+          "start_province_id", prefs.getInt('start_province_id') ?? 4701);
 
       _passwordController.clear();
       // ignore: use_build_context_synchronously
