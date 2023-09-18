@@ -49,6 +49,7 @@ class _PostScreenState extends State<PostScreen> {
   List<Post> posts = [];
   List<int> postIDKey = [];
 
+  bool _isStartSearch = false;
   bool _isLogout = false;
 
   String _stateGoBack = "go";
@@ -281,6 +282,11 @@ class _PostScreenState extends State<PostScreen> {
       //     ],
       //   ),
       // ),
+      IconButton(
+          onPressed: () {
+            updateUI();
+          },
+          icon: Icon(Icons.abc)),
 
       Padding(
         padding: const EdgeInsets.all(8.0),
@@ -355,12 +361,7 @@ class _PostScreenState extends State<PostScreen> {
                                     ),
                                     Row(
                                       children: [
-                                        SizedBox(
-                                          width: (MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  2) +
-                                              50,
+                                        Expanded(
                                           child: TextFormField(
                                             validator: MultiValidator([
                                               RequiredValidator(
@@ -379,9 +380,27 @@ class _PostScreenState extends State<PostScreen> {
                                                 context,
                                                 showTitleActions: true,
                                                 minTime: DateTime.now(),
-                                                currentTime: DateTime.now(),
+                                                currentTime: datetimeSelected !=
+                                                            null &&
+                                                        datetimeSelected!
+                                                            .isAfter(
+                                                                DateTime.now())
+                                                    ? datetimeSelected
+                                                    : DateTime.now(),
                                                 locale: LocaleType.th,
                                                 onConfirm: (time) {
+                                                  if (datetimeBackSelected !=
+                                                          null &&
+                                                      time.isAfter(
+                                                          datetimeBackSelected!) &&
+                                                      _isBackSearch) {
+                                                    datetimeBackSelected = time;
+                                                    dateTimeBackController
+                                                            .text =
+                                                        globalData
+                                                            .dateTimeFormatForPost(
+                                                                time);
+                                                  }
                                                   datetimeSelected = time;
                                                   dateTimeController.text =
                                                       globalData
@@ -416,12 +435,7 @@ class _PostScreenState extends State<PostScreen> {
                                           children: [
                                             Row(
                                               children: [
-                                                SizedBox(
-                                                  width: (MediaQuery.of(context)
-                                                              .size
-                                                              .width /
-                                                          2) +
-                                                      50,
+                                                Expanded(
                                                   child: TextFormField(
                                                     validator: (String? str) {
                                                       if (str!.isEmpty &&
@@ -441,27 +455,32 @@ class _PostScreenState extends State<PostScreen> {
                                                     onTap: () {
                                                       FocusScope.of(context)
                                                           .unfocus();
-                                                      DatePicker
-                                                          .showDateTimePicker(
-                                                        context,
-                                                        showTitleActions: true,
-                                                        minTime:
-                                                            datetimeSelected ??
-                                                                DateTime.now(),
-                                                        currentTime:
-                                                            datetimeSelected ??
-                                                                DateTime.now(),
-                                                        locale: LocaleType.th,
-                                                        onConfirm: (time) {
-                                                          datetimeBackSelected =
-                                                              time;
-                                                          dateTimeBackController
-                                                                  .text =
-                                                              globalData
-                                                                  .dateTimeFormatForPost(
-                                                                      time);
-                                                        },
-                                                      );
+                                                      DatePicker.showDateTimePicker(
+                                                          context,
+                                                          showTitleActions:
+                                                              true,
+                                                          minTime:
+                                                              datetimeSelected ??
+                                                                  DateTime
+                                                                      .now(),
+                                                          currentTime: datetimeSelected !=
+                                                                      null &&
+                                                                  datetimeSelected!
+                                                                      .isAfter(
+                                                                          DateTime
+                                                                              .now())
+                                                              ? datetimeSelected
+                                                              : DateTime.now(),
+                                                          locale: LocaleType.th,
+                                                          onConfirm: (time) {
+                                                        datetimeBackSelected =
+                                                            time;
+                                                        dateTimeBackController
+                                                                .text =
+                                                            globalData
+                                                                .dateTimeFormatForPost(
+                                                                    time);
+                                                      });
                                                     },
                                                     decoration: InputDecoration(
                                                         labelText:
@@ -509,7 +528,7 @@ class _PostScreenState extends State<PostScreen> {
                                             selectedItem: selectedProvinceStart,
                                             items: provinces,
                                             itemAsString: (Province? p) {
-                                              selectedProvinceStart = p;
+                                              // selectedProvinceStart = p;
                                               return "${p!.nameTH.toString()} (${p.nameEN.toString()})";
                                             },
                                             dropdownDecoratorProps:
@@ -521,8 +540,9 @@ class _PostScreenState extends State<PostScreen> {
                                               ),
                                             ),
                                             onChanged: (Province? p) {
-                                              stateDistrictsStart.clear();
+                                              selectedProvinceStart = p;
                                               // print(selectingDistrict.nameTH);
+                                              stateDistrictsStart.clear();
                                               setState(() {
                                                 selectedDistrictStart =
                                                     allDistrict;
@@ -613,6 +633,8 @@ class _PostScreenState extends State<PostScreen> {
                                                 // print(selectingDistrict.nameTH);
                                                 setState(() {
                                                   _isSelectedProvinceEnd = true;
+                                                  selectedDistrictEnd =
+                                                      allDistrict;
                                                   stateDistrictsEnd
                                                       .add(allDistrict);
                                                 });
@@ -624,6 +646,8 @@ class _PostScreenState extends State<PostScreen> {
                                                   }
                                                 }
                                               } else {
+                                                selectedDistrictEnd =
+                                                    allDistrict;
                                                 setState(() {
                                                   _isSelectedProvinceEnd =
                                                       false;
@@ -683,6 +707,7 @@ class _PostScreenState extends State<PostScreen> {
                                 ),
                                 onPressed: () async {
                                   if (formKey.currentState!.validate()) {
+                                    _isStartSearch = true;
                                     Navigator.pop(context);
                                     updateUI();
                                   }
@@ -929,15 +954,17 @@ class _PostScreenState extends State<PostScreen> {
     final prefs = await SharedPreferences.getInstance();
     ChatUserLog? tempData =
         await ChatUserLog.getCountChatUserLog(prefs.getString('jwt') ?? "");
-    setState(() {
-      if (tempData!.count! > 99) {
-        chatNoti = "99+";
-      } else if (tempData.count! > 0) {
-        chatNoti = "${tempData.count}";
-      } else {
-        chatNoti = "";
-      }
-    });
+    if (tempData != null) {
+      setState(() {
+        if (tempData.count! > 99) {
+          chatNoti = "99+";
+        } else if (tempData.count! > 0) {
+          chatNoti = "${tempData.count}";
+        } else {
+          chatNoti = "";
+        }
+      });
+    }
   }
 
   void getProvince() async {
@@ -964,11 +991,14 @@ class _PostScreenState extends State<PostScreen> {
     final prefs = await SharedPreferences.getInstance();
 
     int startProvinceID =
-        selectedProvinceStart?.id ?? prefs.getInt("start_province_id") ?? 4701;
+        selectedProvinceStart?.id ?? prefs.getInt("start_province_id") ?? 35;
     int startDistrictID = selectedDistrictStart?.id ?? 0;
     int endProvinceID = selectedProvinceEnd?.id ?? 0;
     int endDistrictID = selectedDistrictEnd?.id ?? 0;
-
+    bool? dataIsback;
+    if (_isStartSearch) {
+      dataIsback = _isBackSearch;
+    }
     postDataSearch = Post(
       startProvinceID: startProvinceID,
       startDistrictID: startDistrictID,
@@ -976,7 +1006,7 @@ class _PostScreenState extends State<PostScreen> {
       endDistrictID: endDistrictID,
       dateTimeStart: datetimeSelected,
       dateTimeBack: datetimeBackSelected,
-      isBack: _isBackSearch,
+      isBack: dataIsback,
     );
     List<Post>? tempData =
         await Post.getPost(prefs.getString('jwt') ?? "", postDataSearch!);

@@ -441,12 +441,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           Row(
                             children: [
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width - 50,
+                              Expanded(
                                 child: TextFormField(
                                   validator: MultiValidator([
                                     RequiredValidator(
-                                        errorText: "Please Slect DateTime")
+                                        errorText: "Please Select DateTime")
                                   ]),
                                   showCursor: false,
                                   readOnly: true,
@@ -496,10 +495,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width -
-                                                50,
+                                      Expanded(
                                         child: TextFormField(
                                           validator: (String? str) {
                                             if (str!.isEmpty && _isBack) {
