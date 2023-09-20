@@ -45,7 +45,7 @@ class Post {
     this.user,
   });
 
-  static Future<List<Post>?> getPost(String token, Post post) async {
+  static Future<List<Post>?> getPosts(String token, Post post) async {
     String strDatetimeStart = post.dateTimeStart == null
         ? DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now())
         : DateFormat("yyyy-MM-dd HH:mm:ss").format(post.dateTimeStart!);
@@ -137,6 +137,44 @@ class Post {
     return null;
   }
 
+  static Future<List<Post>?> getPostsHistory(String token) async {
+    NetworkHelper networkHelper = NetworkHelper('posts/history', {});
+    List<Post> posts = [];
+    var json = await networkHelper.getData(token);
+    if (json != null && json['error'] == false) {
+      for (Map t in json['posts']) {
+        Post post = Post(
+            id: t['id'],
+            startName: t['name_start'],
+            endName: t['name_end'],
+            startDistrictID: t['start_district_id'],
+            endDistrictID: t['end_district_id'],
+            countPostMember: t['_count']['post_members'],
+            img: t['users']['img_path'],
+            status: t['status'],
+            createdUserID: t['created_user_id'],
+            dateTimeStart: t['date_time_start'] != null
+                ? DateTime.parse(t['date_time_start'])
+                : null,
+            dateTimeBack: t['date_time_back'] != null
+                ? DateTime.parse(t['date_time_back'])
+                : null,
+            postDetail: PostDetail(
+                price: double.parse(t['post_details'][0]['price']),
+                seat: t['post_details'][0]['seat']),
+            user: User(
+              firstName: t['users']['first_name'],
+              lastName: t['users']['last_name'],
+              email: t['users']['email'],
+              sex: t['users']['sex'],
+            ));
+        posts.add(post);
+      }
+      return posts;
+    }
+    return null;
+  }
+
   static Future<Post?> addPostAndPostDetail(
       String token, Post dataPost, PostDetail dataPostDetail) async {
     NetworkHelper networkHelper = NetworkHelper('posts/add_post', {});
@@ -220,7 +258,7 @@ class Post {
       String token, int postID, String status) async {
     NetworkHelper networkHelper = NetworkHelper('posts/update_status_post', {});
 
-    var json = await networkHelper.postData(
+    var json = await networkHelper.putData(
       jsonEncode(<String, dynamic>{"post_id": postID, "status": status}),
       token,
     );

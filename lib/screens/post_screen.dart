@@ -10,6 +10,7 @@ import 'package:car_pool_project/models/review.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/car_screen.dart';
 import 'package:car_pool_project/screens/chat_screen.dart';
+import 'package:car_pool_project/screens/history_screen.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:car_pool_project/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -127,8 +128,6 @@ class _PostScreenState extends State<PostScreen> {
     socket.on('user_${user.id}', (data) async {
       if (data == "Update_Noti") {
         updateChatNoti();
-      } else {
-        print(data);
       }
     });
     socket.on('server_post', (data) async {
@@ -282,12 +281,6 @@ class _PostScreenState extends State<PostScreen> {
       //     ],
       //   ),
       // ),
-      IconButton(
-          onPressed: () {
-            updateUI();
-          },
-          icon: Icon(Icons.abc)),
-
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -820,11 +813,7 @@ class _PostScreenState extends State<PostScreen> {
               child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              (_isLoading
-                  ? listLoader()
-                  : Container(
-                      child: listView(),
-                    )),
+              (_isLoading ? listLoader() : listView()),
             ],
           )),
           floatingActionButton: FloatingActionButton(
@@ -914,7 +903,14 @@ class _PostScreenState extends State<PostScreen> {
                 ListTile(
                   leading: const Icon(Icons.history),
                   title: const Text("History"),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HistoryScreen(user: user)),
+                    );
+                  },
                 ),
                 ListTile(
                   leading: const Icon(Icons.info),
@@ -1009,7 +1005,7 @@ class _PostScreenState extends State<PostScreen> {
       isBack: dataIsback,
     );
     List<Post>? tempData =
-        await Post.getPost(prefs.getString('jwt') ?? "", postDataSearch!);
+        await Post.getPosts(prefs.getString('jwt') ?? "", postDataSearch!);
 
     setState(() {
       posts = tempData ?? [];
