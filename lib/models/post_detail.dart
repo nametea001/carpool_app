@@ -1,4 +1,5 @@
 import 'package:car_pool_project/models/post.dart';
+import 'package:car_pool_project/models/post_member.dart';
 import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -66,8 +67,7 @@ class PostDetail {
     return null;
   }
 
-  static Future<PostDetail?> getPostDetailByPostID(
-      String token, int postID) async {
+  static Future<dynamic> getPostDetailByPostID(String token, int postID) async {
     NetworkHelper networkHelper = NetworkHelper('post_details', {
       "post_id": postID.toString(),
     });
@@ -101,8 +101,22 @@ class PostDetail {
               img: t['posts']['users']['img_path'],
             ),
           ));
+      List<PostMember> postMembers = [];
+      for (Map pm in json['post_detail']['posts']['post_members']) {
+        PostMember postMember = PostMember(
+            id: pm['id'],
+            userID: pm['user_id'],
+            user: User(
+              firstName: pm['users']['first_name'],
+              lastName: pm['users']['last_name'],
+              email: pm['users']['email'],
+              sex: pm['users']['sex'],
+              img: t['posts']['users']['img_path'],
+            ));
+        postMembers.add(postMember);
+      }
 
-      return postDetail;
+      return [postDetail, postMembers];
     }
     return null;
   }

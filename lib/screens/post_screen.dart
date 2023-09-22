@@ -28,6 +28,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 import 'package:badges/badges.dart' as badges;
 import '../models/chat.dart';
 import 'chat_detail_screen.dart';
+import 'review_screen.dart';
 
 class PostScreen extends StatefulWidget {
   final User user;
@@ -87,6 +88,7 @@ class _PostScreenState extends State<PostScreen> {
   List<Review> reviews = [];
   double avgReview = 0.0;
   String chatNoti = "";
+  String reviewNoti = "";
   // bool _isChat = false;
   late IO.Socket socket;
 
@@ -119,7 +121,6 @@ class _PostScreenState extends State<PostScreen> {
       OptionBuilder()
           .setTransports(['websocket'])
           .setPath("/api/socket_io")
-          // .setQuery({"user_id": user.id})
           .build(),
     );
     socket.onConnect((_) {
@@ -128,7 +129,7 @@ class _PostScreenState extends State<PostScreen> {
     socket.on('user_${user.id}', (data) async {
       if (data == "Update_Noti") {
         updateChatNoti();
-      }
+      } else if (data == "Update_Review") {}
     });
     socket.on('server_post', (data) async {
       updatePost(data);
@@ -150,7 +151,7 @@ class _PostScreenState extends State<PostScreen> {
         // tileColor: c.colorListTile(i),
         contentPadding: const EdgeInsets.only(
             top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
-        leading: (post.img != null
+        leading: (post.user!.img != null
             ? GestureDetector(
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
@@ -161,13 +162,15 @@ class _PostScreenState extends State<PostScreen> {
                     avgReview =
                         tempData[1] != null ? tempData[1].toDouble() : 0.0;
                   });
-                  showDetailReview(post);
+                  User? u = post.user;
+                  u?.id = post.createdUserID;
+                  showDetailReview(u!);
                 },
                 child: CircleAvatar(
                   maxRadius: 30,
                   child: ClipOval(
                     child: Image.network(
-                        "${globals.protocol}${globals.serverIP}/profiles/${post.img!}",
+                        "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img!}",
                         fit: BoxFit.cover),
                   ),
                 ),
@@ -297,13 +300,6 @@ class _PostScreenState extends State<PostScreen> {
                     dateTimeBackController.text =
                         globalData.dateTimeFormatForPost(datetimeBackSelected);
                   }
-                  // if(){}
-                  // setState(() {
-                  //   dateTimeBackController.text = "";
-                  //   dateTimeController.text = "";
-                  //   _isSelectedProvinceStart = false;
-                  //   _isSelectedProvinceEnd = false;
-                  // });
                   await showDialog(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
@@ -913,6 +909,20 @@ class _PostScreenState extends State<PostScreen> {
                   },
                 ),
                 ListTile(
+                  leading: const Icon(Icons.reviews),
+                  title: const Text("Review"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ReviewScreen(
+                                user: user,
+                              )),
+                    );
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.info),
                   title: const Text("help"),
                   onTap: () {},
@@ -1158,7 +1168,7 @@ class _PostScreenState extends State<PostScreen> {
     return list;
   }
 
-  void showDetailReview(Post p) async {
+  void showDetailReview(User u) async {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -1182,10 +1192,10 @@ class _PostScreenState extends State<PostScreen> {
                         children: [
                           CircleAvatar(
                             radius: 52,
-                            child: user.img != null
+                            child: u.img != null
                                 ? ClipOval(
                                     child: Image.network(
-                                      "${globals.protocol}${globals.serverIP}/profiles/${p.img!}",
+                                      "${globals.protocol}${globals.serverIP}/profiles/${u.img}",
                                       fit: BoxFit.cover,
                                     ),
                                   )
@@ -1195,19 +1205,19 @@ class _PostScreenState extends State<PostScreen> {
                             height: 12,
                           ),
                           Text(
-                            "${p.user?.firstName} ${p.user?.lastName}",
+                            "${u.firstName} ${u.lastName}",
                             style: const TextStyle(
                                 fontSize: 28,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w400),
                           ),
                           Text(
-                            "${p.user?.email}",
+                            "${u.email}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
                           Text(
-                            "${p.user?.sex}",
+                            "${u.sex}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
@@ -1216,7 +1226,7 @@ class _PostScreenState extends State<PostScreen> {
                           // ),
                           Visibility(
                             // false ,hide chat if p.userID == userID
-                            visible: !(p.createdUserID == user.id),
+                            visible: !(u.id == null || u.id == user.id),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -1237,8 +1247,7 @@ class _PostScreenState extends State<PostScreen> {
                                                       user: user,
                                                       chatDB: Chat(
                                                         chatType: "PRIVATE",
-                                                        sendUserID:
-                                                            p.createdUserID,
+                                                        sendUserID: u.id,
                                                       ),
                                                     )));
                                       },

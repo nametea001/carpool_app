@@ -1,15 +1,18 @@
 import 'dart:convert';
+import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
 
 class PostMember {
   int? id;
   int? postID;
   int? userID;
+  User? user;
 
   PostMember({
     this.id,
     this.postID,
     this.userID,
+    this.user,
   });
 
   static Future<List<PostMember>?> getPostMembers(

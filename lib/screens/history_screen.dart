@@ -11,9 +11,6 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:car_pool_project/global.dart' as globals;
-// ignore: library_prefixes
-// import 'package:socket_io_client/socket_io_client.dart' as IO;
-// import 'package:socket_io_client/socket_io_client.dart';
 import '../models/chat.dart';
 import 'chat_detail_screen.dart';
 
@@ -39,8 +36,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   List<Review> reviews = [];
   double avgReview = 0.0;
-  String chatNoti = "";
-  // late IO.Socket socket;
 
   @override
   void initState() {
@@ -68,7 +63,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             // tileColor: c.colorListTile(i),
             contentPadding: const EdgeInsets.only(
                 top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
-            leading: (post.img != null
+            leading: (post.user!.img != null
                 ? GestureDetector(
                     onTap: () async {
                       final prefs = await SharedPreferences.getInstance();
@@ -79,13 +74,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         avgReview =
                             tempData[1] != null ? tempData[1].toDouble() : 0.0;
                       });
-                      showDetailReview(post);
+                      User? u = post.user;
+                      u!.id = post.createdUserID;
+                      showDetailReview(u);
                     },
                     child: CircleAvatar(
                       maxRadius: 30,
                       child: ClipOval(
                         child: Image.network(
-                            "${globals.protocol}${globals.serverIP}/profiles/${post.img!}",
+                            "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img}",
                             fit: BoxFit.cover),
                       ),
                     ),
@@ -218,30 +215,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("History"),
-          backgroundColor: Colors.pink,
-          bottom: const TabBar(
-            labelColor: Colors.white,
-            // unselectedLabelColor: Colors.black,
-            tabs: [
-              Tab(
-                child: Text("All"),
-              ),
-              Tab(
-                child: Text("New"),
-              ),
-              Tab(
-                child: Text(
-                  "Progress",
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-              Tab(
-                child: Text("Done"),
-              ),
-              Tab(
-                child: Text("Cancel"),
-              ),
-            ],
+          backgroundColor: const Color.fromRGBO(233, 30, 99, 1),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(48.0),
+            child: TabBar(
+              isScrollable: true,
+              labelColor: Colors.white,
+              indicatorSize: TabBarIndicatorSize.label,
+              // unselectedLabelColor: Colors.black,
+              tabs: [
+                Tab(
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 5,
+                        child: const Center(child: Text("All")))),
+                Tab(
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 5,
+                        child: const Center(child: Text("New")))),
+                Tab(
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 5,
+                        child: const Center(child: Text("In Progress")))),
+                Tab(
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 5,
+                        child: const Center(child: Text("Done")))),
+                Tab(
+                    child: SizedBox(
+                        width: MediaQuery.of(context).size.width / 5,
+                        child: const Center(child: Text("Cancel")))),
+              ],
+            ),
           ),
         ),
         body: TabBarView(
@@ -315,22 +319,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
             Row(
               children: [
-                // RatingBar.builder(
-                //   initialRating: 1,
-                //   minRating: 1,
-                //   direction: Axis.horizontal,
-                //   allowHalfRating: true,
-                //   itemCount: 5,
-                //   itemPadding:
-                //       EdgeInsets.symmetric(horizontal: 0.3, vertical: 0.2),
-                //   itemBuilder: (context, _) => Icon(
-                //     Icons.star,
-                //     color: Colors.amber,
-                //   ),
-                //   onRatingUpdate: (rating) {
-                //     print(rating);
-                //   },
-                // ),
                 RatingBarIndicator(
                   rating: score,
                   itemCount: 5,
@@ -396,7 +384,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return list;
   }
 
-  void showDetailReview(Post p) async {
+  void showDetailReview(User u) async {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -420,10 +408,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         children: [
                           CircleAvatar(
                             radius: 52,
-                            child: user.img != null
+                            child: u.img != null
                                 ? ClipOval(
                                     child: Image.network(
-                                      "${globals.protocol}${globals.serverIP}/profiles/${p.img!}",
+                                      "${globals.protocol}${globals.serverIP}/profiles/${u.img}",
                                       fit: BoxFit.cover,
                                     ),
                                   )
@@ -433,19 +421,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             height: 12,
                           ),
                           Text(
-                            "${p.user?.firstName} ${p.user?.lastName}",
+                            "${u.firstName} ${u.lastName}",
                             style: const TextStyle(
                                 fontSize: 28,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w400),
                           ),
                           Text(
-                            "${p.user?.email}",
+                            "${u.email}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
                           Text(
-                            "${p.user?.sex}",
+                            "${u.sex}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
@@ -454,7 +442,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           // ),
                           Visibility(
                             // false ,hide chat if p.userID == userID
-                            visible: !(p.createdUserID == user.id),
+                            visible: !(u.id == null || u.id == user.id),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -475,8 +463,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                                       user: user,
                                                       chatDB: Chat(
                                                         chatType: "PRIVATE",
-                                                        sendUserID:
-                                                            p.createdUserID,
+                                                        sendUserID: u.id,
                                                       ),
                                                     )));
                                       },

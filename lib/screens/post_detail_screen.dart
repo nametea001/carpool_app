@@ -151,6 +151,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   List<re.Review> reviews = [];
   double avgReview = 0.0;
 
+  List<PostMember> postMembers = [];
+
   late IO.Socket socket;
 
   @override
@@ -167,7 +169,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     if (_isAdd) {
       getCar();
     }
-    updateUI();
+    updateUI(post!.id!);
   }
 
   @override
@@ -207,7 +209,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     });
 
     socket.on('server_post', (data) async {
-      updatePostDettail(data);
+      try {
+        int postID = int.parse(data);
+        if (postID == post!.id) {
+          updateUI(postID);
+        }
+      } catch (err) {
+        print(err);
+      }
     });
     socket.onConnectError((data) => print("Connect Error $data"));
     socket.onDisconnect((data) => print("Disconnect Chat Detail"));
@@ -230,16 +239,39 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? const Text('Add ') : const Text('Detail')),
           backgroundColor: Colors.pink,
-          // actions: [
-          //   IconButton(
-          //       onPressed: () async {
-          //         print(_isLoadingAdd);
-          //         setState(() {
-          //           _isLoadingAdd = !_isLoadingAdd;
-          //         });
-          //       },
-          //       icon: Icon(Icons.abc))
-          // ],
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == "Member") {
+                  showDetailPostmember();
+                } else {}
+              },
+              itemBuilder: (BuildContext context) {
+                return [
+                  const PopupMenuItem<String>(
+                    value: 'Member',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person, color: Colors.blue),
+                        SizedBox(width: 8), // Add some spacing
+                        Text('Member'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Report',
+                    child: Row(
+                      children: [
+                        Icon(Icons.report, color: Colors.amber),
+                        SizedBox(width: 8), // Add some spacing
+                        Text('Report'),
+                      ],
+                    ),
+                  ),
+                ];
+              },
+            ),
+          ],
         ),
         body: _isLoading
             ? _loadingDetail()
@@ -943,7 +975,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                     ? tempData[1].toDouble()
                                     : 0.0;
                               });
-                              showDetailReview(post!);
+                              User? u = post!.user;
+                              u!.id = post!.createdUserID;
+                              showDetailReview(u);
                             },
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1214,7 +1248,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void selectCar() async {
+  void selectCar() {
     _focusNodePrice.unfocus();
     _focusNodeBrand.unfocus();
     _focusNodemodel.unfocus();
@@ -1222,7 +1256,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     _focusNodeColor.unfocus();
 
     if (cars != null && cars!.isNotEmpty) {
-      await showDialog(
+      showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
                 title: const Text('Select Car'),
@@ -1283,7 +1317,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 ],
               ));
     } else {
-      await showDialog(
+      showDialog(
           context: context,
           builder: (BuildContext context) => AlertDialog(
                 title: const Text('Select Car'),
@@ -1339,9 +1373,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void showAlertSelecLocation() async {
-    // var
-    await showDialog(
+  void showAlertSelecLocation() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Error'),
@@ -1369,8 +1402,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showAlertAdd() async {
-    await showDialog(
+  void showAlertAdd() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Confirm Add'),
@@ -1454,8 +1487,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showAlerSuccess() async {
-    await showDialog(
+  void showAlerSuccess() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Success'),
@@ -1483,8 +1516,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showJoinPost() async {
-    await showDialog(
+  void showJoinPost() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Join'),
@@ -1511,7 +1544,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         setState(() {
                           _isJoin = false;
                         });
-                        updateUI();
+                        updateUI(post!.id!);
                       }
                       Navigator.pop(context);
                     },
@@ -1529,8 +1562,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showCancelPost() async {
-    await showDialog(
+  void showCancelPost() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Cancel'),
@@ -1558,7 +1591,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         setState(() {
                           post!.status = tempData.status;
                         });
-                        updateUI();
+                        updateUI(post!.id!);
                       } else {
                         showAlerError();
                       }
@@ -1577,8 +1610,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ));
   }
 
-  void showDonePost() async {
-    await showDialog(
+  void showDonePost() {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Done'),
@@ -1606,7 +1639,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         setState(() {
                           post!.status = tempData.status;
                         });
-                        updateUI();
+                        updateUI(post!.id!);
                       } else {
                         showAlerError();
                       }
@@ -1726,82 +1759,51 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void updateUI() async {
+  void updateUI(int postID) async {
     final prefs = await SharedPreferences.getInstance();
     if (!_isAdd) {
       setState(() {
         _isLoading = true;
       });
-      PostDetail? tempData = await PostDetail.getPostDetailByPostID(
-          prefs.getString('jwt') ?? "", post!.id!);
-      if (tempData != null) {
+      // var data
+      var tempData = await PostDetail.getPostDetailByPostID(
+          prefs.getString('jwt') ?? "", postID);
+      PostDetail? tempDataPost = tempData[0];
+      postMembers = tempData[1];
+      if (tempDataPost != null) {
         setState(() {
-          postUser = tempData.post!.user!;
+          postUser = tempDataPost.post!.user!;
         });
-        // postDetailTemp = tempData;
+        // postDetailTemp = tempDataPost;
         _dateTimeController.text =
             globalData.dateTimeFormatForPost(post!.dateTimeStart);
-        // _seatController.text = tempData.seat.toString();
-        _priceController.text = tempData.price.toString();
-        _brandController.text = tempData.brand!;
-        _modelController.text = tempData.model!;
-        _vehicleRegistrationController.text = tempData.vehicleRegistration!;
-        _colorController.text = tempData.color!;
+        // _seatController.text = tempDataPost.seat.toString();
+        _priceController.text = tempDataPost.price.toString();
+        _brandController.text = tempDataPost.brand!;
+        _modelController.text = tempDataPost.model!;
+        _vehicleRegistrationController.text = tempDataPost.vehicleRegistration!;
+        _colorController.text = tempDataPost.color!;
         _descriptionController.text =
-            tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
+            tempDataPost.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
         if (_isBack) {
           _dateTimeBackController.text =
               globalData.dateTimeFormatForPost(post!.dateTimeBack);
         }
-        marker1 = tempData.startLatLng!;
-        marker2 = tempData.endLatLng!;
+        marker1 = tempDataPost.startLatLng!;
+        marker2 = tempDataPost.endLatLng!;
         _seatController.text =
-            "${tempData.post!.countPostMember}/${tempData.seat}";
-        checkJoin(tempData.seat!);
+            "${tempDataPost.post!.countPostMember}/${tempDataPost.seat}";
+        checkJoin(tempDataPost.seat!);
       }
-      checkJoin(tempData!.seat!);
+      checkJoin(tempDataPost!.seat!);
       setState(() {
         _isLoading = false;
-        post!.status = tempData.post!.status;
+        post!.status = tempDataPost.post!.status;
       });
 
       // await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
-    }
-  }
-
-  void updatePostDettail(data) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      int tempID = int.parse(data);
-      if (tempID == post!.id) {
-        PostDetail? tempData = await PostDetail.getPostDetailByPostID(
-            prefs.getString('jwt') ?? "", tempID);
-        if (tempData != null) {
-          setState(() {
-            postUser = tempData.post!.user!;
-          });
-          _dateTimeController.text =
-              globalData.dateTimeFormatForPost(post!.dateTimeStart);
-          _priceController.text = tempData.price.toString();
-          _brandController.text = tempData.brand!;
-          _modelController.text = tempData.model!;
-          _vehicleRegistrationController.text = tempData.vehicleRegistration!;
-          _colorController.text = tempData.color!;
-          _descriptionController.text =
-              tempData.description ?? "ไม่มีรายระเอียดเพิ่มเติม";
-          if (_isBack) {
-            _dateTimeBackController.text =
-                globalData.dateTimeFormatForPost(post!.dateTimeBack);
-          }
-          _seatController.text =
-              "${tempData.post!.countPostMember}/${tempData.seat}";
-          checkJoin(tempData.seat!);
-        }
-      }
-    } catch (err) {
-      print(err);
     }
   }
 
@@ -1820,10 +1822,78 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void showDetailPostmember() {
+    List<ListTile> list = [];
+    for (PostMember postMember in postMembers) {
+      var l = ListTile(
+        contentPadding: const EdgeInsets.all(5.0),
+        leading: CircleAvatar(
+          maxRadius: 30,
+          child: ClipOval(
+            child: Image.network(
+              "${globals.protocol}${globals.serverIP}/profiles/${postMember.user!.img}",
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        title: Text(
+          " ${postMember.user!.firstName} ${postMember.user!.lastName} ",
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+            " ${postMember.userID == post!.createdUserID ? 'คนขับ' : 'ผู้ร่วมเดินทาง'}"),
+        onTap: () {
+          Navigator.pop(context);
+          showDetailReview(postMember.user!);
+        },
+      );
+      if (postMember.userID != post!.createdUserID) {
+        list.add(l);
+      } else {
+        list.insert(0, l);
+      }
+    }
+    showDialog(
+      context: context,
+      barrierDismissible: true, // Allow tapping outside the dialog to dismiss
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Members'),
+        // contentPadding:
+        //     const EdgeInsets.all(20), // Adjust content padding as needed
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SizedBox(
+              width: double.maxFinite,
+              // height: double.infinity,
+              child: Expanded(
+                child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  children: list,
+                ),
+              ),
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.grey,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<ListTile> getListTileReviews() {
     List<ListTile> list = [];
     // int i = 0;
-    for (var review in reviews) {
+    for (re.Review review in reviews) {
       double score = review.score != null ? review.score!.toDouble() : 0.0;
       var l = ListTile(
         // tileColor: getColor.colorListTile(i),
@@ -1845,11 +1915,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               children: [
                 const Icon(
                   Icons.person,
-                  color: Colors.green,
+                  color: Colors.pinkAccent,
                 ),
                 Text(
                   " ${review.user?.firstName} ${review.user?.lastName} ",
                   style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                RatingBarIndicator(
+                  rating: score,
+                  itemCount: 5,
+                  itemSize: 25,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, _) => const Icon(
+                    Icons.star,
+                    color: Colors.amber,
+                  ),
                 ),
               ],
             ),
@@ -1886,36 +1970,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
             Row(
               children: [
-                // RatingBar.builder(
-                //   initialRating: 1,
-                //   minRating: 1,
-                //   direction: Axis.horizontal,
-                //   allowHalfRating: true,
-                //   itemCount: 5,
-                //   itemPadding:
-                //       EdgeInsets.symmetric(horizontal: 0.3, vertical: 0.2),
-                //   itemBuilder: (context, _) => Icon(
-                //     Icons.star,
-                //     color: Colors.amber,
-                //   ),
-                //   onRatingUpdate: (rating) {
-                //     print(rating);
-                //   },
-                // ),
-                RatingBarIndicator(
-                  rating: score,
-                  itemCount: 5,
-                  itemSize: 25,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                  ),
+                const Icon(
+                  Icons.edit,
+                  color: Colors.lightBlue,
                 ),
-              ],
-            ),
-            Row(
-              children: [
                 Text(
                   "  ${review.description}",
                 ),
@@ -1932,13 +1990,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     return list;
   }
 
-  void showDetailReview(Post p) async {
+  void showDetailReview(User u) async {
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
-              // insetPadding: EdgeInsets.zero,
-
               insetPadding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 30, top: 30),
               content: StatefulBuilder(
@@ -1956,10 +2012,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         children: [
                           CircleAvatar(
                             radius: 52,
-                            child: user.img != null
+                            child: u.img != null
                                 ? ClipOval(
                                     child: Image.network(
-                                      "${globals.protocol}${globals.serverIP}/profiles/${p.img!}",
+                                      "${globals.protocol}${globals.serverIP}/profiles/${u.img}",
                                       fit: BoxFit.cover,
                                     ),
                                   )
@@ -1969,19 +2025,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             height: 12,
                           ),
                           Text(
-                            "${p.user?.firstName} ${p.user?.lastName}",
+                            "${u.firstName} ${u.lastName}",
                             style: const TextStyle(
                                 fontSize: 28,
                                 color: Colors.black,
                                 fontWeight: FontWeight.w400),
                           ),
                           Text(
-                            "${p.user?.email}",
+                            "${u.email}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
                           Text(
-                            "${p.user?.sex}",
+                            "${u.sex}",
                             style: const TextStyle(
                                 fontSize: 15, color: Colors.black),
                           ),
@@ -1989,8 +2045,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           //   height: 10,
                           // ),
                           Visibility(
-                            // false ,hide chat if p.userID == userID
-                            visible: !(p.createdUserID == user.id),
+                            visible: !(u.id == null || u.id == user.id),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
@@ -2011,8 +2066,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                                       user: user,
                                                       chatDB: Chat(
                                                         chatType: "PRIVATE",
-                                                        sendUserID:
-                                                            p.createdUserID,
+                                                        sendUserID: u.id,
                                                       ),
                                                     )));
                                       },

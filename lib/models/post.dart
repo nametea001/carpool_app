@@ -15,7 +15,6 @@ class Post {
   int? startProvinceID;
   int? endDistrictID;
   int? endProvinceID;
-  String? img;
   int? countPostMember;
   int? createdUserID;
   DateTime? dateTimeStart;
@@ -34,7 +33,6 @@ class Post {
     this.startProvinceID,
     this.endDistrictID,
     this.endProvinceID,
-    this.img,
     this.countPostMember,
     this.createdUserID,
     this.dateTimeStart,
@@ -75,7 +73,6 @@ class Post {
             endDistrictID: t['end_district_id'],
             // endProvinceID: t['end_district']['provinces']['id'],
             countPostMember: t['_count']['post_members'],
-            img: t['users']['img_path'],
             status: t['status'],
             createdUserID: t['created_user_id'],
             dateTimeStart: t['date_time_start'] != null
@@ -92,6 +89,7 @@ class Post {
               lastName: t['users']['last_name'],
               email: t['users']['email'],
               sex: t['users']['sex'],
+              img: t['users']['img_path'],
             ));
         posts.add(post);
       }
@@ -113,7 +111,6 @@ class Post {
           startDistrictID: t['start_district_id'],
           endDistrictID: t['end_district_id'],
           countPostMember: t['_count']['post_members'],
-          img: t['users']['img_path'],
           status: t['status'],
           createdUserID: t['created_user_id'],
           dateTimeStart: t['date_time_start'] != null
@@ -130,6 +127,7 @@ class Post {
             lastName: t['users']['last_name'],
             email: t['users']['email'],
             sex: t['users']['sex'],
+            img: t['users']['img_path'],
           ));
 
       return post;
@@ -150,7 +148,6 @@ class Post {
             startDistrictID: t['start_district_id'],
             endDistrictID: t['end_district_id'],
             countPostMember: t['_count']['post_members'],
-            img: t['users']['img_path'],
             status: t['status'],
             createdUserID: t['created_user_id'],
             dateTimeStart: t['date_time_start'] != null
@@ -167,6 +164,7 @@ class Post {
               lastName: t['users']['last_name'],
               email: t['users']['email'],
               sex: t['users']['sex'],
+              img: t['users']['img_path'],
             ));
         posts.add(post);
       }
@@ -256,7 +254,7 @@ class Post {
 
   static Future<Post?> updateStatusPost(
       String token, int postID, String status) async {
-    NetworkHelper networkHelper = NetworkHelper('posts/update_status_post', {});
+    NetworkHelper networkHelper = NetworkHelper('posts/update_status', {});
 
     var json = await networkHelper.putData(
       jsonEncode(<String, dynamic>{"post_id": postID, "status": status}),
