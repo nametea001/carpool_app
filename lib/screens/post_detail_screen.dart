@@ -1903,7 +1903,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           maxRadius: 30,
           child: ClipOval(
             child: Image.network(
-              "${globals.protocol}${globals.serverIP}/profiles/${review.img!}",
+              "${globals.protocol}${globals.serverIP}/profiles/${review.user!.img}",
               fit: BoxFit.cover,
             ),
           ),

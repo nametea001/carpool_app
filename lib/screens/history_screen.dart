@@ -32,10 +32,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _isLoading = true;
   Post? postDataSearch = Post();
   List<Post> posts = [];
+  List<Post> postsState = [];
   List<int> postIDKey = [];
 
   List<Review> reviews = [];
   double avgReview = 0.0;
+
+  bool settingMyPost = true;
+  bool settingJoinPost = true;
+
+  List<ListTile> listALL = [];
+  List<ListTile> listNew = [];
+  List<ListTile> listInProgress = [];
+  List<ListTile> listDone = [];
+  List<ListTile> listCancel = [];
 
   @override
   void initState() {
@@ -55,10 +65,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget listViewPostStatus(String status) {
-    List<ListTile> list = [];
-    if (posts.isNotEmpty) {
-      for (var post in posts) {
-        if (post.status == status || status == "ALL") {
+    if (postsState.isNotEmpty) {
+      List<ListTile> list = [];
+      if (listALL.isEmpty) {
+        for (Post post in postsState) {
           var l = ListTile(
             // tileColor: c.colorListTile(i),
             contentPadding: const EdgeInsets.only(
@@ -167,33 +177,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
               );
             },
           );
-          list.add(l);
+          listALL.add(l);
+          if (post.status == "NEW") {
+            listNew.add(l);
+          } else if (post.status == "IN_PROGRESS") {
+            listInProgress.add(l);
+          } else if (post.status == "DONE") {
+            listDone.add(l);
+          } else if (post.status == "CANCEL") {
+            listCancel.add(l);
+          }
         }
       }
-      if (list.isNotEmpty) {
-        return Expanded(
-            child: RefreshIndicator(
-          onRefresh: () async {
-            updateUI();
-          },
-          child: ListView(
-            shrinkWrap: true,
-            physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics()),
-            children: list,
-          ),
-        ));
+      if (status == "ALL") {
+        list = listALL;
+      } else if (status == "NEW") {
+        list = listNew;
+      } else if (status == "IN_PROGRESS") {
+        list = listInProgress;
+      } else if (status == "DONE") {
+        list = listDone;
       } else {
-        return const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "No data",
-              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            )
-          ],
-        );
+        list = listCancel;
       }
+      return Expanded(
+          child: RefreshIndicator(
+        onRefresh: () async {
+          updateUI();
+        },
+        child: ListView(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          children: list,
+        ),
+      ));
     } else {
       return const Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -216,6 +234,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
         appBar: AppBar(
           title: const Text("History"),
           backgroundColor: const Color.fromRGBO(233, 30, 99, 1),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  showSettingHistory();
+                },
+                icon: const Icon(Icons.settings))
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(48.0),
             child: TabBar(
@@ -261,6 +286,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  void fillterPost() {
+    if (settingMyPost && settingJoinPost) {
+      setState(() {
+        postsState = posts;
+      });
+    } else if (settingMyPost && !settingJoinPost) {
+      List<Post> postTemp = [];
+      for (Post p in posts) {
+        if (p.createdUserID == user.id) {
+          postTemp.add(p);
+        }
+      }
+      setState(() {
+        postsState = postTemp;
+      });
+    } else if (settingJoinPost && !settingMyPost) {
+      List<Post> postTemp = [];
+      for (Post p in posts) {
+        if (p.createdUserID != user.id) {
+          postTemp.add(p);
+        }
+      }
+      setState(() {
+        postsState = postTemp;
+      });
+    } else {
+      setState(() {
+        postsState = posts;
+      });
+    }
+  }
+
   void updateUI() async {
     setState(() {
       _isLoading = true;
@@ -272,6 +329,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     setState(() {
       posts = tempData ?? [];
+      fillterPost();
       _isLoading = false;
     });
   }
@@ -297,7 +355,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           maxRadius: 30,
           child: ClipOval(
             child: Image.network(
-              "${globals.protocol}${globals.serverIP}/profiles/${review.img!}",
+              "${globals.protocol}${globals.serverIP}/profiles/${review.user!.img}",
               fit: BoxFit.cover,
             ),
           ),
@@ -384,8 +442,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return list;
   }
 
-  void showDetailReview(User u) async {
-    await showDialog(
+  void showDetailReview(User u) {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
@@ -561,6 +619,92 @@ class _HistoryScreenState extends State<HistoryScreen> {
     //         children: [],
     //       )),
     // );
+  }
+
+  void showSettingHistory() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.settings),
+                  SizedBox(width: 10),
+                  Text('Setting')
+                ],
+              ),
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "My Post",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Switch(
+                            // splashRadius: 25,
+                            value: settingMyPost,
+                            onChanged: (value) {
+                              setState(() {
+                                settingMyPost = value;
+                              });
+                              if (settingMyPost == false &&
+                                  settingJoinPost == false) {
+                                setState(() {
+                                  settingJoinPost = true;
+                                });
+                              }
+                              fillterPost();
+                            })
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Join Post",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(width: 10),
+                        Switch(
+                            // splashRadius: 25,
+                            value: settingJoinPost,
+                            onChanged: (value) {
+                              setState(() {
+                                settingJoinPost = value;
+                              });
+                              if (settingMyPost == false &&
+                                  settingJoinPost == false) {
+                                setState(() {
+                                  settingMyPost = true;
+                                });
+                              }
+                              fillterPost();
+                            })
+                      ],
+                    )
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
   }
 
   // skeleton_loader
