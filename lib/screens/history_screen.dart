@@ -17,11 +17,7 @@ import 'chat_detail_screen.dart';
 class HistoryScreen extends StatefulWidget {
   final User user;
 
-  const HistoryScreen({
-    super.key,
-    required this.user,
-    // this.posts,
-  });
+  const HistoryScreen({super.key, required this.user});
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
@@ -30,7 +26,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   User user = User();
   GlobalData globalData = GlobalData();
   bool _isLoading = true;
-  Post? postDataSearch = Post();
   List<Post> posts = [];
   List<Post> postsState = [];
   List<int> postIDKey = [];
@@ -59,8 +54,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   void dispose() {
-    // socket.disconnect();
-    // socket.dispose();
     super.dispose();
   }
 

@@ -37,7 +37,7 @@ class ChatDetailScreen extends StatefulWidget {
     required this.showBackbt,
     required this.user,
     this.pushFrom,
-    this.chatDB,
+    required this.chatDB,
   });
 
   @override

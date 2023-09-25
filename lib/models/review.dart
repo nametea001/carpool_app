@@ -1,27 +1,27 @@
-import 'package:car_pool_project/models/user.dart';
-import 'package:car_pool_project/services/networking.dart';
+import 'dart:convert';
 
+import 'package:car_pool_project/services/networking.dart';
 import 'post.dart';
+import 'post_detail.dart';
+import 'user.dart';
 
 class Review {
   int? id;
   int? postID;
-  // int? userID;
+  int? userID;
   int? createdUserID;
   int? score;
   String? description;
-  String? img;
   Post? post;
   User? user;
 
   Review({
     this.id,
     this.postID,
-    // this.userID,
+    this.userID,
     this.createdUserID,
     this.score,
     this.description,
-    this.img,
     this.post,
     this.user,
   });
@@ -38,11 +38,11 @@ class Review {
           id: t['id'],
           score: t['score'],
           description: t['description'],
-          img: t['users_reviews_created']['img_path'],
           post: Post(endName: t['posts']['name_end']),
           user: User(
             firstName: t['users_reviews_created']['first_name'],
             lastName: t['users_reviews_created']['last_name'],
+            img: t['users_reviews_created']['img_path'],
           ),
         );
         reviews.add(review);
@@ -52,13 +52,122 @@ class Review {
     return null;
   }
 
-  // static Future<double?> avgRatingReveiw(String token, int userID) async {
-  //   NetworkHelper networkHelper = NetworkHelper('login', {});
-  //   var json = await networkHelper.getData(token);
-  //   if (json != null && json['error'] == false) {
-  //     double avg = json['_avg'];
-  //     return avg;
-  //   }
-  //   return null;
-  // }
+  static Future<List<dynamic>?> getMyReviews(String token) async {
+    NetworkHelper networkHelper = NetworkHelper('reviews/my_review', {});
+    List<Review> reviews = [];
+    List<Post> posts = [];
+    var json = await networkHelper.getData(token);
+    if (json != null && json['error'] == false) {
+      for (Map t in json['reviews']) {
+        Review review = Review(
+          id: t['id'],
+          score: t['score'],
+          description: t['description'],
+          post: Post(
+              id: t['posts']['id'],
+              startName: t['posts']['name_start'],
+              endName: t['posts']['name_end'],
+              startDistrictID: t['posts']['start_district_id'],
+              endDistrictID: t['posts']['end_district_id'],
+              countPostMember: t['posts']['_count']['post_members'],
+              status: t['posts']['status'],
+              createdUserID: t['posts']['created_user_id'],
+              dateTimeStart: t['posts']['date_time_start'] != null
+                  ? DateTime.parse(t['posts']['date_time_start'])
+                  : null,
+              dateTimeBack: t['posts']['date_time_back'] != null
+                  ? DateTime.parse(t['posts']['date_time_back'])
+                  : null,
+              postDetail: PostDetail(
+                  price: double.parse(t['posts']['post_details'][0]['price']),
+                  seat: t['posts']['post_details'][0]['seat']),
+              user: User(
+                firstName: t['posts']['users']['first_name'],
+                lastName: t['posts']['users']['last_name'],
+                email: t['posts']['users']['email'],
+                sex: t['posts']['users']['sex'],
+                img: t['posts']['users']['img_path'],
+              )),
+        );
+        reviews.add(review);
+      }
+      for (Map p in json['review_user_logs']) {
+        var t = p['posts'];
+        Post post = Post(
+            id: t['id'],
+            startName: t['name_start'],
+            endName: t['name_end'],
+            startDistrictID: t['start_district_id'],
+            endDistrictID: t['end_district_id'],
+            countPostMember: t['_count']['post_members'],
+            status: t['status'],
+            createdUserID: t['created_user_id'],
+            dateTimeStart: t['date_time_start'] != null
+                ? DateTime.parse(t['date_time_start'])
+                : null,
+            dateTimeBack: t['date_time_back'] != null
+                ? DateTime.parse(t['date_time_back'])
+                : null,
+            postDetail: PostDetail(
+                price: double.parse(t['post_details'][0]['price']),
+                seat: t['post_details'][0]['seat']),
+            user: User(
+              firstName: t['users']['first_name'],
+              lastName: t['users']['last_name'],
+              email: t['users']['email'],
+              sex: t['users']['sex'],
+              img: t['users']['img_path'],
+            ));
+        posts.add(post);
+      }
+      return [reviews, posts];
+    }
+    return null;
+  }
+
+  static Future<Review?> editMyReview(String token, Review review) async {
+    NetworkHelper networkHelper = NetworkHelper('reviews/edit_review', {});
+    var json = await networkHelper.putData(
+        jsonEncode(<String, dynamic>{
+          "review_id": review.id,
+          "score": review.score,
+          "description": review.description,
+        }),
+        token);
+    if (json != null && json['error'] == false) {
+      Map t = json['review'];
+      Review review = Review(
+        id: t['id'],
+        score: t['score'],
+        description: t['description'],
+        post: Post(
+            id: t['posts']['id'],
+            startName: t['posts']['name_start'],
+            endName: t['posts']['name_end'],
+            startDistrictID: t['posts']['start_district_id'],
+            endDistrictID: t['posts']['end_district_id'],
+            countPostMember: t['posts']['_count']['post_members'],
+            status: t['posts']['status'],
+            createdUserID: t['posts']['created_user_id'],
+            dateTimeStart: t['posts']['date_time_start'] != null
+                ? DateTime.parse(t['posts']['date_time_start'])
+                : null,
+            dateTimeBack: t['posts']['date_time_back'] != null
+                ? DateTime.parse(t['posts']['date_time_back'])
+                : null,
+            postDetail: PostDetail(
+                price: double.parse(t['posts']['post_details'][0]['price']),
+                seat: t['posts']['post_details'][0]['seat']),
+            user: User(
+              firstName: t['posts']['users']['first_name'],
+              lastName: t['posts']['users']['last_name'],
+              email: t['posts']['users']['email'],
+              sex: t['posts']['users']['sex'],
+              img: t['posts']['users']['img_path'],
+            )),
+      );
+      return review;
+    }
+    return null;
+  }
 }

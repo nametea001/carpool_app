@@ -140,126 +140,6 @@ class _PostScreenState extends State<PostScreen> {
     // socket.on('message', (data) => print(data));
   }
 
-  // ListTile posts
-  List<ListTile> getListTile() {
-    List<ListTile> list = [];
-    // var c = GetColor();
-    // int i = 0;
-    for (var post in posts) {
-      postIDKey.add(post.id!);
-      var l = ListTile(
-        // tileColor: c.colorListTile(i),
-        contentPadding: const EdgeInsets.only(
-            top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
-        leading: (post.user!.img != null
-            ? GestureDetector(
-                onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  var tempData = await Review.getReviews(
-                      prefs.getString('jwt') ?? "", post.createdUserID!);
-                  setState(() {
-                    reviews = tempData![0] ?? [];
-                    avgReview =
-                        tempData[1] != null ? tempData[1].toDouble() : 0.0;
-                  });
-                  User? u = post.user;
-                  u?.id = post.createdUserID;
-                  showDetailReview(u!);
-                },
-                child: CircleAvatar(
-                  maxRadius: 30,
-                  child: ClipOval(
-                    child: Image.network(
-                        "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img!}",
-                        fit: BoxFit.cover),
-                  ),
-                ),
-              )
-            : null),
-        // tileColor: Colors.amberAccent,
-        title: Column(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                const Icon(
-                  Icons.pin_drop,
-                  color: Colors.red,
-                ),
-                Flexible(
-                  child: Text(
-                    "${post.startName}",
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                const Icon(
-                  Icons.golf_course,
-                  color: Colors.green,
-                ),
-                Flexible(
-                  child: Text(
-                    "${post.endName}",
-                    // textAlign: TextAlign.justify,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                const Icon(
-                  Icons.alarm,
-                  color: Colors.orange,
-                ),
-                Text(globalData.dateTimeFormatForPost(post.dateTimeStart)),
-              ],
-            ),
-            Row(
-              children: [
-                Icon(
-                  Icons.airline_seat_recline_normal,
-                  color:
-                      colorSeat(post.countPostMember!, post.postDetail!.seat!),
-                ),
-                Text(
-                  "${post.countPostMember}/${post.postDetail!.seat}",
-                  // style: TextStyle(fontSize: 20),
-                ),
-              ],
-            ),
-          ],
-        ),
-        // subtitle: Column(
-        //   children: [],
-        // ),
-        trailing: Text("${post.postDetail!.price}"),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PostDetailScreen(
-                user: user,
-                isAdd: false,
-                isback: post.isBack,
-                post: post,
-              ),
-            ),
-          );
-        },
-      );
-      // i++;
-      list.add(l);
-    }
-
-    return list;
-  }
 
   List<Widget> appBarBt() {
     var bt = [
@@ -762,6 +642,123 @@ class _PostScreenState extends State<PostScreen> {
     return bt;
   }
 
+  List<ListTile> getListTile() {
+    List<ListTile> list = [];
+    for (var post in posts) {
+      var l = ListTile(
+        // tileColor: c.colorListTile(i),
+        contentPadding: const EdgeInsets.only(
+            top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
+        leading: (post.user!.img != null
+            ? GestureDetector(
+                onTap: () async {
+                  final prefs = await SharedPreferences.getInstance();
+                  var tempData = await Review.getReviews(
+                      prefs.getString('jwt') ?? "", post.createdUserID!);
+                  setState(() {
+                    reviews = tempData![0] ?? [];
+                    avgReview =
+                        tempData[1] != null ? tempData[1].toDouble() : 0.0;
+                  });
+                  User? u = post.user;
+                  u?.id = post.createdUserID;
+                  showDetailReview(u!);
+                },
+                child: CircleAvatar(
+                  maxRadius: 30,
+                  child: ClipOval(
+                    child: Image.network(
+                        "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img!}",
+                        fit: BoxFit.cover),
+                  ),
+                ),
+              )
+            : null),
+        // tileColor: Colors.amberAccent,
+        title: Column(
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.pin_drop,
+                  color: Colors.red,
+                ),
+                Flexible(
+                  child: Text(
+                    "${post.startName}",
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.golf_course,
+                  color: Colors.green,
+                ),
+                Flexible(
+                  child: Text(
+                    "${post.endName}",
+                    // textAlign: TextAlign.justify,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.alarm,
+                  color: Colors.orange,
+                ),
+                Text(globalData.dateTimeFormatForPost(post.dateTimeStart)),
+              ],
+            ),
+            Row(
+              children: [
+                Icon(
+                  Icons.airline_seat_recline_normal,
+                  color:
+                      colorSeat(post.countPostMember!, post.postDetail!.seat!),
+                ),
+                Text(
+                  "${post.countPostMember}/${post.postDetail!.seat}",
+                  // style: TextStyle(fontSize: 20),
+                ),
+              ],
+            ),
+          ],
+        ),
+        // subtitle: Column(
+        //   children: [],
+        // ),
+        trailing: Text("${post.postDetail!.price}"),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PostDetailScreen(
+                user: user,
+                isAdd: false,
+                isback: post.isBack,
+                post: post,
+              ),
+            ),
+          );
+        },
+      );
+      // i++;
+      list.add(l);
+    }
+
+    return list;
+  }
+
   Widget listView() {
     if (posts.isNotEmpty) {
       return Expanded(
@@ -1168,8 +1165,8 @@ class _PostScreenState extends State<PostScreen> {
     return list;
   }
 
-  void showDetailReview(User u) async {
-    await showDialog(
+  void showDetailReview(User u) {
+    showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
