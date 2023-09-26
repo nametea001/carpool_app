@@ -168,8 +168,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     location2 = widget.post.endName ?? "Search End";
     if (_isAdd) {
       getCar();
+    } else {
+      updateUI(post!.id!);
     }
-    updateUI(post!.id!);
   }
 
   @override
