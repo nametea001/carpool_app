@@ -4,6 +4,7 @@
 import 'package:car_pool_project/gobal_function/data.dart';
 import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/review.dart';
+import 'package:car_pool_project/models/review_user_log.dart';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
   List<Review> reviewUserPost = [];
   List<Review> reviews = [];
   double avgReview = 0.0;
-  List<Post> posts = [];
+  // List<Post> posts = [];
+  List<ReviewUserLog> reviewUserLogs = [];
 
   final FocusNode _focusNodeReviewDescription = FocusNode();
   final TextEditingController _descriptionController = TextEditingController();
@@ -53,12 +55,13 @@ class _ReviewScreenState extends State<ReviewScreen> {
 
   Widget listViewReview() {
     List<ListTile> list = [];
-    for (var post in posts) {
+    for (ReviewUserLog reviewUserLog in reviewUserLogs) {
+      Post? post = reviewUserLog.post;
       var l = ListTile(
         // tileColor: c.colorListTile(i),
         contentPadding: const EdgeInsets.only(
             top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
-        leading: (post.user!.img != null
+        leading: (post!.user!.img != null
             ? GestureDetector(
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
@@ -145,7 +148,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
         ),
         trailing: Text("${post.postDetail!.price}"),
         onTap: () {
-          showDetailReviewLog(post);
+          showDetailReviewLog(reviewUserLog);
         },
       );
       // i++;
@@ -332,6 +335,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context, reviewUserLogs.length);
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
           title: const Text("Review"),
           backgroundColor: const Color.fromRGBO(233, 30, 99, 1),
           bottom: PreferredSize(
@@ -372,7 +381,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     var tempData = await Review.getMyReviews(prefs.getString('jwt') ?? "");
     if (tempData != null) {
       reviews = tempData[0];
-      posts = tempData[1];
+      reviewUserLogs = tempData[1];
     }
     setState(() {
       _isLoading = false;
@@ -687,30 +696,9 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                                       ElevatedButton.styleFrom(
                                                           backgroundColor:
                                                               Colors.green),
-                                                  onPressed: () async {
-                                                    final prefs =
-                                                        await SharedPreferences
-                                                            .getInstance();
-                                                    Review? tempData =
-                                                        await Review
-                                                            .editMyReview(
-                                                                prefs.getString(
-                                                                        'jwt') ??
-                                                                    "",
-                                                                r);
-                                                    if (tempData != null) {
-                                                      for (Review r
-                                                          in reviews) {
-                                                        if (r.id ==
-                                                            tempData.id) {
-                                                          setState(() {
-                                                            r = tempData;
-                                                          });
-                                                          break;
-                                                        }
-                                                      }
-                                                    }
-                                                    Navigator.pop(context);
+                                                  onPressed: () {
+                                                    showConfirmEditReview(r);
+                                                    // Navigator.pop(context);
                                                   },
                                                   child: const Row(
                                                     children: [
@@ -776,12 +764,19 @@ class _ReviewScreenState extends State<ReviewScreen> {
             ));
   }
 
-  void showDetailReviewLog(Post post) {
-    User? u = post.user;
+  void showDetailReviewLog(ReviewUserLog reviewUserLog) {
+    Post? post = reviewUserLog.post;
+    User? u = post!.user;
     u!.id = post.createdUserID;
     double ratingScore = 0;
     bool stateMoreNameStart = false;
     bool stateMoreNameEnd = false;
+    Review review = Review(
+      postID: post.id,
+      userID: post.createdUserID,
+      score: 0,
+      description: "",
+    );
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -990,7 +985,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                     color: Colors.amberAccent,
                                   ),
                                   onRatingUpdate: (rating) {
-                                    print(rating);
+                                    review.score = rating.toInt();
+                                    // print(rating);
                                   },
                                 ),
                                 const SizedBox(height: 20),
@@ -1000,9 +996,11 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                       child: TextFormField(
                                         // autofocus: true,
                                         focusNode: _focusNodeReviewDescription,
-                                        controller: _descriptionController,
+                                        // controller: _descriptionController,
                                         maxLines: 3,
-                                        onChanged: (value) {},
+                                        onChanged: (value) {
+                                          review.description = value;
+                                        },
                                         decoration: InputDecoration(
                                             labelText: "ข้อความ",
                                             filled: true,
@@ -1020,6 +1018,26 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green),
+                                      onPressed: () {
+                                        showConfirmReview(
+                                            reviewUserLog.id!, review);
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.check_circle_outline),
+                                          SizedBox(width: 10),
+                                          Text("Review")
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ],
                             ),
                           ),
@@ -1041,6 +1059,92 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     child: const Text('Close')),
               ],
             ));
+  }
+
+  void showConfirmEditReview(Review review) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Edit Review'),
+        content: const Text("ยืนยันการแก้่ไข"),
+        actions: [
+          TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+              ),
+              onPressed: () async {
+                final prefs = await SharedPreferences.getInstance();
+                Review? tempData = await Review.editMyReview(
+                    prefs.getString('jwt') ?? "", review);
+                if (tempData != null) {
+                  for (Review r in reviews) {
+                    if (r.id == tempData.id) {
+                      setState(() {
+                        r = tempData;
+                      });
+                      break;
+                    }
+                  }
+                }
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text('Confirm')),
+          TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel')),
+        ],
+      ),
+    );
+  }
+
+  void showConfirmReview(int reviewUserLogID, Review r) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Review'),
+        content: const Text("ยืนยันการรีวิว"),
+        actions: [
+          TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.green,
+              ),
+              onPressed: () async {
+                Navigator.pop(context);
+                Navigator.pop(context);
+                final prefs = await SharedPreferences.getInstance();
+                Review? tempData = await Review.addReview(
+                    prefs.getString('jwt') ?? "", reviewUserLogID, r);
+                if (tempData != null) {
+                  reviewUserLogs
+                      .removeWhere((r) => r.post!.id! == tempData.post!.id);
+                  setState(() {
+                    reviewUserLogs = reviewUserLogs;
+                    reviews.insert(0, tempData);
+                  });
+                }
+              },
+              child: const Text('Confirm')),
+          TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Cancel')),
+        ],
+      ),
+    );
   }
 
   List<ListTile> getListTileReviews() {
