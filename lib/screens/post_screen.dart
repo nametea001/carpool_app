@@ -902,13 +902,20 @@ class _PostScreenState extends State<PostScreen> {
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: const Text("Profile"),
-                  onTap: () {
+                  onTap: () async {
                     Navigator.pop(context);
-                    Navigator.push(
+                    User? u = await Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => const ProfileScreen()),
+                          builder: (context) => ProfileScreen(
+                                user: user,
+                              )),
                     );
+                    if (u != null) {
+                      setState(() {
+                        user = u;
+                      });
+                    }
                   },
                 ),
                 ListTile(
