@@ -62,6 +62,7 @@ dependencies:
   socket_io_client: ^2.0.3+1
   badges: ^3.1.1
   image_cropper: ^4.0.1
+  path: ^1.8.3
 
 flutter_icons:
   android: true

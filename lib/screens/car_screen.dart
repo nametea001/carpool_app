@@ -156,6 +156,12 @@ class _CarScreenState extends State<CarScreen> {
         appBar: AppBar(
           title: const Text("My Cars"),
           backgroundColor: Colors.pink,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context, cars);
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
           actions: appBarBt(),
         ),
         body: SafeArea(

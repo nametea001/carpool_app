@@ -72,10 +72,6 @@ class _ChatScreenState extends State<ChatScreen> {
     // socket.on('message', (data) => print(data));
   }
 
-  String dateTimeChatFormat(DateTime dateTime) {
-    return "";
-  }
-
   List checkChatType(Chat chat) {
     String name = "";
     String? img = "";
@@ -151,7 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
               )),
         ),
         // trailing: Text(dateTimeformat(DateTime.now())),
-        trailing: Text(globalData.dateTimeFormatForChat(chat.createdAt)),
+        trailing: Text(globalData.dateTimeFormatForChat(chat.updatedAt)),
         onTap: () {
           setState(() {
             chat.chatUserLog!.count = 0;

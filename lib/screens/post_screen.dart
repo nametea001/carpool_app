@@ -28,6 +28,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:badges/badges.dart' as badges;
 import '../models/chat.dart';
+import '../models/report_reason.dart';
 import 'chat_detail_screen.dart';
 import 'review_screen.dart';
 
@@ -91,6 +92,17 @@ class _PostScreenState extends State<PostScreen> {
   String chatNoti = "";
   String reviewNoti = "";
   // bool _isChat = false;
+
+  // List<ReportReason> reportReasons = [];
+  List<ReportReason> reportReasons = [];
+  List<ReportReason> reportReasonsUser = [];
+  List<ReportReason> reportReasonsReview = [];
+  List<ReportReason> reportReasonsPost = [];
+
+  ReportReason? reportReasonPost;
+  ReportReason? reportReasonUser;
+  ReportReason? reportReasonReview;
+
   late IO.Socket socket;
 
   @override
@@ -105,6 +117,7 @@ class _PostScreenState extends State<PostScreen> {
     updateUI(); //loading posts
     updateChatNoti();
     updateReviewNoti();
+    getReportReason();
     initSocketIO();
   }
 
@@ -643,8 +656,7 @@ class _PostScreenState extends State<PostScreen> {
                       prefs.getString('jwt') ?? "", post.createdUserID!);
                   setState(() {
                     reviews = tempData![0] ?? [];
-                    avgReview =
-                        tempData[1] != null ? tempData[1].toDouble() : 0.0;
+                    avgReview = globalData.avgDecimalPointFormat(tempData[1]);
                   });
                   User? u = post.user;
                   u?.id = post.createdUserID;
@@ -733,6 +745,7 @@ class _PostScreenState extends State<PostScreen> {
                 isAdd: false,
                 isback: post.isBack,
                 post: post,
+                reportReasons: reportReasons,
               ),
             ),
           );
@@ -848,6 +861,7 @@ class _PostScreenState extends State<PostScreen> {
                           isAdd: true,
                           user: user,
                           post: Post(),
+                          reportReasons: reportReasons,
                         )),
               );
             },
@@ -938,7 +952,10 @@ class _PostScreenState extends State<PostScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => HistoryScreen(user: user)),
+                          builder: (context) => HistoryScreen(
+                                user: user,
+                                reportReasons: reportReasons,
+                              )),
                     );
                   },
                 ),
@@ -961,6 +978,7 @@ class _PostScreenState extends State<PostScreen> {
                       MaterialPageRoute(
                           builder: (context) => ReviewScreen(
                                 user: user,
+                                reportReasons: reportReasons,
                               )),
                     );
                     if (reviewLog != null && reviewLog != 0) {
@@ -1090,6 +1108,34 @@ class _PostScreenState extends State<PostScreen> {
       posts = tempData ?? [];
       _isLoading = false;
     });
+  }
+
+  void getReportReason() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<ReportReason>? tempData =
+        await ReportReason.getReportReasons(prefs.getString('jwt') ?? "");
+    if (tempData != null) {
+      reportReasons = tempData;
+      for (var r in reportReasons) {
+        if (r.type == "ALL") {
+          reportReasonsPost.add(r);
+          reportReasonsUser.add(r);
+          reportReasonsReview.add(r);
+          reportReasonPost = r;
+          reportReasonUser = r;
+          reportReasonReview = r;
+        } else if (r.type == "POST") {
+          reportReasonsPost.add(r);
+          reportReasonPost = r;
+        } else if (r.type == "USER") {
+          reportReasonsUser.add(r);
+          reportReasonUser = r;
+        } else if (r.type == "REVIEW") {
+          reportReasonsReview.add(r);
+          reportReasonReview = r;
+        }
+      }
+    }
   }
 
   void updatePost(data) async {

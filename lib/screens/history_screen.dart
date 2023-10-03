@@ -12,12 +12,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import '../models/chat.dart';
+import '../models/report_reason.dart';
 import 'chat_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   final User user;
+  final List<ReportReason> reportReasons;
 
-  const HistoryScreen({super.key, required this.user});
+  const HistoryScreen({
+    super.key,
+    required this.user,
+    required this.reportReasons,
+  });
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
@@ -36,11 +42,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool settingMyPost = true;
   bool settingJoinPost = true;
 
-  List<ListTile> listALL = [];
-  List<ListTile> listNew = [];
-  List<ListTile> listInProgress = [];
-  List<ListTile> listDone = [];
-  List<ListTile> listCancel = [];
+  List<ReportReason> reportReasons = [];
 
   @override
   void initState() {
@@ -57,142 +59,268 @@ class _HistoryScreenState extends State<HistoryScreen> {
     super.dispose();
   }
 
-  Widget listViewPostStatus(String status) {
+  Widget listViewPostStatusALL() {
     if (postsState.isNotEmpty) {
       List<ListTile> list = [];
-      if (listALL.isEmpty) {
-        for (Post post in postsState) {
-          var l = ListTile(
-            // tileColor: c.colorListTile(i),
-            contentPadding: const EdgeInsets.only(
-                top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
-            leading: (post.user!.img != null
-                ? GestureDetector(
-                    onTap: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      var tempData = await Review.getReviews(
-                          prefs.getString('jwt') ?? "", post.createdUserID!);
-                      setState(() {
-                        reviews = tempData![0] ?? [];
-                        avgReview =
-                            tempData[1] != null ? tempData[1].toDouble() : 0.0;
-                      });
-                      User? u = post.user;
-                      u!.id = post.createdUserID;
-                      showDetailReview(u);
-                    },
-                    child: CircleAvatar(
-                      maxRadius: 30,
-                      child: ClipOval(
-                        child: Image.network(
-                            "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img}",
-                            fit: BoxFit.cover),
-                      ),
+      for (Post post in postsState) {
+        var l = ListTile(
+          contentPadding: const EdgeInsets.only(
+              top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
+          leading: (post.user!.img != null
+              ? GestureDetector(
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    var tempData = await Review.getReviews(
+                        prefs.getString('jwt') ?? "", post.createdUserID!);
+                    setState(() {
+                      reviews = tempData![0] ?? [];
+                      avgReview = globalData.avgDecimalPointFormat(tempData[1]);
+                    });
+                    User? u = post.user;
+                    u!.id = post.createdUserID;
+                    showDetailReview(u);
+                  },
+                  child: CircleAvatar(
+                    maxRadius: 30,
+                    child: ClipOval(
+                      child: Image.network(
+                          "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img}",
+                          fit: BoxFit.cover),
                     ),
-                  )
-                : null),
-            // tileColor: Colors.amberAccent,
-            title: Column(
-              // crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.pin_drop,
-                      color: Colors.red,
-                    ),
-                    Flexible(
-                      child: Text(
-                        "${post.startName}",
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.golf_course,
-                      color: Colors.green,
-                    ),
-                    Flexible(
-                      child: Text(
-                        "${post.endName}",
-                        // textAlign: TextAlign.justify,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.alarm,
-                      color: Colors.orange,
-                    ),
-                    Text(globalData.dateTimeFormatForPost(post.dateTimeStart)),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.airline_seat_recline_normal,
-                      color: colorSeat(
-                          post.countPostMember!, post.postDetail!.seat!),
-                    ),
-                    Text(
-                      "${post.countPostMember}/${post.postDetail!.seat}",
-                      // style: TextStyle(fontSize: 20),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            // subtitle: Column(
-            //   children: [],
-            // ),
-            trailing: Text("${post.postDetail!.price}"),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PostDetailScreen(
-                    user: user,
-                    isAdd: false,
-                    isback: post.isBack,
-                    post: post,
-                    isView: true,
                   ),
+                )
+              : null),
+          // tileColor: Colors.amberAccent,
+          title: Column(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.pin_drop,
+                    color: Colors.red,
+                  ),
+                  Flexible(
+                    child: Text(
+                      "${post.startName}",
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.golf_course,
+                    color: Colors.green,
+                  ),
+                  Flexible(
+                    child: Text(
+                      "${post.endName}",
+                      // textAlign: TextAlign.justify,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.alarm,
+                    color: Colors.orange,
+                  ),
+                  Text(globalData.dateTimeFormatForPost(post.dateTimeStart)),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.airline_seat_recline_normal,
+                    color: colorSeat(
+                        post.countPostMember!, post.postDetail!.seat!),
+                  ),
+                  Text(
+                    "${post.countPostMember}/${post.postDetail!.seat}",
+                    // style: TextStyle(fontSize: 20),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // subtitle: Column(
+          //   children: [],
+          // ),
+          trailing: Column(
+            children: [
+              Text("${post.postDetail!.price}"),
+              // const SizedBox(height: 5),
+              Text(
+                "${post.status}",
+                style: TextStyle(
+                    color: colorStatus(post.status!),
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostDetailScreen(
+                  user: user,
+                  isAdd: false,
+                  isback: post.isBack,
+                  post: post,
+                  isView: true,
+                  reportReasons: reportReasons,
                 ),
-              );
-            },
-          );
-          listALL.add(l);
-          if (post.status == "NEW") {
-            listNew.add(l);
-          } else if (post.status == "IN_PROGRESS") {
-            listInProgress.add(l);
-          } else if (post.status == "DONE") {
-            listDone.add(l);
-          } else if (post.status == "CANCEL") {
-            listCancel.add(l);
-          }
-        }
+              ),
+            );
+          },
+        );
+        list.add(l);
       }
-      if (status == "ALL") {
-        list = listALL;
-      } else if (status == "NEW") {
-        list = listNew;
-      } else if (status == "IN_PROGRESS") {
-        list = listInProgress;
-      } else if (status == "DONE") {
-        list = listDone;
-      } else {
-        list = listCancel;
+      return Expanded(
+          child: RefreshIndicator(
+        onRefresh: () async {
+          updateUI();
+        },
+        child: ListView(
+          shrinkWrap: true,
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          children: list,
+        ),
+      ));
+    } else {
+      return const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "No data",
+            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          )
+        ],
+      );
+    }
+  }
+
+  Widget listViewPostStatus(String status) {
+    List<ListTile> list = [];
+    for (Post post in postsState) {
+      if (post.status == status) {
+        var l = ListTile(
+          // tileColor: c.colorListTile(i),
+          contentPadding: const EdgeInsets.only(
+              top: 5.0, left: 15.0, right: 10.0, bottom: 5.0),
+          leading: (post.user!.img != null
+              ? GestureDetector(
+                  onTap: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    var tempData = await Review.getReviews(
+                        prefs.getString('jwt') ?? "", post.createdUserID!);
+                    setState(() {
+                      reviews = tempData![0] ?? [];
+                      avgReview = globalData.avgDecimalPointFormat(tempData[1]);
+                    });
+                    User? u = post.user;
+                    u!.id = post.createdUserID;
+                    showDetailReview(u);
+                  },
+                  child: CircleAvatar(
+                    maxRadius: 30,
+                    child: ClipOval(
+                      child: Image.network(
+                          "${globals.protocol}${globals.serverIP}/profiles/${post.user!.img}",
+                          fit: BoxFit.cover),
+                    ),
+                  ),
+                )
+              : null),
+          // tileColor: Colors.amberAccent,
+          title: Column(
+            // crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.pin_drop,
+                    color: Colors.red,
+                  ),
+                  Flexible(
+                    child: Text(
+                      "${post.startName}",
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.golf_course,
+                    color: Colors.green,
+                  ),
+                  Flexible(
+                    child: Text(
+                      "${post.endName}",
+                      // textAlign: TextAlign.justify,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.alarm,
+                    color: Colors.orange,
+                  ),
+                  Text(globalData.dateTimeFormatForPost(post.dateTimeStart)),
+                ],
+              ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.airline_seat_recline_normal,
+                    color: colorSeat(
+                        post.countPostMember!, post.postDetail!.seat!),
+                  ),
+                  Text(
+                    "${post.countPostMember}/${post.postDetail!.seat}",
+                    // style: TextStyle(fontSize: 20),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          trailing: Text("${post.postDetail!.price}"),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PostDetailScreen(
+                  user: user,
+                  isAdd: false,
+                  isback: post.isBack,
+                  post: post,
+                  isView: true,
+                  reportReasons: reportReasons,
+                ),
+              ),
+            );
+          },
+        );
+        list.add(l);
       }
+    }
+    if (list.isNotEmpty) {
       return Expanded(
           child: RefreshIndicator(
         onRefresh: () async {
@@ -268,7 +396,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
         body: TabBarView(
           children: [
-            (_isLoading ? listLoader() : listViewPostStatus("ALL")),
+            (_isLoading ? listLoader() : listViewPostStatusALL()),
             (_isLoading ? listLoader() : listViewPostStatus("NEW")),
             (_isLoading ? listLoader() : listViewPostStatus("IN_PROGRESS")),
             (_isLoading ? listLoader() : listViewPostStatus("DONE")),
@@ -698,6 +826,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     child: const Text('Close')),
               ],
             ));
+  }
+
+  Color? colorStatus(String status) {
+    if (status == "NEW") {
+      return Colors.green;
+    } else if (status == "IN_PROGRESS") {
+      return Colors.red;
+    } else if (status == "DONE") {
+      return Colors.red;
+    } else {
+      return Colors.red;
+    }
   }
 
   // skeleton_loader

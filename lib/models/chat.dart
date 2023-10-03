@@ -19,6 +19,7 @@ class Chat {
   ChatDetail? chatDetail;
   DateTime? createdAt;
   String? img;
+  DateTime? updatedAt;
 
   Chat({
     this.id,
@@ -33,6 +34,7 @@ class Chat {
     this.post,
     this.chatDetail,
     this.createdAt,
+    this.updatedAt,
     this.img,
   });
 
@@ -75,6 +77,9 @@ class Chat {
             chatUserLog: ChatUserLog(count: c['_count']['chat_user_logs']),
             createdAt: c['created_at'] != null
                 ? DateTime.parse(c['created_at'])
+                : null,
+            updatedAt: c['updated_at'] != null
+                ? DateTime.parse(c['updated_at'])
                 : null,
           );
           chats.add(chat);

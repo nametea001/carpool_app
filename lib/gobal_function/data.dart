@@ -5,6 +5,10 @@ class GlobalData {
     return "AIzaSyCwp3of0o28LsZ6PiLtKkIM9tAo8xG8xh0";
   }
 
+  double avgDecimalPointFormat(int data) {
+    return double.parse(data.toStringAsFixed(2));
+  }
+
   String dateTimeFormatForChat(DateTime? dateTime) {
     int mount = int.parse(DateFormat.M().format(dateTime!));
     String dayWeek = DateFormat.E().format(dateTime);

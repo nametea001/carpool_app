@@ -15,17 +15,24 @@ import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:car_pool_project/global.dart' as globals;
 
 import '../models/chat.dart';
+import '../models/report_reason.dart';
 import 'chat_detail_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
   final User user;
+  final List<ReportReason> reportReasons;
 
-  const ReviewScreen({super.key, required this.user});
+  const ReviewScreen({
+    super.key,
+    required this.user,
+    required this.reportReasons,
+  });
   @override
   State<ReviewScreen> createState() => _ReviewScreenState();
 }
 
-class _ReviewScreenState extends State<ReviewScreen> {
+class _ReviewScreenState extends State<ReviewScreen>
+    with SingleTickerProviderStateMixin {
   User user = User();
   GlobalData globalData = GlobalData();
   bool _isLoading = true;
@@ -35,6 +42,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
   // List<Post> posts = [];
   List<ReviewUserLog> reviewUserLogs = [];
 
+  List<ReportReason> reportReasons = [];
+
+  late final TabController _tabController =
+      TabController(length: 2, vsync: this);
   final FocusNode _focusNodeReviewDescription = FocusNode();
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -51,6 +62,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
   @override
   void dispose() {
     super.dispose();
+    _tabController.dispose();
   }
 
   Widget listViewReview() {
@@ -69,8 +81,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                       prefs.getString('jwt') ?? "", post.createdUserID!);
                   setState(() {
                     reviewUserPost = tempData![0] ?? [];
-                    avgReview =
-                        tempData[1] != null ? tempData[1].toDouble() : 0.0;
+                    avgReview = globalData.avgDecimalPointFormat(tempData[1]);
                   });
                   User? u = post.user;
                   u!.id = post.createdUserID;
@@ -346,6 +357,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(48.0),
             child: TabBar(
+              controller: _tabController,
               isScrollable: true,
               labelColor: Colors.white,
               indicatorSize: TabBarIndicatorSize.label,
@@ -364,6 +376,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
           ),
         ),
         body: TabBarView(
+          controller: _tabController,
           children: [
             (_isLoading ? listLoader() : listViewReview()),
             (_isLoading ? listLoader() : listViewMyReview()),
@@ -507,6 +520,8 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                             isAdd: false,
                                             isback: post.isBack,
                                             post: post,
+                                            reportReasons: reportReasons,
+                                            // reportReasons: ,
                                           ),
                                         ),
                                       );
@@ -877,6 +892,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                                             isAdd: false,
                                             isback: post.isBack,
                                             post: post,
+                                            reportReasons: reportReasons,
                                           ),
                                         ),
                                       );
@@ -1130,6 +1146,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                     reviewUserLogs = reviewUserLogs;
                     reviews.insert(0, tempData);
                   });
+                  _tabController.animateTo(1);
                 }
               },
               child: const Text('Confirm')),

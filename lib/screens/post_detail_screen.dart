@@ -28,6 +28,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
 import '../models/chat.dart';
+import '../models/report_reason.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:car_pool_project/models/review.dart' as re;
@@ -40,6 +41,7 @@ class PostDetailScreen extends StatefulWidget {
   final bool? isView;
   final bool? isback;
   final Post post;
+  final List<ReportReason> reportReasons;
 
   const PostDetailScreen({
     super.key,
@@ -48,6 +50,7 @@ class PostDetailScreen extends StatefulWidget {
     this.isback,
     this.isView,
     required this.post,
+    required this.reportReasons,
   });
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -152,6 +155,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   double avgReview = 0.0;
 
   List<PostMember> postMembers = [];
+  // List<ReportReason> reportReasons = [];
+  List<ReportReason> reportReasonsUser = [];
+  List<ReportReason> reportReasonsReview = [];
+  List<ReportReason> reportReasonsPost = [];
+
+  ReportReason? reportReasonPost;
+  ReportReason? reportReasonUser;
+  ReportReason? reportReasonReview;
 
   late IO.Socket socket;
 
@@ -166,6 +177,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     post = widget.post;
     location1 = widget.post.startName ?? "Search Start";
     location2 = widget.post.endName ?? "Search End";
+    mapTypeReportReason();
     if (_isAdd) {
       getCar();
     } else {
@@ -245,7 +257,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               onSelected: (value) {
                 if (value == "Member") {
                   showDetailPostmember();
-                } else {}
+                } else {
+                  reportPost();
+                }
               },
               itemBuilder: (BuildContext context) {
                 return [
@@ -972,9 +986,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   post!.createdUserID!);
                               setState(() {
                                 reviews = tempData![0] ?? [];
-                                avgReview = tempData[1] != null
-                                    ? tempData[1].toDouble()
-                                    : 0.0;
+                                avgReview = globalData
+                                    .avgDecimalPointFormat(tempData[1]);
                               });
                               User? u = post!.user;
                               u!.id = post!.createdUserID;
@@ -1249,6 +1262,85 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
+  void reportPost() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                            value: reportReasonPost,
+                            items: reportReasonsPost.map((ReportReason r) {
+                              return DropdownMenuItem<ReportReason>(
+                                  value: reportReasonPost,
+                                  child: Text("${r.reason}"));
+                            }).toList(),
+                            onChanged: (ReportReason? r) {
+                              // print(c!.model);
+                              setState(() {
+                                reportReasonPost = r;
+                              });
+                            }),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            onTap: () {},
+                            // maxLength: 4,
+                            maxLines: 4,
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
   void selectCar() {
     _focusNodePrice.unfocus();
     _focusNodeBrand.unfocus();
@@ -1278,7 +1370,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               value: car,
                               items: cars!.map((Car car) {
                                 return DropdownMenuItem<Car>(
-                                    value: car, child: Text("${car.model}"));
+                                    value: car,
+                                    child: Text("${car.model} ${car.brand}"));
                               }).toList(),
                               onChanged: (Car? c) {
                                 // print(c!.model);
@@ -1344,12 +1437,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            onPressed: () {
+                            onPressed: () async {
                               Navigator.pop(context);
-                              Navigator.push(
+                              List<Car>? temp = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => const CarScreen()));
+
+                              if (temp != null && temp.isNotEmpty) {
+                                setState(() {
+                                  cars = temp;
+                                });
+                              }
                             },
                             icon: const Icon(Icons.add),
                             color: Colors.green,
@@ -1889,6 +1988,28 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ],
       ),
     );
+  }
+
+  void mapTypeReportReason() {
+    for (var r in widget.reportReasons) {
+      if (r.type == "ALL") {
+        reportReasonsPost.add(r);
+        reportReasonsUser.add(r);
+        reportReasonsReview.add(r);
+        reportReasonPost = r;
+        reportReasonUser = r;
+        reportReasonReview = r;
+      } else if (r.type == "POST") {
+        reportReasonsPost.add(r);
+        reportReasonPost = r;
+      } else if (r.type == "USER") {
+        reportReasonsUser.add(r);
+        reportReasonUser = r;
+      } else if (r.type == "REVIEW") {
+        reportReasonsReview.add(r);
+        reportReasonReview = r;
+      }
+    }
   }
 
   List<ListTile> getListTileReviews() {

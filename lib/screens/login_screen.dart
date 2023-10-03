@@ -19,7 +19,8 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final formKey1 = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
   String ip = '';
@@ -46,6 +47,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final FocusNode _focusNodeSingUpLastName = FocusNode();
 
   final TextEditingController _passwordController = TextEditingController();
+
+  late final TabController _tabController =
+      TabController(length: 2, vsync: this);
 
   String sex = "Male";
 
@@ -145,10 +149,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const TabBar(
+                      TabBar(
+                        controller: _tabController,
                         labelColor: Colors.blue,
                         unselectedLabelColor: Colors.black,
-                        tabs: [
+                        tabs: const [
                           Tab(
                             text: 'Sign in',
                           ),
@@ -160,465 +165,448 @@ class _LoginScreenState extends State<LoginScreen> {
                       SizedBox(
                         height: MediaQuery.of(context).size.height - 100,
                         // padding: EdgeInsets.only(top: 30),
-                        child: TabBarView(
-                            // controller: ,
-                            children: [
-                              // tab login
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                child: Form(
-                                    key: formKey1,
-                                    child: Column(
-                                      children: [
-                                        TextFormField(
-                                          focusNode: _focusNodeUsername,
-                                          onChanged: (value) {
-                                            username = value;
-                                          },
-                                          autofocus: true,
-                                          decoration: InputDecoration(
-                                              labelText: "Username",
-                                              filled: true,
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                                // borderSide: BorderSide.none,
-                                              ),
-                                              prefixIcon: const Icon(
-                                                Icons.person,
-                                                color: Colors.pink,
-                                              )),
-                                        ),
-                                        const SizedBox(
-                                          height: 20.0,
-                                        ),
-                                        TextFormField(
-                                          focusNode: _focusNodePassword,
-                                          obscureText: true,
-                                          controller: _passwordController,
-                                          onChanged: (value) {
-                                            password = value;
-                                          },
-                                          decoration: InputDecoration(
-                                              labelText: "Password",
-                                              filled: true,
-                                              border: OutlineInputBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10.0),
-                                                // borderSide: BorderSide.none,
-                                              ),
-                                              prefixIcon: const Icon(
-                                                Icons.vpn_key,
-                                                color: Colors.pink,
-                                              )),
-                                        ),
-                                        // forget pass bt
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                              150, 0, 0, 0),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.end,
-                                            children: [
-                                              TextButton(
-                                                  onPressed: () {},
-                                                  child: Text(
-                                                    "Forget your password ?",
-                                                    style: TextStyle(
-                                                        color:
-                                                            Colors.red.shade900,
-                                                        decoration:
-                                                            TextDecoration
-                                                                .underline,
-                                                        fontStyle:
-                                                            FontStyle.italic),
-                                                  ))
-                                            ],
+                        child:
+                            TabBarView(controller: _tabController, children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            child: Form(
+                                key: formKey1,
+                                child: Column(
+                                  children: [
+                                    TextFormField(
+                                      focusNode: _focusNodeUsername,
+                                      onChanged: (value) {
+                                        username = value;
+                                      },
+                                      autofocus: true,
+                                      decoration: InputDecoration(
+                                          labelText: "Username",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
                                           ),
-                                        ),
-                                        //  login button
-                                        _isSignIn
-                                            ? _loadingSingin()
-                                            : SizedBox(
-                                                width: double.infinity,
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.pink,
-                                                  ),
-                                                  onPressed: () {
-                                                    showLogin();
-                                                  },
-                                                  child: const Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            vertical: 18),
-                                                    child: Text(
-                                                      "Sign in",
-                                                      style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 20,
-                                                          fontWeight:
-                                                              FontWeight.w800),
-                                                    ),
-                                                  ),
-                                                )),
-                                      ],
-                                    )),
-                              ),
-
-                              // tap SignUp
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                child: Form(
-                                  key: formKey2,
-                                  child: Column(
-                                    children: [
-                                      TextFormField(
-                                        focusNode: _focusNodeSingUpUsername,
-                                        onSaved: (newValue) {
-                                          userSignUp.username = newValue;
-                                        },
-                                        autofocus: true,
-                                        validator: MultiValidator([
-                                          RequiredValidator(
-                                              errorText:
-                                                  "Please Input Username")
-                                        ]),
-                                        decoration: InputDecoration(
-                                            labelText: "Username",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.person,
-                                              color: Colors.pink,
-                                            )),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      Focus(
-                                        onFocusChange: (bool focus) {
-                                          setState(() {
-                                            _isFocusPassword =
-                                                !_isFocusPassword;
-                                            _isShowPassword = false;
-                                          });
-                                        },
-                                        child: TextFormField(
-                                          focusNode: _focusNodeSingUpPassword,
-                                          obscureText: !_isShowPassword,
-                                          onChanged: (value) {
-                                            password = value;
-                                          },
-                                          onSaved: (newValue) {
-                                            password = newValue!;
-                                          },
-                                          validator: (String? str) {
-                                            if (str!.isEmpty) {
-                                              return "Please Input Password";
-                                            }
-                                            if (password != confirmPassword) {
-                                              return "Password and Confirm Password is not match";
-                                            }
-                                            return null;
-                                          },
-                                          decoration: InputDecoration(
-                                            labelText: "Password",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.vpn_key,
-                                              color: Colors.pink,
-                                            ),
-                                            suffixIcon: IconButton(
-                                                onPressed: _isFocusPassword
-                                                    ? () {
-                                                        setState(() {
-                                                          _isShowPassword =
-                                                              !_isShowPassword;
-                                                        });
-                                                      }
-                                                    : null,
-                                                icon: _isFocusPassword
-                                                    ? visibility(
-                                                        _isShowPassword)
-                                                    : const Icon(null)),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      Focus(
-                                        onFocusChange: (bool focus) {
-                                          setState(() {
-                                            _isFocusConfirmPassword =
-                                                !_isFocusConfirmPassword;
-                                            _isShowConfirmPassword = false;
-                                          });
-                                        },
-                                        child: TextFormField(
-                                          focusNode:
-                                              _focusNodeSingUpConfirmPassword,
-                                          obscureText: !_isShowConfirmPassword,
-                                          onChanged: (value) {
-                                            confirmPassword = value;
-                                          },
-                                          validator: (String? str) {
-                                            if (str!.isEmpty) {
-                                              return "Please Input Confirm Password";
-                                            }
-                                            if (password != confirmPassword) {
-                                              return "Password and Confirm Password is not match";
-                                            }
-                                            return null;
-                                          },
-                                          // validator: MultiValidator([
-                                          //   RequiredValidator(
-                                          //       errorText:
-                                          //           "Please Input Confirm Password."),
-                                          // ]),
-                                          decoration: InputDecoration(
-                                            labelText: "Confirm Password",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.vpn_key,
-                                              color: Colors.pink,
-                                            ),
-                                            suffixIcon: IconButton(
-                                                onPressed:
-                                                    _isFocusConfirmPassword
-                                                        ? () {
-                                                            setState(() {
-                                                              _isShowConfirmPassword =
-                                                                  !_isShowConfirmPassword;
-                                                            });
-                                                          }
-                                                        : null,
-                                                icon: _isFocusConfirmPassword
-                                                    ? visibility(
-                                                        _isShowConfirmPassword)
-                                                    : const Icon(null)),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      TextFormField(
-                                        focusNode: _focusNodeSingUpEmail,
-                                        validator: MultiValidator([
-                                          RequiredValidator(
-                                              errorText: "Please Input Email."),
-                                          EmailValidator(
-                                              errorText: "Email is Incorrect !")
-                                        ]),
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        // onChanged: (value) {
-                                        //   email = value;
-                                        // },
-                                        onSaved: (newValue) {
-                                          userSignUp.email = newValue;
-                                        },
-                                        decoration: InputDecoration(
-                                            labelText: "Email",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.email,
-                                              color: Colors.pink,
-                                            )),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      TextFormField(
-                                        focusNode: _focusNodeSingUpFirstName,
-                                        // onChanged: (value) {
-                                        //   username = value;
-                                        // },
-                                        onSaved: (newValue) {
-                                          userSignUp.firstName = newValue;
-                                        },
-                                        validator: MultiValidator([
-                                          RequiredValidator(
-                                              errorText:
-                                                  "Please Input First name.")
-                                        ]),
-                                        decoration: InputDecoration(
-                                            labelText: "First name",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.edit_note,
-                                              color: Colors.pink,
-                                            )),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      TextFormField(
-                                        focusNode: _focusNodeSingUpLastName,
-                                        // onChanged: (value) {
-                                        //   username = value;
-                                        // },
-                                        onSaved: (newValue) {
-                                          userSignUp.lastName = newValue;
-                                        },
-                                        validator: MultiValidator([
-                                          RequiredValidator(
-                                              errorText:
-                                                  "Please Input Last name.")
-                                        ]),
-                                        decoration: InputDecoration(
-                                            labelText: "Last name",
-                                            filled: true,
-                                            border: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(10.0),
-                                              // borderSide: BorderSide.none,
-                                            ),
-                                            prefixIcon: const Icon(
-                                              Icons.edit_note,
-                                              color: Colors.pink,
-                                            )),
-                                      ),
-                                      const SizedBox(
-                                        height: 20.0,
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          // Text("Sex"),
-                                          const Icon(
-                                            Icons.man,
-                                            color: Colors.blue,
-                                            size: 35,
-                                          ),
-                                          SizedBox(
-                                            width: 30,
-                                            child: RadioListTile(
-                                                value: "Male",
-                                                groupValue: sex,
-                                                onChanged: ((value) {
-                                                  setState(() {
-                                                    sex = value.toString();
-                                                    userSignUp.sex = sex;
-                                                  });
-                                                })),
-                                          ),
-                                          const Text("Male"),
-                                          SizedBox(
-                                            width: (MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    2) -
-                                                140,
-                                          ),
-                                          const Icon(
-                                            Icons.woman,
+                                          prefixIcon: const Icon(
+                                            Icons.person,
                                             color: Colors.pink,
-                                            size: 35,
+                                          )),
+                                    ),
+                                    const SizedBox(
+                                      height: 20.0,
+                                    ),
+                                    TextFormField(
+                                      focusNode: _focusNodePassword,
+                                      obscureText: true,
+                                      controller: _passwordController,
+                                      onChanged: (value) {
+                                        password = value;
+                                      },
+                                      decoration: InputDecoration(
+                                          labelText: "Password",
+                                          filled: true,
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(10.0),
+                                            // borderSide: BorderSide.none,
                                           ),
-                                          SizedBox(
-                                            width: 30,
-                                            child: RadioListTile(
-                                                value: "Famale",
-                                                groupValue: sex,
-                                                onChanged: ((value) {
-                                                  setState(() {
-                                                    sex = value.toString();
-                                                    userSignUp.sex = sex;
-                                                  });
-                                                })),
-                                          ),
-                                          const Text("Famale"),
+                                          prefixIcon: const Icon(
+                                            Icons.vpn_key,
+                                            color: Colors.pink,
+                                          )),
+                                    ),
+                                    // forget pass bt
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                          150, 0, 0, 0),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          TextButton(
+                                              onPressed: () {},
+                                              child: Text(
+                                                "Forget your password ?",
+                                                style: TextStyle(
+                                                    color: Colors.red.shade900,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    fontStyle:
+                                                        FontStyle.italic),
+                                              ))
                                         ],
                                       ),
-                                      //  register button
-                                      _isSingUp
-                                          ? _loadingSingin()
-                                          : Container(
-                                              padding: const EdgeInsets.only(
-                                                  top: 30.0),
-                                              width: double.infinity,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.pink,
-                                                ),
-                                                onPressed: () async {
-                                                  userSignUp.sex = sex;
-                                                  if (formKey2.currentState!
-                                                          .validate() &&
-                                                      password ==
-                                                          confirmPassword) {
-                                                    formKey2.currentState!
-                                                        .save();
-
-                                                    setState(() {
-                                                      _isSingUp = true;
-                                                    });
-                                                    User? u = await User.signUp(
-                                                        userSignUp, password);
-                                                    setState(() {
-                                                      _isSingUp = false;
-                                                    });
-                                                    if (u != null) {
-                                                      showAlerRegisterSuccess();
-                                                    } else {
-                                                      showAlerRegisterFail();
-                                                    }
-                                                  }
-                                                  formKey2.currentState?.reset;
-                                                },
-                                                child: const Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      vertical: 18),
-                                                  child: Text(
-                                                    "Sign up",
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.w800),
-                                                  ),
+                                    ),
+                                    //  login button
+                                    _isSignIn
+                                        ? _loadingSingin()
+                                        : SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.pink,
+                                              ),
+                                              onPressed: () {
+                                                showLogin();
+                                              },
+                                              child: const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 18),
+                                                child: Text(
+                                                  "Sign in",
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.w800),
                                                 ),
                                               ),
-                                            ),
-                                      // TextButton(
-                                      //     onPressed: () {}, child: Text("gggg"))
+                                            )),
+                                  ],
+                                )),
+                          ),
+
+                          // tap SignUp
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            child: Form(
+                              key: formKey2,
+                              child: Column(
+                                children: [
+                                  TextFormField(
+                                    focusNode: _focusNodeSingUpUsername,
+                                    onSaved: (newValue) {
+                                      userSignUp.username = newValue;
+                                    },
+                                    autofocus: true,
+                                    validator: MultiValidator([
+                                      RequiredValidator(
+                                          errorText: "Please Input Username")
+                                    ]),
+                                    decoration: InputDecoration(
+                                        labelText: "Username",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.person,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  Focus(
+                                    onFocusChange: (bool focus) {
+                                      setState(() {
+                                        _isFocusPassword = !_isFocusPassword;
+                                        _isShowPassword = false;
+                                      });
+                                    },
+                                    child: TextFormField(
+                                      focusNode: _focusNodeSingUpPassword,
+                                      obscureText: !_isShowPassword,
+                                      onChanged: (value) {
+                                        password = value;
+                                      },
+                                      onSaved: (newValue) {
+                                        password = newValue!;
+                                      },
+                                      validator: (String? str) {
+                                        if (str!.isEmpty) {
+                                          return "Please Input Password";
+                                        }
+                                        if (password != confirmPassword) {
+                                          return "Password and Confirm Password is not match";
+                                        }
+                                        return null;
+                                      },
+                                      decoration: InputDecoration(
+                                        labelText: "Password",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.vpn_key,
+                                          color: Colors.pink,
+                                        ),
+                                        suffixIcon: IconButton(
+                                            onPressed: _isFocusPassword
+                                                ? () {
+                                                    setState(() {
+                                                      _isShowPassword =
+                                                          !_isShowPassword;
+                                                    });
+                                                  }
+                                                : null,
+                                            icon: _isFocusPassword
+                                                ? visibility(_isShowPassword)
+                                                : const Icon(null)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  Focus(
+                                    onFocusChange: (bool focus) {
+                                      setState(() {
+                                        _isFocusConfirmPassword =
+                                            !_isFocusConfirmPassword;
+                                        _isShowConfirmPassword = false;
+                                      });
+                                    },
+                                    child: TextFormField(
+                                      focusNode:
+                                          _focusNodeSingUpConfirmPassword,
+                                      obscureText: !_isShowConfirmPassword,
+                                      onChanged: (value) {
+                                        confirmPassword = value;
+                                      },
+                                      validator: (String? str) {
+                                        if (str!.isEmpty) {
+                                          return "Please Input Confirm Password";
+                                        }
+                                        if (password != confirmPassword) {
+                                          return "Password and Confirm Password is not match";
+                                        }
+                                        return null;
+                                      },
+                                      // validator: MultiValidator([
+                                      //   RequiredValidator(
+                                      //       errorText:
+                                      //           "Please Input Confirm Password."),
+                                      // ]),
+                                      decoration: InputDecoration(
+                                        labelText: "Confirm Password",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.vpn_key,
+                                          color: Colors.pink,
+                                        ),
+                                        suffixIcon: IconButton(
+                                            onPressed: _isFocusConfirmPassword
+                                                ? () {
+                                                    setState(() {
+                                                      _isShowConfirmPassword =
+                                                          !_isShowConfirmPassword;
+                                                    });
+                                                  }
+                                                : null,
+                                            icon: _isFocusConfirmPassword
+                                                ? visibility(
+                                                    _isShowConfirmPassword)
+                                                : const Icon(null)),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  TextFormField(
+                                    focusNode: _focusNodeSingUpEmail,
+                                    validator: MultiValidator([
+                                      RequiredValidator(
+                                          errorText: "Please Input Email."),
+                                      EmailValidator(
+                                          errorText: "Email is Incorrect !")
+                                    ]),
+                                    keyboardType: TextInputType.emailAddress,
+                                    // onChanged: (value) {
+                                    //   email = value;
+                                    // },
+                                    onSaved: (newValue) {
+                                      userSignUp.email = newValue;
+                                    },
+                                    decoration: InputDecoration(
+                                        labelText: "Email",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.email,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  TextFormField(
+                                    focusNode: _focusNodeSingUpFirstName,
+                                    // onChanged: (value) {
+                                    //   username = value;
+                                    // },
+                                    onSaved: (newValue) {
+                                      userSignUp.firstName = newValue;
+                                    },
+                                    validator: MultiValidator([
+                                      RequiredValidator(
+                                          errorText: "Please Input First name.")
+                                    ]),
+                                    decoration: InputDecoration(
+                                        labelText: "First name",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.edit_note,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  TextFormField(
+                                    focusNode: _focusNodeSingUpLastName,
+                                    // onChanged: (value) {
+                                    //   username = value;
+                                    // },
+                                    onSaved: (newValue) {
+                                      userSignUp.lastName = newValue;
+                                    },
+                                    validator: MultiValidator([
+                                      RequiredValidator(
+                                          errorText: "Please Input Last name.")
+                                    ]),
+                                    decoration: InputDecoration(
+                                        labelText: "Last name",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.edit_note,
+                                          color: Colors.pink,
+                                        )),
+                                  ),
+                                  const SizedBox(
+                                    height: 20.0,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      // Text("Sex"),
+                                      const Icon(
+                                        Icons.man,
+                                        color: Colors.blue,
+                                        size: 35,
+                                      ),
+                                      SizedBox(
+                                        width: 30,
+                                        child: RadioListTile(
+                                            value: "Male",
+                                            groupValue: sex,
+                                            onChanged: ((value) {
+                                              setState(() {
+                                                sex = value.toString();
+                                                userSignUp.sex = sex;
+                                              });
+                                            })),
+                                      ),
+                                      const Text("Male"),
+                                      SizedBox(
+                                        width:
+                                            (MediaQuery.of(context).size.width /
+                                                    2) -
+                                                140,
+                                      ),
+                                      const Icon(
+                                        Icons.woman,
+                                        color: Colors.pink,
+                                        size: 35,
+                                      ),
+                                      SizedBox(
+                                        width: 30,
+                                        child: RadioListTile(
+                                            value: "Famale",
+                                            groupValue: sex,
+                                            onChanged: ((value) {
+                                              setState(() {
+                                                sex = value.toString();
+                                                userSignUp.sex = sex;
+                                              });
+                                            })),
+                                      ),
+                                      const Text("Famale"),
                                     ],
                                   ),
-                                ),
+                                  //  register button
+                                  _isSingUp
+                                      ? _loadingSingin()
+                                      : Container(
+                                          padding:
+                                              const EdgeInsets.only(top: 30.0),
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.pink,
+                                            ),
+                                            onPressed: () async {
+                                              userSignUp.sex = sex;
+                                              if (formKey2.currentState!
+                                                      .validate() &&
+                                                  password == confirmPassword) {
+                                                formKey2.currentState!.save();
+
+                                                setState(() {
+                                                  _isSingUp = true;
+                                                });
+                                                User? u = await User.signUp(
+                                                    userSignUp, password);
+                                                setState(() {
+                                                  _isSingUp = false;
+                                                });
+                                                if (u != null) {
+                                                  showAlerRegisterSuccess();
+                                                  _tabController.animateTo(0);
+                                                } else {
+                                                  showAlerRegisterFail();
+                                                }
+                                              }
+                                              formKey2.currentState?.reset;
+                                            },
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 18),
+                                              child: Text(
+                                                "Sign up",
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w800),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                  // TextButton(
+                                  //     onPressed: () {}, child: Text("gggg"))
+                                ],
                               ),
-                            ]),
+                            ),
+                          ),
+                        ]),
                       )
                     ],
                   ),
