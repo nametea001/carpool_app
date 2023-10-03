@@ -11,6 +11,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import '../models/chat.dart';
+import '../models/report.dart';
 import '../models/report_reason.dart';
 import 'chat_detail_screen.dart';
 
@@ -41,7 +42,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool settingMyPost = true;
   bool settingJoinPost = true;
 
-  List<ReportReason> reportReasons = [];
+  List<ReportReason> reportReasonsUser = [];
+  List<ReportReason> reportReasonsReview = [];
+  List<ReportReason> reportReasonsPost = [];
+
+  ReportReason? reportReasonPost;
+  ReportReason? reportReasonUser;
+  ReportReason? reportReasonReview;
+
+  Report reportPostData = Report();
+  Report reportUserData = Report();
+  Report reportReviewData = Report();
 
   @override
   void initState() {
@@ -172,7 +183,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   isback: post.isBack,
                   post: post,
                   isView: true,
-                  reportReasons: reportReasons,
+                  reportReasons: widget.reportReasons,
                 ),
               ),
             );
@@ -306,7 +317,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   isback: post.isBack,
                   post: post,
                   isView: true,
-                  reportReasons: reportReasons,
+                  reportReasons: widget.reportReasons,
                 ),
               ),
             );
@@ -434,6 +445,265 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
   }
 
+  void showAlerError() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAlerSuccess() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Success'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("ดำเดินการสำเร็จ"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void reportUser(int reportUserID) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report User'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonUser,
+                          onChanged: (newValue) {
+                            reportUserData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonUser = newValue;
+                            });
+                          },
+                          items: reportReasonsUser.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportUserData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportUserData.userID = reportUserID;
+                      var temp = await Report.addReport(reportUserData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void reportReview(int reportReviewID) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report Review'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonReview,
+                          onChanged: (newValue) {
+                            reportReviewData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonReview = newValue;
+                            });
+                          },
+                          items: reportReasonsReview.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportReviewData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportReviewData.reviewID = reportReviewID;
+                      var temp = await Report.addReport(reportUserData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void mapTypeReportReason() {
+    for (var r in widget.reportReasons) {
+      if (r.type == "ALL") {
+        reportReasonsUser.add(r);
+        reportReasonsReview.add(r);
+      } else if (r.type == "USER") {
+        reportReasonsUser.add(r);
+      } else if (r.type == "REVIEW") {
+        reportReasonsReview.add(r);
+      }
+      if (reportReasonsUser.isNotEmpty) {
+        reportReasonUser = reportReasonsUser[0];
+        reportUserData.reasonID = reportReasonsUser[0].id;
+      }
+      if (reportReasonsReview.isNotEmpty) {
+        reportReasonReview = reportReasonsReview[0];
+        reportReviewData.reasonID = reportReasonsReview[0].id;
+      }
+    }
+  }
+
   void updateUI() async {
     setState(() {
       _isLoading = true;
@@ -545,22 +815,72 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ],
         ),
-        // trailing: const Text("10"),
+        trailing: user.userRoleID! < 5
+            ? PopupMenuButton<String>(
+                onSelected: (String newValue) {
+                  if (newValue == "Detail") {
+                    // Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(
+                          user: user,
+                          isAdd: false,
+                          post: Post(id: review.postID),
+                          reportReasons: widget.reportReasons,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pop(context);
+                    reportReview(review.id!);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  var popUpMenuItemDetail = const PopupMenuItem<String>(
+                    value: 'Detail',
+                    child: Row(
+                      children: [
+                        Icon(Icons.description, color: Colors.blue),
+                        SizedBox(width: 5),
+                        Text('Detail')
+                      ],
+                    ),
+                  );
+                  var popUpMenuItemReport = const PopupMenuItem<String>(
+                    value: 'Report',
+                    child: Row(
+                      children: [
+                        Icon(Icons.report_problem, color: Colors.amber),
+                        SizedBox(width: 5),
+                        Text('Report')
+                      ],
+                    ),
+                  );
+                  if (review.createdUserID != user.id) {
+                    return <PopupMenuEntry<String>>[
+                      popUpMenuItemDetail,
+                      popUpMenuItemReport
+                    ];
+                  } else {
+                    return <PopupMenuEntry<String>>[popUpMenuItemDetail];
+                  }
+                },
+              )
+            : null,
         // onTap: () {},
       );
       list.add(l);
     }
-
     return list;
   }
 
-  void showDetailReview(User u) {
-    showDialog(
+  void showDetailReview(User u) async {
+    await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
-              // insetPadding: EdgeInsets.zero,
-
               insetPadding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 30, top: 30),
               content: StatefulBuilder(
@@ -611,18 +931,30 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           //   height: 10,
                           // ),
                           Visibility(
-                            // false ,hide chat if p.userID == userID
-                            visible: !(u.id == null || u.id == user.id),
+                            visible: !((u.id == null || u.id == user.id) &&
+                                user.userRoleID! < 5),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  TextButton(
-                                      style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Colors.blue),
+                                  ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.amber),
+                                      onPressed: () {
+                                        // Navigator.pop(context);
+                                        reportUser(u.id!);
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.report_problem_outlined),
+                                          SizedBox(width: 8),
+                                          Text("report")
+                                        ],
+                                      )),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton(
                                       onPressed: () {
                                         Navigator.push(
                                             context,
@@ -640,15 +972,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                       child: const Row(
                                         children: [
                                           Icon(Icons.message),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text(
-                                            "Chat",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          )
+                                          SizedBox(width: 8),
+                                          Text("Chat")
                                         ],
                                       )),
                                 ],

@@ -28,6 +28,7 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:socket_io_client/socket_io_client.dart';
 import 'package:badges/badges.dart' as badges;
 import '../models/chat.dart';
+import '../models/report.dart';
 import '../models/report_reason.dart';
 import 'chat_detail_screen.dart';
 import 'review_screen.dart';
@@ -102,6 +103,10 @@ class _PostScreenState extends State<PostScreen> {
   ReportReason? reportReasonPost;
   ReportReason? reportReasonUser;
   ReportReason? reportReasonReview;
+
+  Report reportPostData = Report();
+  Report reportUserData = Report();
+  Report reportReviewData = Report();
 
   late IO.Socket socket;
 
@@ -1024,6 +1029,186 @@ class _PostScreenState extends State<PostScreen> {
     );
   }
 
+  void reportUser(int reportUserID) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report User'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonUser,
+                          onChanged: (newValue) {
+                            reportUserData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonUser = newValue;
+                            });
+                          },
+                          items: reportReasonsUser.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportUserData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportUserData.userID = reportUserID;
+                      var temp = await Report.addReport(reportUserData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void reportReview(int reportReviewID) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report Review'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonReview,
+                          onChanged: (newValue) {
+                            reportReviewData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonReview = newValue;
+                            });
+                          },
+                          items: reportReasonsReview.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportReviewData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportReviewData.reviewID = reportReviewID;
+                      var temp = await Report.addReport(reportUserData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
   void updateChatNoti() async {
     int? tempData = await ChatUserLog.getCountChatUserLog();
     if (tempData != null) {
@@ -1187,22 +1372,6 @@ class _PostScreenState extends State<PostScreen> {
             ),
             Row(
               children: [
-                // RatingBar.builder(
-                //   initialRating: 1,
-                //   minRating: 1,
-                //   direction: Axis.horizontal,
-                //   allowHalfRating: true,
-                //   itemCount: 5,
-                //   itemPadding:
-                //       EdgeInsets.symmetric(horizontal: 0.3, vertical: 0.2),
-                //   itemBuilder: (context, _) => Icon(
-                //     Icons.star,
-                //     color: Colors.amber,
-                //   ),
-                //   onRatingUpdate: (rating) {
-                //     print(rating);
-                //   },
-                // ),
                 RatingBarIndicator(
                   rating: score,
                   itemCount: 5,
@@ -1259,22 +1428,72 @@ class _PostScreenState extends State<PostScreen> {
             ),
           ],
         ),
-        // trailing: const Text("10"),
+        trailing: user.userRoleID! < 5
+            ? PopupMenuButton<String>(
+                onSelected: (String newValue) {
+                  if (newValue == "Detail") {
+                    // Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(
+                          user: user,
+                          isAdd: false,
+                          post: Post(id: review.postID),
+                          reportReasons: reportReasons,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pop(context);
+                    reportReview(review.id!);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  var popUpMenuItemDetail = const PopupMenuItem<String>(
+                    value: 'Detail',
+                    child: Row(
+                      children: [
+                        Icon(Icons.description, color: Colors.blue),
+                        SizedBox(width: 5),
+                        Text('Detail')
+                      ],
+                    ),
+                  );
+                  var popUpMenuItemReport = const PopupMenuItem<String>(
+                    value: 'Report',
+                    child: Row(
+                      children: [
+                        Icon(Icons.report_problem, color: Colors.amber),
+                        SizedBox(width: 5),
+                        Text('Report')
+                      ],
+                    ),
+                  );
+                  if (review.createdUserID != user.id) {
+                    return <PopupMenuEntry<String>>[
+                      popUpMenuItemDetail,
+                      popUpMenuItemReport
+                    ];
+                  } else {
+                    return <PopupMenuEntry<String>>[popUpMenuItemDetail];
+                  }
+                },
+              )
+            : null,
         // onTap: () {},
       );
       list.add(l);
     }
-
     return list;
   }
 
-  void showDetailReview(User u) {
-    showDialog(
+  void showDetailReview(User u) async {
+    await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
               title: const Text('Reviews'),
-              // insetPadding: EdgeInsets.zero,
-
               insetPadding: const EdgeInsets.only(
                   left: 20, right: 20, bottom: 30, top: 30),
               content: StatefulBuilder(
@@ -1325,18 +1544,30 @@ class _PostScreenState extends State<PostScreen> {
                           //   height: 10,
                           // ),
                           Visibility(
-                            // false ,hide chat if p.userID == userID
-                            visible: !(u.id == null || u.id == user.id),
+                            visible: !((u.id == null || u.id == user.id) &&
+                                user.userRoleID! < 5),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  TextButton(
-                                      style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Colors.blue),
+                                  ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.amber),
+                                      onPressed: () {
+                                        // Navigator.pop(context);
+                                        reportUser(u.id!);
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.report_problem_outlined),
+                                          SizedBox(width: 8),
+                                          Text("report")
+                                        ],
+                                      )),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton(
                                       onPressed: () {
                                         Navigator.push(
                                             context,
@@ -1354,15 +1585,8 @@ class _PostScreenState extends State<PostScreen> {
                                       child: const Row(
                                         children: [
                                           Icon(Icons.message),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text(
-                                            "Chat",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          )
+                                          SizedBox(width: 8),
+                                          Text("Chat")
                                         ],
                                       )),
                                 ],
@@ -1445,6 +1669,64 @@ class _PostScreenState extends State<PostScreen> {
     //         children: [],
     //       )),
     // );
+  }
+
+  void showAlerError() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAlerSuccess() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Success'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("ดำเดินการสำเร็จ"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
   }
 
   // skeleton_loader

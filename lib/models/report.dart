@@ -8,6 +8,7 @@ class Report {
   int? reasonID;
   int? userID;
   int? postID;
+  int? reviewID;
   String? description;
 
   Report({
@@ -15,6 +16,7 @@ class Report {
     this.reasonID,
     this.userID,
     this.postID,
+    this.reviewID,
     this.description,
   });
 

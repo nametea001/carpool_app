@@ -256,41 +256,58 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? const Text('Add ') : const Text('Detail')),
           backgroundColor: Colors.pink,
-          actions: [
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == "Member") {
-                  showDetailPostmember();
-                } else {
-                  reportPost();
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return [
-                  const PopupMenuItem<String>(
-                    value: 'Member',
-                    child: Row(
-                      children: [
-                        Icon(Icons.person, color: Colors.blue),
-                        SizedBox(width: 8), // Add some spacing
-                        Text('Member'),
-                      ],
-                    ),
+          actions: user.userRoleID! < 5
+              ? [
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == "Member") {
+                        showDetailPostmember();
+                      } else {
+                        reportPost();
+                      }
+                    },
+                    itemBuilder: (BuildContext context) {
+                      if (post!.id != user.id) {
+                        return [
+                          const PopupMenuItem<String>(
+                            value: 'Member',
+                            child: Row(
+                              children: [
+                                Icon(Icons.person, color: Colors.blue),
+                                SizedBox(width: 8), // Add some spacing
+                                Text('Member'),
+                              ],
+                            ),
+                          ),
+                          const PopupMenuItem<String>(
+                            value: 'Report',
+                            child: Row(
+                              children: [
+                                Icon(Icons.report, color: Colors.amber),
+                                SizedBox(width: 8), // Add some spacing
+                                Text('Report'),
+                              ],
+                            ),
+                          ),
+                        ];
+                      } else {
+                        return [
+                          const PopupMenuItem<String>(
+                            value: 'Member',
+                            child: Row(
+                              children: [
+                                Icon(Icons.person, color: Colors.blue),
+                                SizedBox(width: 8), // Add some spacing
+                                Text('Member'),
+                              ],
+                            ),
+                          ),
+                        ];
+                      }
+                    },
                   ),
-                  const PopupMenuItem<String>(
-                    value: 'Report',
-                    child: Row(
-                      children: [
-                        Icon(Icons.report, color: Colors.amber),
-                        SizedBox(width: 8), // Add some spacing
-                        Text('Report'),
-                      ],
-                    ),
-                  ),
-                ];
-              },
-            ),
-          ],
+                ]
+              : null,
         ),
         body: _isLoading
             ? _loadingDetail()
@@ -1265,7 +1282,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
   }
 
-  void reportUser() {
+  void reportUser(int reportUserID) {
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -1282,11 +1299,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         DropdownButton<ReportReason>(
-                          value: reportReasonPost,
+                          value: reportReasonUser,
                           onChanged: (newValue) {
-                            reportPostData.reasonID = newValue!.id;
+                            reportUserData.reasonID = newValue!.id;
                             setState(() {
-                              reportReasonPost = newValue;
+                              reportReasonUser = newValue;
                             });
                           },
                           items: reportReasonsUser.map((r) {
@@ -1305,7 +1322,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                             // maxLength: 4,
                             maxLines: 4,
                             onChanged: (value) {
-                              reportPostData.description = value;
+                              reportUserData.description = value;
                             },
                             decoration: InputDecoration(
                                 labelText: "รายระเอียด",
@@ -1333,8 +1350,98 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     onPressed: () async {
                       Navigator.pop(context);
-                      reportPostData.postID = post!.id;
-                      var temp = await Report.addReport(reportPostData);
+                      reportUserData.userID = reportUserID;
+                      var temp = await Report.addReport(reportUserData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void reportReview(int reportReviewID) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report Review'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonReview,
+                          onChanged: (newValue) {
+                            reportReviewData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonReview = newValue;
+                            });
+                          },
+                          items: reportReasonsReview.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportReviewData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportReviewData.reviewID = reportReviewID;
+                      var temp = await Report.addReport(reportUserData);
                       if (temp != null) {
                         showAlerSuccess();
                       } else {
@@ -1966,6 +2073,13 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (tempDataPost != null) {
         setState(() {
           postUser = tempDataPost.post!.user!;
+          post = Post(
+            id: tempDataPost.postID,
+            status: tempDataPost.post!.status,
+            dateTimeStart: tempDataPost.post!.dateTimeStart,
+            dateTimeBack: tempDataPost.post!.dateTimeBack,
+            isBack: tempDataPost.post!.isBack,
+          );
         });
         // postDetailTemp = tempDataPost;
         _dateTimeController.text =
@@ -2034,8 +2148,23 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         ),
         subtitle: Text(
             " ${postMember.userID == post!.createdUserID ? 'คนขับ' : 'ผู้ร่วมเดินทาง'}"),
-        onTap: () {
+        trailing: postMember.userID != user.id
+            ? IconButton(
+                onPressed: () {
+                  reportUser(postMember.userID!);
+                },
+                icon: const Icon(
+                  Icons.report_problem,
+                  color: Colors.amber,
+                ))
+            : null,
+        onTap: () async {
           Navigator.pop(context);
+          var tempData = await re.Review.getReviews(postMember.userID!);
+          setState(() {
+            reviews = tempData![0] ?? [];
+            avgReview = globalData.avgDecimalPointFormat(tempData[1]);
+          });
           showDetailReview(postMember.user!);
         },
       );
@@ -2201,12 +2330,69 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             ),
           ],
         ),
-        // trailing: const Text("10"),
+        trailing: user.userRoleID! < 5 &&
+                (post!.id != review.postID || user.id != review.createdUserID)
+            ? PopupMenuButton<String>(
+                onSelected: (String newValue) {
+                  if (newValue == "Detail") {
+                    // Navigator.of(context).popUntil((route) => route.isFirst);
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(
+                          user: user,
+                          isAdd: false,
+                          post: Post(id: review.postID),
+                          reportReasons: widget.reportReasons,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Navigator.pop(context);
+                    reportReview(review.id!);
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  var popUpMenuItemDetail = const PopupMenuItem<String>(
+                    value: 'Detail',
+                    child: Row(
+                      children: [
+                        Icon(Icons.description, color: Colors.blue),
+                        SizedBox(width: 5),
+                        Text('Detail')
+                      ],
+                    ),
+                  );
+                  var popUpMenuItemReport = const PopupMenuItem<String>(
+                    value: 'Report',
+                    child: Row(
+                      children: [
+                        Icon(Icons.report_problem, color: Colors.amber),
+                        SizedBox(width: 5),
+                        Text('Report')
+                      ],
+                    ),
+                  );
+                  if (post!.id != review.postID &&
+                      review.createdUserID != user.id) {
+                    return <PopupMenuEntry<String>>[
+                      popUpMenuItemDetail,
+                      popUpMenuItemReport
+                    ];
+                  } else if (post!.id == review.postID &&
+                      review.createdUserID != user.id) {
+                    return <PopupMenuEntry<String>>[popUpMenuItemReport];
+                  } else {
+                    return <PopupMenuEntry<String>>[popUpMenuItemDetail];
+                  }
+                },
+              )
+            : null,
         // onTap: () {},
       );
       list.add(l);
     }
-
     return list;
   }
 
@@ -2265,17 +2451,30 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           //   height: 10,
                           // ),
                           Visibility(
-                            visible: !(u.id == null || u.id == user.id),
+                            visible: !((u.id == null || u.id == user.id) &&
+                                user.userRoleID! < 5),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  TextButton(
-                                      style: TextButton.styleFrom(
-                                          foregroundColor: Colors.white,
-                                          backgroundColor: Colors.blue),
+                                  ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.amber),
+                                      onPressed: () {
+                                        // Navigator.pop(context);
+                                        reportUser(u.id!);
+                                      },
+                                      child: const Row(
+                                        children: [
+                                          Icon(Icons.report_problem_outlined),
+                                          SizedBox(width: 8),
+                                          Text("report")
+                                        ],
+                                      )),
+                                  const SizedBox(width: 10),
+                                  ElevatedButton(
                                       onPressed: () {
                                         Navigator.push(
                                             context,
@@ -2293,15 +2492,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       child: const Row(
                                         children: [
                                           Icon(Icons.message),
-                                          SizedBox(
-                                            width: 10,
-                                          ),
-                                          Text(
-                                            "Chat",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                            ),
-                                          )
+                                          SizedBox(width: 8),
+                                          Text("Chat")
                                         ],
                                       )),
                                 ],

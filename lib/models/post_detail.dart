@@ -95,6 +95,13 @@ class PostDetail {
           post: Post(
             status: t['posts']['status'],
             countPostMember: t['posts']['_count']['post_members'],
+            dateTimeStart: t['posts']['date_time_start'] != null
+                ? DateTime.parse(t['posts']['date_time_start'])
+                : null,
+            dateTimeBack: t['posts']['date_time_back'] != null
+                ? DateTime.parse(t['posts']['date_time_back'])
+                : null,
+            isBack: t['posts']['is_back'],
             user: User(
               firstName: t['posts']['users']['first_name'],
               lastName: t['posts']['users']['last_name'],

@@ -41,7 +41,9 @@ class Review {
         Review review = Review(
           id: t['id'],
           score: t['score'],
+          postID: t['post_id'],
           description: t['description'],
+          createdUserID: t['created_user_id'],
           post: Post(endName: t['posts']['name_end']),
           user: User(
             firstName: t['users_reviews_created']['first_name'],
