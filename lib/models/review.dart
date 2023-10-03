@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:car_pool_project/models/review_user_log.dart';
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 import 'post.dart';
 import 'post_detail.dart';
 import 'user.dart';
@@ -27,7 +28,9 @@ class Review {
     this.user,
   });
 
-  static Future<List<dynamic>?> getReviews(String token, int userID) async {
+  static Future<List<dynamic>?> getReviews(int userID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('reviews', {
       "user_id": userID.toString(),
     });

@@ -8,7 +8,6 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/post_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import '../models/chat.dart';
@@ -69,9 +68,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           leading: (post.user!.img != null
               ? GestureDetector(
                   onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    var tempData = await Review.getReviews(
-                        prefs.getString('jwt') ?? "", post.createdUserID!);
+                    var tempData = await Review.getReviews(post.createdUserID!);
                     setState(() {
                       reviews = tempData![0] ?? [];
                       avgReview = globalData.avgDecimalPointFormat(tempData[1]);
@@ -219,9 +216,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           leading: (post.user!.img != null
               ? GestureDetector(
                   onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    var tempData = await Review.getReviews(
-                        prefs.getString('jwt') ?? "", post.createdUserID!);
+                    var tempData = await Review.getReviews(post.createdUserID!);
                     setState(() {
                       reviews = tempData![0] ?? [];
                       avgReview = globalData.avgDecimalPointFormat(tempData[1]);
@@ -443,11 +438,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
       _isLoading = true;
     });
-    final prefs = await SharedPreferences.getInstance();
-
-    List<Post>? tempData =
-        await Post.getPostsHistory(prefs.getString('jwt') ?? "");
-
+    List<Post>? tempData = await Post.getPostsHistory();
     setState(() {
       posts = tempData ?? [];
       fillterPost();

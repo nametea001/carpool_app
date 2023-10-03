@@ -1,4 +1,5 @@
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class District {
   int? id;
@@ -13,9 +14,9 @@ class District {
     this.nameEN,
   });
 
-  static Future<List<District>?> getDistricts(
-    String token,
-  ) async {
+  static Future<List<District>?> getDistricts() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('districts', {});
     List<District> districts = [];
     var json = await networkHelper.getData(token);
@@ -35,9 +36,10 @@ class District {
   }
 
   static Future<District?> getDistrictByNameEN(
-    String token,
     String nameEN,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('districts/get_by_name', {
       'name_en': nameEN,
     });
@@ -57,9 +59,10 @@ class District {
   }
 
   static Future<District?> getDistrictByProvinceNameEN(
-    String token,
     String nameEN,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('districts/get_by_province_name', {
       'name_en': nameEN,

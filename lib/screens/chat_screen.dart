@@ -6,7 +6,6 @@ import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/screens/chat_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:car_pool_project/gobal_function/data.dart';
-import 'package:prefs/prefs.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -201,8 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _acceptChat() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
+    List<Chat>? tempData = await Chat.getChats();
 
     setState(() {
       chats.removeWhere(
@@ -212,9 +210,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void updateUI() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Chat>? tempData = await Chat.getChats(prefs.getString('jwt') ?? "");
-
+    List<Chat>? tempData = await Chat.getChats();
     setState(() {
       chats = tempData ?? [];
       _isLoading = false;

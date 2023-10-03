@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:car_pool_project/models/user.dart';
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class PostMember {
   int? id;
@@ -15,9 +16,9 @@ class PostMember {
     this.user,
   });
 
-  static Future<List<PostMember>?> getPostMembers(
-    String token,
-  ) async {
+  static Future<List<PostMember>?> getPostMembers() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('post_members', {});
     List<PostMember> postMembers = [];
     var json = await networkHelper.getData(token);
@@ -36,9 +37,10 @@ class PostMember {
   }
 
   static Future<List<PostMember>?> getPostMembersForCheckJoin(
-    String token,
     int postID,
   ) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper("post_members/get_check_join", {
       "post_id": postID.toString(),
     });
@@ -58,7 +60,9 @@ class PostMember {
     return null;
   }
 
-  static Future<PostMember?> joinPost(String token, int postID) async {
+  static Future<PostMember?> joinPost(int postID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper("post_members/join_post", {});
     var json = await networkHelper.postData(
       jsonEncode(<String, dynamic>{

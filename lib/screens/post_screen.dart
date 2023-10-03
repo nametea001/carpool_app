@@ -651,9 +651,7 @@ class _PostScreenState extends State<PostScreen> {
         leading: (post.user!.img != null
             ? GestureDetector(
                 onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  var tempData = await Review.getReviews(
-                      prefs.getString('jwt') ?? "", post.createdUserID!);
+                  var tempData = await Review.getReviews(post.createdUserID!);
                   setState(() {
                     reviews = tempData![0] ?? [];
                     avgReview = globalData.avgDecimalPointFormat(tempData[1]);
@@ -1027,9 +1025,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void updateChatNoti() async {
-    final prefs = await SharedPreferences.getInstance();
-    int? tempData =
-        await ChatUserLog.getCountChatUserLog(prefs.getString('jwt') ?? "");
+    int? tempData = await ChatUserLog.getCountChatUserLog();
     if (tempData != null) {
       setState(() {
         if (tempData > 99) {
@@ -1044,9 +1040,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void updateReviewNoti() async {
-    final prefs = await SharedPreferences.getInstance();
-    int? tempData =
-        await ReviewUserLog.getCountReviewUserLog(prefs.getString('jwt') ?? "");
+    int? tempData = await ReviewUserLog.getCountReviewUserLog();
     if (tempData != null) {
       setState(() {
         if (tempData > 99) {
@@ -1061,9 +1055,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void getProvince() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Province>? tempDataProvinces =
-        await Province.getProvinces(prefs.getString('jwt') ?? "");
+    List<Province>? tempDataProvinces = await Province.getProvinces();
     provinces = tempDataProvinces ?? [];
     stateProvincesEnd
         .add(Province(id: 0, nameTH: "ทุกจังหวัด", nameEN: "All Province"));
@@ -1071,9 +1063,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void getDistrict() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<District>? tempDataDistricts =
-        await District.getDistricts(prefs.getString('jwt') ?? "");
+    List<District>? tempDataDistricts = await District.getDistricts();
     districts = tempDataDistricts ?? [];
   }
 
@@ -1101,8 +1091,7 @@ class _PostScreenState extends State<PostScreen> {
       dateTimeBack: datetimeBackSelected,
       isBack: dataIsback,
     );
-    List<Post>? tempData =
-        await Post.getPosts(prefs.getString('jwt') ?? "", postDataSearch!);
+    List<Post>? tempData = await Post.getPosts(postDataSearch!);
 
     setState(() {
       posts = tempData ?? [];
@@ -1111,9 +1100,7 @@ class _PostScreenState extends State<PostScreen> {
   }
 
   void getReportReason() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<ReportReason>? tempData =
-        await ReportReason.getReportReasons(prefs.getString('jwt') ?? "");
+    List<ReportReason>? tempData = await ReportReason.getReportReasons();
     if (tempData != null) {
       reportReasons = tempData;
       for (var r in reportReasons) {
@@ -1140,11 +1127,9 @@ class _PostScreenState extends State<PostScreen> {
 
   void updatePost(data) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       int tempID = int.parse(data);
       if (postIDKey.contains(tempID)) {
-        Post? tempData =
-            await Post.getPostByID(prefs.getString('jwt') ?? "", tempID);
+        Post? tempData = await Post.getPostByID(tempID);
         for (Post post in posts) {
           if (post.id == tempData!.id) {
             setState(() {

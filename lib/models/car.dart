@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class Car {
   int? id;
@@ -18,9 +19,9 @@ class Car {
     this.color,
   });
 
-  static Future<List<Car>?> getCars(
-    String token,
-  ) async {
+  static Future<List<Car>?> getCars() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('cars', {});
     List<Car> cars = [];
     var json = await networkHelper.getData(token);
@@ -41,7 +42,9 @@ class Car {
     return null;
   }
 
-  static Future<Car?> addCar(String token, Car car) async {
+  static Future<Car?> addCar(Car car) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('cars/add_car', {});
     var json = await networkHelper.postData(
         jsonEncode(<String, dynamic>{
@@ -67,7 +70,9 @@ class Car {
     return null;
   }
 
-  static Future<Car?> editCar(String token, Car car) async {
+  static Future<Car?> editCar(Car car) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('cars/edit_car', {});
     var json = await networkHelper.postData(
         jsonEncode(<String, dynamic>{
@@ -94,7 +99,9 @@ class Car {
     return null;
   }
 
-  static Future<Car?> deleteCar(String token, int carID) async {
+  static Future<Car?> deleteCar(int carID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('cars/delete_car', {});
     var json = await networkHelper.postData(
         jsonEncode(<String, dynamic>{'id': carID}), token);

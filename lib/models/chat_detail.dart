@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:car_pool_project/models/chat.dart';
 import 'package:car_pool_project/models/user.dart';
+import 'package:prefs/prefs.dart';
 
 import '../services/networking.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
@@ -28,8 +29,9 @@ class ChatDetail {
     // this.latLng,
   });
 
-  static Future<List<types.Message>?> getChatDetails(
-      String token, Chat chat) async {
+  static Future<List<types.Message>?> getChatDetails(Chat chat) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('chat_details/${chat.id}', {});
     var json = await networkHelper.getData(token);
 
@@ -55,7 +57,9 @@ class ChatDetail {
     return null;
   }
 
-  static Future<dynamic> startChatDetails(String token, Chat chat) async {
+  static Future<dynamic> startChatDetails(Chat chat) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('chat_details/start_chat', {
       "chat_type": chat.chatType.toString(),
       "send_user_id": chat.sendUserID.toString(),
@@ -120,10 +124,11 @@ class ChatDetail {
   }
 
   static Future<types.TextMessage?> sendMessage(
-      String token, ChatDetail chatDetail, Chat chat) async {
+      ChatDetail chatDetail, Chat chat) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('chat_details/send_message', {});
-
     var json = await networkHelper.postData(
       jsonEncode(<String, dynamic>{
         "chat_id": chatDetail.chatID,

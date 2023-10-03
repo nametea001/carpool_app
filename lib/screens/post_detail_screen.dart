@@ -21,7 +21,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_api_headers/google_api_headers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_webservice/places.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 import 'package:socket_io_client/socket_io_client.dart';
@@ -156,6 +155,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   double avgReview = 0.0;
 
   List<PostMember> postMembers = [];
+
   List<ReportReason> reportReasonsUser = [];
   List<ReportReason> reportReasonsReview = [];
   List<ReportReason> reportReasonsPost = [];
@@ -165,6 +165,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   ReportReason? reportReasonReview;
 
   Report reportPostData = Report();
+  Report reportUserData = Report();
+  Report reportReviewData = Report();
+
   late IO.Socket socket;
 
   @override
@@ -980,10 +983,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           ),
                           GestureDetector(
                             onTap: () async {
-                              final prefs =
-                                  await SharedPreferences.getInstance();
                               var tempData = await re.Review.getReviews(
-                                  prefs.getString('jwt') ?? "",
                                   post!.createdUserID!);
                               setState(() {
                                 reviews = tempData![0] ?? [];
@@ -1099,18 +1099,16 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           searchProvin = true;
           district = name;
         }
-        final prefs = await SharedPreferences.getInstance();
         int? tempDistrictID = 0;
         if (searchProvin == false) {
-          District? tempDistrict = await District.getDistrictByNameEN(
-              prefs.getString('jwt') ?? "", district);
+          District? tempDistrict = await District.getDistrictByNameEN(district);
 
           if (tempDistrict != null) {
             tempDistrictID = tempDistrict.id;
           }
         } else {
-          District? tempDistrict = await District.getDistrictByProvinceNameEN(
-              prefs.getString('jwt') ?? "", district);
+          District? tempDistrict =
+              await District.getDistrictByProvinceNameEN(district);
           if (tempDistrict != null) {
             tempDistrictID = tempDistrict.id;
           }
@@ -1254,20 +1252,114 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Future<void> checkCameraLocation(
       CameraUpdate cameraUpdate, GoogleMapController mapController) async {
-    mapController.animateCamera(cameraUpdate);
-    LatLngBounds l1 = await mapController.getVisibleRegion();
-    LatLngBounds l2 = await mapController.getVisibleRegion();
+    try {
+      mapController.animateCamera(cameraUpdate);
+      LatLngBounds l1 = await mapController.getVisibleRegion();
+      LatLngBounds l2 = await mapController.getVisibleRegion();
 
-    if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
-      return checkCameraLocation(cameraUpdate, mapController);
+      if (l1.southwest.latitude == -90 || l2.southwest.latitude == -90) {
+        return checkCameraLocation(cameraUpdate, mapController);
+      }
+    } catch (err) {
+      return;
     }
+  }
+
+  void reportUser() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Report User'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        DropdownButton<ReportReason>(
+                          value: reportReasonPost,
+                          onChanged: (newValue) {
+                            reportPostData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonPost = newValue;
+                            });
+                          },
+                          items: reportReasonsUser.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            // maxLength: 4,
+                            maxLines: 4,
+                            onChanged: (value) {
+                              reportPostData.description = value;
+                            },
+                            decoration: InputDecoration(
+                                labelText: "รายระเอียด",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.note_alt_rounded,
+                                  color: Colors.pink,
+                                )),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.amber,
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      reportPostData.postID = post!.id;
+                      var temp = await Report.addReport(reportPostData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('report')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
   }
 
   void reportPost() {
     showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
-              title: const Text('Report'),
+              title: const Text('Report Post'),
               content: StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
@@ -1539,11 +1631,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       setState(() {
                         _isLoadingAdd = true;
                       });
-                      final prefs = await SharedPreferences.getInstance();
                       Post? post = await Post.addPostAndPostDetail(
-                          prefs.getString('jwt') ?? "",
-                          postData!,
-                          postDetailData!);
+                          postData!, postDetailData!);
                       Navigator.pop(context);
                       setState(() {
                         _isAdd = false;
@@ -1648,10 +1737,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       backgroundColor: Colors.green,
                     ),
                     onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-
-                      PostMember? postMemberJoin = await PostMember.joinPost(
-                          prefs.getString('jwt') ?? "", post!.id!);
+                      PostMember? postMemberJoin =
+                          await PostMember.joinPost(post!.id!);
                       if (postMemberJoin != null) {
                         setState(() {
                           _isJoin = false;
@@ -1695,9 +1782,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     onPressed: () async {
                       Navigator.pop(context);
-                      final prefs = await SharedPreferences.getInstance();
-                      Post? tempData = await Post.updateStatusPost(
-                          prefs.getString('jwt') ?? "", post!.id!, "CANCEL");
+                      Post? tempData =
+                          await Post.updateStatusPost(post!.id!, "CANCEL");
                       if (tempData != null) {
                         showAlerSuccess();
                         setState(() {
@@ -1743,9 +1829,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     ),
                     onPressed: () async {
                       Navigator.pop(context);
-                      final prefs = await SharedPreferences.getInstance();
-                      Post? tempData = await Post.updateStatusPost(
-                          prefs.getString('jwt') ?? "", post!.id!, "DONE");
+                      Post? tempData =
+                          await Post.updateStatusPost(post!.id!, "DONE");
                       if (tempData != null) {
                         showAlerSuccess();
                         setState(() {
@@ -1838,13 +1923,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void checkJoin(int seat) async {
-    final prefs = await SharedPreferences.getInstance();
     int countMember = 0;
     bool isMember = false;
 
     List<PostMember>? tempDataPostmember =
-        await PostMember.getPostMembersForCheckJoin(
-            prefs.getString('jwt') ?? "", post!.id!);
+        await PostMember.getPostMembersForCheckJoin(post!.id!);
 
     if (tempDataPostmember == null) {
       setState(() {
@@ -1872,14 +1955,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void updateUI(int postID) async {
-    final prefs = await SharedPreferences.getInstance();
     if (!_isAdd) {
       setState(() {
         _isLoading = true;
       });
       // var data
-      var tempData = await PostDetail.getPostDetailByPostID(
-          prefs.getString('jwt') ?? "", postID);
+      var tempData = await PostDetail.getPostDetailByPostID(postID);
       PostDetail? tempDataPost = tempData[0];
       postMembers = tempData[1];
       if (tempDataPost != null) {
@@ -1920,8 +2001,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   void getCar() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Car>? tempData = await Car.getCars(prefs.getString('jwt') ?? "");
+    List<Car>? tempData = await Car.getCars();
     if (tempData != null && tempData.isNotEmpty) {
       car = tempData[0];
       setState(() {
@@ -2021,9 +2101,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       }
       if (reportReasonsUser.isNotEmpty) {
         reportReasonUser = reportReasonsUser[0];
+        reportUserData.reasonID = reportReasonsUser[0].id;
       }
       if (reportReasonsReview.isNotEmpty) {
         reportReasonReview = reportReasonsReview[0];
+        reportReviewData.reasonID = reportReasonsReview[0].id;
       }
     }
   }

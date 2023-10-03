@@ -1,3 +1,5 @@
+import 'package:prefs/prefs.dart';
+
 import '../services/networking.dart';
 import 'post.dart';
 
@@ -16,7 +18,9 @@ class ReviewUserLog {
     // this.count,
   });
 
-  static Future<int?> getCountReviewUserLog(String token) async {
+  static Future<int?> getCountReviewUserLog() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('review_user_logs/count_review', {});
     var json = await networkHelper.getData(token);

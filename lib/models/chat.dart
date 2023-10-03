@@ -1,6 +1,7 @@
 import 'package:car_pool_project/models/chat_detail.dart';
 import 'package:car_pool_project/models/chat_user_log.dart';
 import 'package:car_pool_project/models/user.dart';
+import 'package:prefs/prefs.dart';
 
 import '../services/networking.dart';
 import 'post.dart';
@@ -38,9 +39,9 @@ class Chat {
     this.img,
   });
 
-  static Future<List<Chat>?> getChats(
-    String token,
-  ) async {
+  static Future<List<Chat>?> getChats() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('chats', {});
     List<Chat> chats = [];
     var json = await networkHelper.getData(token);
@@ -121,6 +122,8 @@ class Chat {
   }
 
   static Future<List<Chat>?> getChatFromChatUserLog(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('chat_user_logs/get_chats', {});
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {

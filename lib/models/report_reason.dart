@@ -1,4 +1,5 @@
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class ReportReason {
   int? id;
@@ -11,9 +12,9 @@ class ReportReason {
     this.reason,
   });
 
-  static Future<List<ReportReason>?> getReportReasons(
-    String token,
-  ) async {
+  static Future<List<ReportReason>?> getReportReasons() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('report_reasons', {});
     List<ReportReason> reportReasons = [];
     var json = await networkHelper.getData(token);

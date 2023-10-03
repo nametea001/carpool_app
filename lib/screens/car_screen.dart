@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:skeleton_loader/skeleton_loader.dart';
 
 import '../gobal_function/color.dart';
@@ -286,9 +285,7 @@ class _CarScreenState extends State<CarScreen> {
                         setState(() {
                           _isLoading = true;
                         });
-                        final prefs = await SharedPreferences.getInstance();
-                        Car? tempData = await Car.addCar(
-                            prefs.getString('jwt') ?? "", carData!);
+                        Car? tempData = await Car.addCar(carData!);
                         if (tempData != null) {
                           updateUI();
                         } else {
@@ -435,9 +432,7 @@ class _CarScreenState extends State<CarScreen> {
                         setState(() {
                           _isLoading = true;
                         });
-                        final prefs = await SharedPreferences.getInstance();
-                        Car? tempData = await Car.editCar(
-                            prefs.getString('jwt') ?? "", carData!);
+                        Car? tempData = await Car.editCar(carData!);
                         if (tempData != null) {
                           updateUI();
                         } else {
@@ -569,13 +564,10 @@ class _CarScreenState extends State<CarScreen> {
                         _isLoading = true;
                       });
                       Navigator.pop(context);
-
-                      final prefs = await SharedPreferences.getInstance();
                       setState(() {
                         _isLoading = true;
                       });
-                      Car? tempData = await Car.deleteCar(
-                          prefs.getString('jwt') ?? "", c.id!);
+                      Car? tempData = await Car.deleteCar(c.id!);
                       if (tempData != null) {
                         updateUI();
                       } else {
@@ -597,14 +589,7 @@ class _CarScreenState extends State<CarScreen> {
   }
 
   void updateUI() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    // setState(() {
-    //   _isLoading = true;
-    // });
-
-    List<Car>? tempData = await Car.getCars(prefs.getString('jwt') ?? "");
-
+    List<Car>? tempData = await Car.getCars();
     setState(() {
       cars = tempData ?? [];
       _isLoading = false;

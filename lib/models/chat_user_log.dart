@@ -1,3 +1,5 @@
+import 'package:prefs/prefs.dart';
+
 import '../services/networking.dart';
 
 class ChatUserLog {
@@ -15,7 +17,9 @@ class ChatUserLog {
     // this.chat,
   });
 
-  static Future<int?> getCountChatUserLog(String token) async {
+  static Future<int?> getCountChatUserLog() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('chat_user_logs/count_user', {});
     var json = await networkHelper.getData(token);
@@ -29,7 +33,9 @@ class ChatUserLog {
     return null;
   }
 
-  static Future<bool?> deleteChatUserLog(String token, int chatID) async {
+  static Future<bool?> deleteChatUserLog(int chatID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('chat_user_logs/delete_chat_log/$chatID', {});
     var json = await networkHelper.deleteData(token);

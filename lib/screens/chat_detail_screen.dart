@@ -14,7 +14,6 @@ import 'package:http/http.dart' as http;
 // import 'package:mime/mime.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:prefs/prefs.dart';
 // import 'package:uuid/uuid.dart';
 import '../models/chat.dart' as c;
 import '../models/chat_user_log.dart';
@@ -326,9 +325,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _acceptMessage(data) async {
     var acceptMessage = await ChatDetail.acceptMessage(user.id!, data);
     if (acceptMessage != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await ChatUserLog.deleteChatUserLog(
-          prefs.getString('jwt') ?? "", chatDB.id!);
+      await ChatUserLog.deleteChatUserLog(chatDB.id!);
       _addMessage(acceptMessage);
     }
   }
@@ -340,9 +337,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     //   id: const Uuid().v4(),
     //   text: message.text,
     // );
-    final prefs = await SharedPreferences.getInstance();
     var textMessage = await ChatDetail.sendMessage(
-      prefs.getString('jwt') ?? "",
       ChatDetail(
         chatID: chatDB.id,
         msgType: "MSG",
@@ -369,11 +364,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void updateUI() async {
-    final prefs = await SharedPreferences.getInstance();
-
     if (pushFrom != "Chat") {
-      var tempData = await ChatDetail.startChatDetails(
-          prefs.getString('jwt') ?? "", chatDB);
+      var tempData = await ChatDetail.startChatDetails(chatDB);
       if (tempData != null) {
         setState(() {
           chatDB = tempData[0];
@@ -385,9 +377,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         // }
       }
     } else {
-      _messages = await ChatDetail.getChatDetails(
-              prefs.getString('jwt') ?? "", chatDB) ??
-          [];
+      _messages = await ChatDetail.getChatDetails(chatDB) ?? [];
     }
 
     if (chatDB.chatType == "PRIVATE") {

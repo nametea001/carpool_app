@@ -1,4 +1,5 @@
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class Province {
   int? id;
@@ -11,9 +12,9 @@ class Province {
     this.nameEN,
   });
 
-  static Future<List<Province>?> getProvinces(
-    String token,
-  ) async {
+  static Future<List<Province>?> getProvinces() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('provinces', {});
     List<Province> provinces = [];
     var json = await networkHelper.getData(token);

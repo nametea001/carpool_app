@@ -6,6 +6,7 @@ import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 // ignore: depend_on_referenced_packages
 import 'package:intl/intl.dart';
+import 'package:prefs/prefs.dart';
 
 class Post {
   int? id;
@@ -43,7 +44,9 @@ class Post {
     this.user,
   });
 
-  static Future<List<Post>?> getPosts(String token, Post post) async {
+  static Future<List<Post>?> getPosts(Post post) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     String strDatetimeStart = post.dateTimeStart == null
         ? DateFormat("yyyy-MM-dd HH:mm:ss").format(DateTime.now())
         : DateFormat("yyyy-MM-dd HH:mm:ss").format(post.dateTimeStart!);
@@ -98,7 +101,9 @@ class Post {
     return null;
   }
 
-  static Future<Post?>? getPostByID(String token, int postID) async {
+  static Future<Post?>? getPostByID(int postID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('get_post_by_id', {"post_id": postID.toString()});
     var json = await networkHelper.getData(token);
@@ -135,7 +140,9 @@ class Post {
     return null;
   }
 
-  static Future<List<Post>?> getPostsHistory(String token) async {
+  static Future<List<Post>?> getPostsHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('posts/history', {});
     List<Post> posts = [];
     var json = await networkHelper.getData(token);
@@ -174,7 +181,9 @@ class Post {
   }
 
   static Future<Post?> addPostAndPostDetail(
-      String token, Post dataPost, PostDetail dataPostDetail) async {
+      Post dataPost, PostDetail dataPostDetail) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('posts/add_post', {});
 
     String? dateTImeStart =
@@ -252,10 +261,10 @@ class Post {
     return null;
   }
 
-  static Future<Post?> updateStatusPost(
-      String token, int postID, String status) async {
+  static Future<Post?> updateStatusPost(int postID, String status) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('posts/update_status', {});
-
     var json = await networkHelper.putData(
       jsonEncode(<String, dynamic>{"post_id": postID, "status": status}),
       token,

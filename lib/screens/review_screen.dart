@@ -76,9 +76,7 @@ class _ReviewScreenState extends State<ReviewScreen>
         leading: (post!.user!.img != null
             ? GestureDetector(
                 onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  var tempData = await Review.getReviews(
-                      prefs.getString('jwt') ?? "", post.createdUserID!);
+                  var tempData = await Review.getReviews(post.createdUserID!);
                   setState(() {
                     reviewUserPost = tempData![0] ?? [];
                     avgReview = globalData.avgDecimalPointFormat(tempData[1]);
@@ -204,9 +202,7 @@ class _ReviewScreenState extends State<ReviewScreen>
         leading: (post.user!.img != null
             ? GestureDetector(
                 onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  var tempData = await Review.getReviews(
-                      prefs.getString('jwt') ?? "", post.createdUserID!);
+                  var tempData = await Review.getReviews(post.createdUserID!);
                   setState(() {
                     reviewUserPost = tempData![0] ?? [];
                     avgReview =

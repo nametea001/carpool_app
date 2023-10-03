@@ -2,6 +2,7 @@ import 'package:car_pool_project/models/post.dart';
 import 'package:car_pool_project/models/post_member.dart';
 import 'package:car_pool_project/services/networking.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:prefs/prefs.dart';
 
 import 'user.dart';
 
@@ -36,9 +37,9 @@ class PostDetail {
     this.post,
   });
 
-  static Future<List<PostDetail>?> getPostDetails(
-    String token,
-  ) async {
+  static Future<List<PostDetail>?> getPostDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('posts_detail', {});
     List<PostDetail> postDetails = [];
     var json = await networkHelper.getData(token);
@@ -67,10 +68,11 @@ class PostDetail {
     return null;
   }
 
-  static Future<dynamic> getPostDetailByPostID(String token, int postID) async {
-    NetworkHelper networkHelper = NetworkHelper('post_details', {
-      "post_id": postID.toString(),
-    });
+  static Future<dynamic> getPostDetailByPostID(int postID) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper =
+        NetworkHelper('post_details', {"post_id": postID.toString()});
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       Map t = json['post_detail'];
