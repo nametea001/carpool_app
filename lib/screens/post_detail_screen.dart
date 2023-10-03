@@ -28,6 +28,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 import '../gobal_function/data.dart';
 import '../models/car.dart';
 import '../models/chat.dart';
+import '../models/report.dart';
 import '../models/report_reason.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
@@ -155,7 +156,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   double avgReview = 0.0;
 
   List<PostMember> postMembers = [];
-  // List<ReportReason> reportReasons = [];
   List<ReportReason> reportReasonsUser = [];
   List<ReportReason> reportReasonsReview = [];
   List<ReportReason> reportReasonsPost = [];
@@ -164,6 +164,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   ReportReason? reportReasonUser;
   ReportReason? reportReasonReview;
 
+  Report reportPostData = Report();
   late IO.Socket socket;
 
   @override
@@ -1279,27 +1280,31 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         DropdownButton<ReportReason>(
-                            value: reportReasonPost,
-                            items: reportReasonsPost.map((ReportReason r) {
-                              return DropdownMenuItem<ReportReason>(
-                                  value: reportReasonPost,
-                                  child: Text("${r.reason}"));
-                            }).toList(),
-                            onChanged: (ReportReason? r) {
-                              // print(c!.model);
-                              setState(() {
-                                reportReasonPost = r;
-                              });
-                            }),
+                          value: reportReasonPost,
+                          onChanged: (newValue) {
+                            reportPostData.reasonID = newValue!.id;
+                            setState(() {
+                              reportReasonPost = newValue;
+                            });
+                          },
+                          items: reportReasonsPost.map((r) {
+                            return DropdownMenuItem<ReportReason>(
+                              value: r,
+                              child: Text(r.reason!),
+                            );
+                          }).toList(),
+                        )
                       ],
                     ),
                     Row(
                       children: [
                         Expanded(
                           child: TextFormField(
-                            onTap: () {},
                             // maxLength: 4,
                             maxLines: 4,
+                            onChanged: (value) {
+                              reportPostData.description = value;
+                            },
                             decoration: InputDecoration(
                                 labelText: "รายระเอียด",
                                 filled: true,
@@ -1324,8 +1329,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       foregroundColor: Colors.white,
                       backgroundColor: Colors.amber,
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context);
+                      reportPostData.postID = post!.id;
+                      var temp = await Report.addReport(reportPostData);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
                     },
                     child: const Text('report')),
                 TextButton(
@@ -1996,18 +2008,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         reportReasonsPost.add(r);
         reportReasonsUser.add(r);
         reportReasonsReview.add(r);
-        reportReasonPost = r;
-        reportReasonUser = r;
-        reportReasonReview = r;
       } else if (r.type == "POST") {
         reportReasonsPost.add(r);
-        reportReasonPost = r;
       } else if (r.type == "USER") {
         reportReasonsUser.add(r);
-        reportReasonUser = r;
       } else if (r.type == "REVIEW") {
         reportReasonsReview.add(r);
-        reportReasonReview = r;
+      }
+      if (reportReasonsPost.isNotEmpty) {
+        reportReasonPost = reportReasonsPost[0];
+        reportPostData.reasonID = reportReasonsPost[0].id;
+      }
+      if (reportReasonsUser.isNotEmpty) {
+        reportReasonUser = reportReasonsUser[0];
+      }
+      if (reportReasonsReview.isNotEmpty) {
+        reportReasonReview = reportReasonsReview[0];
       }
     }
   }

@@ -27,9 +27,7 @@ class User {
   });
 
   static Future<User?> checkLoginJWT(String token) async {
-    NetworkHelper networkHelper = NetworkHelper('user/checkLoginJWT', {
-      'device': "mobile",
-    });
+    NetworkHelper networkHelper = NetworkHelper('user/checkLoginJWT', {});
     var json = await networkHelper.postData("", token);
 
     if (json != null && json['error'] == false && json['token'] != null) {
