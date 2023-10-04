@@ -116,41 +116,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text("Profile"),
         backgroundColor: Colors.pink,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  _pickImage(
-                      context); // Call the _pickImage function when tapped
-                },
-                child: CircleAvatar(
-                  radius: 100,
-                  child: ClipOval(
-                    child: _isPickerImage == false || _image == null
-                        ? Image.network(
-                            "${globals.protocol}${globals.serverIP}/profiles/${user.img!}",
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.error_outline);
-                            },
-                          )
-                        : Image.file(
-                            _image!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.error_outline);
-                            },
-                          ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    _pickImage(
+                        context); // Call the _pickImage function when tapped
+                  },
+                  child: CircleAvatar(
+                    radius: 100,
+                    child: ClipOval(
+                      child: _isPickerImage == false || _image == null
+                          ? Image.network(
+                              "${globals.protocol}${globals.serverIP}/profiles/${user.img!}",
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.error_outline);
+                              },
+                            )
+                          : Image.file(
+                              _image!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.error_outline);
+                              },
+                            ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row()
-          ],
+              Padding(
+                padding: const EdgeInsets.only(top: 20, left: 50, right: 50),
+                child: Column(
+                  children: [
+                    TextFormField(
+                        onChanged: (value) {},
+                        decoration: InputDecoration(
+                            labelText: "Username",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              // borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.person,
+                              color: Colors.pink,
+                            ))),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      onChanged: (value) {},
+                      decoration: InputDecoration(
+                          labelText: "First name",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.edit_note,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      onChanged: (value) {},
+                      decoration: InputDecoration(
+                          labelText: "Last name",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.edit_note,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      onChanged: (value) {},
+                      decoration: InputDecoration(
+                          labelText: "Email",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.mail,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 15),
+                    TextFormField(
+                      onChanged: (value) {},
+                      decoration: InputDecoration(
+                          labelText: "User role",
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10.0),
+                            // borderSide: BorderSide.none,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.badge,
+                            color: Colors.pink,
+                          )),
+                    ),
+                    const SizedBox(height: 15),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.pink,
+                      ),
+                      onPressed: () {},
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 18),
+                        child: Text(
+                          "Save",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
