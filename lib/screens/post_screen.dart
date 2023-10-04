@@ -268,33 +268,58 @@ class _PostScreenState extends State<PostScreen> {
                                       controller: dateTimeController,
                                       onTap: () {
                                         FocusScope.of(context).unfocus();
-                                        DatePicker.showDateTimePicker(
-                                          context,
-                                          showTitleActions: true,
-                                          minTime: DateTime.now(),
-                                          currentTime: datetimeSelected !=
-                                                      null &&
-                                                  datetimeSelected!
-                                                      .isAfter(DateTime.now())
-                                              ? datetimeSelected
-                                              : DateTime.now(),
-                                          locale: LocaleType.th,
-                                          onConfirm: (time) {
-                                            if (datetimeBackSelected != null &&
-                                                time.isAfter(
-                                                    datetimeBackSelected!) &&
-                                                _isBackSearch) {
-                                              datetimeBackSelected = time;
-                                              dateTimeBackController.text =
-                                                  globalData
-                                                      .dateTimeFormatForPost(
-                                                          time);
-                                            }
-                                            datetimeSelected = time;
-                                            dateTimeController.text = globalData
-                                                .dateTimeFormatForPost(time);
-                                          },
-                                        );
+                                        // DatePicker.showDateTimePicker(
+                                        //   context,
+                                        //   showTitleActions: true,
+                                        //   minTime: DateTime.now(),
+                                        //   currentTime: datetimeSelected !=
+                                        //               null &&
+                                        //           datetimeSelected!
+                                        //               .isAfter(DateTime.now())
+                                        //       ? datetimeSelected
+                                        //       : DateTime.now(),
+                                        //   locale: LocaleType.th,
+                                        //   onConfirm: (time) {
+                                        //     if (datetimeBackSelected != null &&
+                                        //         time.isAfter(
+                                        //             datetimeBackSelected!) &&
+                                        //         _isBackSearch) {
+                                        //       datetimeBackSelected = time;
+                                        //       dateTimeBackController.text =
+                                        //           globalData
+                                        //               .dateTimeFormatForPost(
+                                        //                   time);
+                                        //     }
+                                        //     datetimeSelected = time;
+                                        //     dateTimeController.text = globalData
+                                        //         .dateTimeFormatForPost(time);
+                                        //   },
+                                        // );
+                                        DatePicker.showDatePicker(context,
+                                            locale: LocaleType.th,
+                                            minTime: DateTime.now(),
+                                            currentTime: datetimeSelected !=
+                                                        null &&
+                                                    datetimeSelected!
+                                                        .isAfter(DateTime.now())
+                                                ? datetimeSelected
+                                                : DateTime.now(),
+                                            onConfirm: (time) {
+                                          if (datetimeBackSelected != null &&
+                                              time.isAfter(
+                                                  datetimeBackSelected!) &&
+                                              _isBackSearch) {
+                                            datetimeBackSelected = time;
+                                            dateTimeBackController.text =
+                                                globalData
+                                                    .dateTimeFormatForSearchPost(
+                                                        time);
+                                          }
+                                          datetimeSelected = time;
+                                          dateTimeController.text = globalData
+                                              .dateTimeFormatForSearchPost(
+                                                  time);
+                                        });
                                       },
                                       decoration: InputDecoration(
                                           labelText: "เวลาเดินทาง",
@@ -340,9 +365,30 @@ class _PostScreenState extends State<PostScreen> {
                                               onTap: () {
                                                 FocusScope.of(context)
                                                     .unfocus();
-                                                DatePicker.showDateTimePicker(
+                                                // DatePicker.showDateTimePicker(
+                                                //     context,
+                                                //     showTitleActions: true,
+                                                //     minTime: datetimeSelected ??
+                                                //         DateTime.now(),
+                                                //     currentTime: datetimeSelected !=
+                                                //                 null &&
+                                                //             datetimeSelected!
+                                                //                 .isAfter(
+                                                //                     DateTime
+                                                //                         .now())
+                                                //         ? datetimeSelected
+                                                //         : DateTime.now(),
+                                                //     locale: LocaleType.th,
+                                                //     onConfirm: (time) {
+                                                //   datetimeBackSelected = time;
+                                                //   dateTimeBackController.text =
+                                                //       globalData
+                                                //           .dateTimeFormatForPost(
+                                                //               time);
+                                                // });
+                                                DatePicker.showDatePicker(
                                                     context,
-                                                    showTitleActions: true,
+                                                    locale: LocaleType.th,
                                                     minTime: datetimeSelected ??
                                                         DateTime.now(),
                                                     currentTime: datetimeSelected !=
@@ -353,12 +399,11 @@ class _PostScreenState extends State<PostScreen> {
                                                                         .now())
                                                         ? datetimeSelected
                                                         : DateTime.now(),
-                                                    locale: LocaleType.th,
                                                     onConfirm: (time) {
                                                   datetimeBackSelected = time;
                                                   dateTimeBackController.text =
                                                       globalData
-                                                          .dateTimeFormatForPost(
+                                                          .dateTimeFormatForSearchPost(
                                                               time);
                                                 });
                                               },

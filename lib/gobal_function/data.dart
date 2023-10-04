@@ -42,6 +42,18 @@ class GlobalData {
     }
   }
 
+  String dateTimeFormatForSearchPost(DateTime? dateTime) {
+    int mount = int.parse(DateFormat.M().format(dateTime!));
+    String dayWeek = DateFormat.E().format(dateTime);
+    DateTime now = DateTime.now();
+    if (dateTime.year == now.year ||
+        dateTime.isBefore(now.add(const Duration(days: 365)))) {
+      return "${getDay(dayWeek)} ${dateTime.day} ${getMonth(mount)}";
+    } else {
+      return "${getDay(dayWeek)} ${dateTime.day} ${getMonth(mount)} ${dateTime.year}";
+    }
+  }
+
   String getMonth(int month) {
     List months = [
       "ม.ค.",

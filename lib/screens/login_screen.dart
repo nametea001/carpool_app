@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     TextFormField(
                                       focusNode: _focusNodeUsername,
                                       onChanged: (value) {
-                                        username = value;
+                                        username = value.trim();
                                       },
                                       autofocus: true,
                                       decoration: InputDecoration(
@@ -200,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       obscureText: true,
                                       controller: _passwordController,
                                       onChanged: (value) {
-                                        password = value;
+                                        password = value.trim();
                                       },
                                       decoration: InputDecoration(
                                           labelText: "Password",
@@ -278,7 +278,7 @@ class _LoginScreenState extends State<LoginScreen>
                                   TextFormField(
                                     focusNode: _focusNodeSingUpUsername,
                                     onSaved: (newValue) {
-                                      userSignUp.username = newValue;
+                                      userSignUp.username = newValue!.trim();
                                     },
                                     autofocus: true,
                                     validator: MultiValidator([
@@ -315,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen>
                                         password = value;
                                       },
                                       onSaved: (newValue) {
-                                        password = newValue!;
+                                        password = newValue!.trim();
                                       },
                                       validator: (String? str) {
                                         if (str!.isEmpty) {
@@ -369,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           _focusNodeSingUpConfirmPassword,
                                       obscureText: !_isShowConfirmPassword,
                                       onChanged: (value) {
-                                        confirmPassword = value;
+                                        confirmPassword = value.trim();
                                       },
                                       validator: (String? str) {
                                         if (str!.isEmpty) {
@@ -429,7 +429,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     //   email = value;
                                     // },
                                     onSaved: (newValue) {
-                                      userSignUp.email = newValue;
+                                      userSignUp.email = newValue!.trim();
                                     },
                                     decoration: InputDecoration(
                                         labelText: "Email",
@@ -453,7 +453,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     //   username = value;
                                     // },
                                     onSaved: (newValue) {
-                                      userSignUp.firstName = newValue;
+                                      userSignUp.firstName = newValue!.trim();
                                     },
                                     validator: MultiValidator([
                                       RequiredValidator(
@@ -481,7 +481,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     //   username = value;
                                     // },
                                     onSaved: (newValue) {
-                                      userSignUp.lastName = newValue;
+                                      userSignUp.lastName = newValue!.trim();
                                     },
                                     validator: MultiValidator([
                                       RequiredValidator(

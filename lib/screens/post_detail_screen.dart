@@ -2079,7 +2079,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             dateTimeStart: tempDataPost.post!.dateTimeStart,
             dateTimeBack: tempDataPost.post!.dateTimeBack,
             isBack: tempDataPost.post!.isBack,
+            startName: tempDataPost.post!.startName,
+            endName: tempDataPost.post!.endName,
           );
+          location1 = tempDataPost.post!.startName!;
+          location2 = tempDataPost.post!.endName!;
         });
         // postDetailTemp = tempDataPost;
         _dateTimeController.text =
