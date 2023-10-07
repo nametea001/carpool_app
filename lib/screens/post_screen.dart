@@ -904,8 +904,8 @@ class _PostScreenState extends State<PostScreen> {
           )),
           floatingActionButton: user.userRoleID! < 4
               ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.push(
+                  onPressed: () async {
+                    int? postID = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => PostDetailScreen(
@@ -915,6 +915,14 @@ class _PostScreenState extends State<PostScreen> {
                                 reportReasons: reportReasons,
                               )),
                     );
+                    if (postID != null) {
+                      Post? temp = await Post.getPostByID(postID);
+                      if (temp != null) {
+                        setState(() {
+                          posts.insert(0, temp);
+                        });
+                      }
+                    }
                   },
                   backgroundColor: Colors.pink,
                   child: const Icon(Icons.add),

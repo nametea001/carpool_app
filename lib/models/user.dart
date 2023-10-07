@@ -48,7 +48,8 @@ class User {
     return null;
   }
 
-  static Future<dynamic> checkLogin(String username, String password) async {
+  static Future<User?> checkLogin(String username, String password) async {
+    final prefs = await SharedPreferences.getInstance();
     NetworkHelper networkHelper = NetworkHelper('login', {});
     var json = await networkHelper.postData(
       jsonEncode(<String, dynamic>{
@@ -71,7 +72,8 @@ class User {
         img: u['img_path'],
         sex: u['sex'],
       );
-      return [user, json['token']];
+      await prefs.setString('jwt', json['token']);
+      return user;
     }
     return null;
   }
@@ -107,7 +109,7 @@ class User {
   static Future<dynamic> getUserForUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
-    NetworkHelper networkHelper = NetworkHelper('login', {});
+    NetworkHelper networkHelper = NetworkHelper('', {});
     var json = await networkHelper.getData(token);
 
     if (json != null && json['error'] == false && json['token'] != null) {
@@ -124,6 +126,37 @@ class User {
         sex: u['sex'],
       );
       return [user, json['token']];
+    }
+    return null;
+  }
+
+  static Future<User?> editProfile(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper = NetworkHelper('users/edit_profile', {});
+    var json = await networkHelper.putData(
+        jsonEncode(<String, dynamic>{
+          'first_name': user.firstName,
+          'last_name': user.lastName,
+          'email': user.email,
+          'sex': user.sex
+        }),
+        token);
+    if (json != null && json['error'] == false && json['token'] != null) {
+      Map u = json['user'];
+      User user = User(
+        id: u["id"],
+        username: u["username"],
+        firstName: u["first_name"],
+        lastName: u["last_name"],
+        email: u["email"],
+        userRoleID: u["user_role_id"],
+        userRoleName: u["user_roles"]["user_role_name"],
+        img: u['img_path'],
+        sex: u['sex'],
+      );
+      await prefs.setString('jwt', json['token']);
+      return user;
     }
     return null;
   }

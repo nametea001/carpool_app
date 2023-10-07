@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:form_field_validator/form_field_validator.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:image_picker/image_picker.dart';
@@ -113,15 +114,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _cropImage() async {
     CroppedFile? croppedFile = await ImageCropper().cropImage(
-      // maxHeight: 1152,
-      // maxWidth: 1152,
+      maxHeight: 1152,
+      maxWidth: 1152,
       sourcePath: _image!.path,
       aspectRatioPresets: [
         CropAspectRatioPreset.square,
-        CropAspectRatioPreset.ratio3x2,
-        CropAspectRatioPreset.original,
-        CropAspectRatioPreset.ratio4x3,
-        CropAspectRatioPreset.ratio16x9
+        // CropAspectRatioPreset.ratio3x2,
+        // CropAspectRatioPreset.original,
+        // CropAspectRatioPreset.ratio4x3,
+        // CropAspectRatioPreset.ratio16x9
       ],
       uiSettings: [
         AndroidUiSettings(
@@ -259,6 +260,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onTap: () {
                               _focusNodeUsername.unfocus();
                             },
+                            validator: MultiValidator([
+                              RequiredValidator(
+                                  errorText: "Please Input Username")
+                            ]),
                             decoration: InputDecoration(
                                 labelText: "Username",
                                 filled: true,
@@ -283,6 +288,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _focusNodeFirstName.unfocus();
                             }
                           },
+                          validator: MultiValidator([
+                            RequiredValidator(
+                                errorText: "Please Input First name.")
+                          ]),
                           decoration: InputDecoration(
                               labelText: "First name",
                               filled: true,
@@ -308,6 +317,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _focusNodeLastName.unfocus();
                             }
                           },
+                          validator: MultiValidator([
+                            RequiredValidator(
+                                errorText: "Please Input Last name.")
+                          ]),
                           decoration: InputDecoration(
                               labelText: "Last name",
                               filled: true,
@@ -333,6 +346,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               _focusNodeEmail.unfocus();
                             }
                           },
+                          validator: MultiValidator([
+                            RequiredValidator(errorText: "Please Input Email."),
+                            EmailValidator(errorText: "Email is Incorrect !")
+                          ]),
                           decoration: InputDecoration(
                               labelText: "Email",
                               filled: true,
@@ -425,7 +442,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                     ),
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      if (formKey.currentState!.validate()) {
+                                        formKey.currentState!.save();
+                                        User? temp =
+                                            await User.editProfile(userData);
+                                        if (temp != null) {
+                                          setState(() {
+                                            user = temp;
+                                            _isEdit = false;
+                                          });
+                                          showAlerSuccess();
+                                        } else {
+                                          showAlerError();
+                                        }
+                                      }
+                                    },
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(
                                           vertical: 12, horizontal: 15),
@@ -452,6 +484,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         _isEdit = false;
                                       });
                                       sex = user.sex!;
+                                      _firstNameController.text =
+                                          user.firstName!;
+                                      _lastNameController.text = user.lastName!;
+                                      _emailController.text = user.email!;
                                     },
                                     child: const Padding(
                                       padding: EdgeInsets.symmetric(
@@ -517,5 +553,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _emailController.text = user.email!;
     _userRoleNameController.text = user.userRoleName!;
     sex = user.sex!;
+  }
+
+  void showAlerError() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Error'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("เกิดข้อผิดพลาดโปรดลองใหม่อีกครั้ง"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAlerSuccess() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Success'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("ดำเดินการสำเร็จ"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
   }
 }

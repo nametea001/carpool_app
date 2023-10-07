@@ -35,13 +35,13 @@ class District {
     return null;
   }
 
-  static Future<District?> getDistrictByNameEN(
-    String nameEN,
+  static Future<District?> getDistrictByName(
+    String name,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('districts/get_by_name', {
-      'name_en': nameEN,
+      'name': name,
     });
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
@@ -58,14 +58,14 @@ class District {
     return null;
   }
 
-  static Future<District?> getDistrictByProvinceNameEN(
-    String nameEN,
+  static Future<District?> getDistrictByProvinceName(
+    String name,
   ) async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
         NetworkHelper('districts/get_by_province_name', {
-      'name_en': nameEN,
+      'name': name,
     });
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {

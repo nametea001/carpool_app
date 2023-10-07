@@ -140,6 +140,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   // PostDetail? postDetailTemp = PostDetail();
   bool _isLoading = false;
   bool _isJoin = false;
+  bool isMember = false;
+
+  bool _isAddSuccess = false;
 
   MapsRoutes route = MapsRoutes();
   DistanceCalculator distanceCalculator = DistanceCalculator();
@@ -256,6 +259,15 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         appBar: AppBar(
           title: (_isAdd ? const Text('Add ') : const Text('Detail')),
           backgroundColor: Colors.pink,
+          leading: IconButton(
+              onPressed: () {
+                if (!_isAddSuccess) {
+                  Navigator.pop(context);
+                } else {
+                  Navigator.pop(context, post!.id);
+                }
+              },
+              icon: const Icon(Icons.arrow_back)),
           actions: user.userRoleID! < 5
               ? [
                   PopupMenuButton<String>(
@@ -1116,16 +1128,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           searchProvin = true;
           district = name;
         }
+
         int? tempDistrictID = 0;
         if (searchProvin == false) {
-          District? tempDistrict = await District.getDistrictByNameEN(district);
+          District? tempDistrict = await District.getDistrictByName(district);
 
           if (tempDistrict != null) {
             tempDistrictID = tempDistrict.id;
           }
         } else {
           District? tempDistrict =
-              await District.getDistrictByProvinceNameEN(district);
+              await District.getDistrictByProvinceName(district);
           if (tempDistrict != null) {
             tempDistrictID = tempDistrict.id;
           }
@@ -1738,15 +1751,18 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       setState(() {
                         _isLoadingAdd = true;
                       });
-                      Post? post = await Post.addPostAndPostDetail(
+                      Post? tempPostDetail = await Post.addPostAndPostDetail(
                           postData!, postDetailData!);
                       Navigator.pop(context);
-                      setState(() {
-                        _isAdd = false;
-                        _isLoadingAdd = false;
-                      });
-                      if (post != null) {
-                        postUser = post.user;
+
+                      if (tempPostDetail != null) {
+                        setState(() {
+                          _isAdd = false;
+                          _isLoadingAdd = false;
+                          _isAddSuccess = true;
+                        });
+                        post = tempPostDetail;
+                        postUser = tempPostDetail.user;
                         showAlerSuccess();
                       } else {
                         showAlerError();
@@ -1979,51 +1995,96 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   dynamic flotButton() {
     if (!_isView && user.userRoleID! < 5) {
-      if (post!.createdUserID != user.id && post!.status == "NEW" && _isJoin) {
-        return FloatingActionButton(
-          onPressed: () {
-            showJoinPost();
-          },
-          child: const Icon(Icons.add),
-        );
-      } else if ((post!.createdUserID != user.id && _isJoin == false) ||
-          (post!.createdUserID == user.id &&
-              (post!.status == "DONE" || post!.status == "CANCEL"))) {
-        return FloatingActionButton(
-          onPressed: () {
-            pushChatDetailScreen();
-          },
-          child: const Icon(Icons.message),
-        );
-      } else if (post!.createdUserID == user.id &&
-          (post!.status == "NEW" || post!.status == "IN_PROGRESS")) {
-        return SpeedDial(
-          icon: Icons.expand_less,
-          activeIcon: Icons.expand_more,
-          backgroundColor: Colors.green,
-          activeBackgroundColor: Colors.red,
-          spacing: 12,
-          children: [
-            // chat
-            SpeedDialChild(
-              backgroundColor: Colors.blue,
-              label: "Chat",
-              child: const Icon(Icons.message),
-              onTap: () {
-                pushChatDetailScreen();
-              },
-            ),
-            // cancel
-            SpeedDialChild(
-              backgroundColor: Colors.red,
-              label: "Cancel",
-              child: const Icon(Icons.cancel_outlined),
-              onTap: () {
-                showCancelPost();
-              },
-            ),
-          ],
-        );
+      if (post!.createdUserID == user.id) {
+        if (post!.status == "NEW") {
+          return SpeedDial(
+            icon: Icons.expand_less,
+            activeIcon: Icons.expand_more,
+            backgroundColor: Colors.green,
+            activeBackgroundColor: Colors.red,
+            spacing: 12,
+            children: [
+              // chat
+              SpeedDialChild(
+                backgroundColor: Colors.blue,
+                label: "Chat",
+                child: const Icon(Icons.message),
+                onTap: () {
+                  pushChatDetailScreen();
+                },
+              ),
+              // cancel
+              SpeedDialChild(
+                backgroundColor: Colors.red,
+                label: "Cancel",
+                child: const Icon(Icons.cancel_outlined),
+                onTap: () {
+                  showCancelPost();
+                },
+              ),
+            ],
+          );
+        } else if (post!.status == "IN_PROGRESS") {
+          return SpeedDial(
+            icon: Icons.expand_less,
+            activeIcon: Icons.expand_more,
+            backgroundColor: Colors.green,
+            activeBackgroundColor: Colors.red,
+            spacing: 12,
+            children: [
+              // chat
+              SpeedDialChild(
+                backgroundColor: Colors.blue,
+                label: "Chat",
+                child: const Icon(Icons.message),
+                onTap: () {
+                  pushChatDetailScreen();
+                },
+              ),
+              SpeedDialChild(
+                backgroundColor: Colors.green,
+                label: "Done",
+                child: const Icon(Icons.check_outlined),
+                onTap: () {
+                  showCancelPost();
+                },
+              ),
+              // cancel
+              SpeedDialChild(
+                backgroundColor: Colors.red,
+                label: "Cancel",
+                child: const Icon(Icons.cancel_outlined),
+                onTap: () {
+                  showCancelPost();
+                },
+              ),
+            ],
+          );
+        } else {
+          return FloatingActionButton(
+            onPressed: () {
+              pushChatDetailScreen();
+            },
+            child: const Icon(Icons.message),
+          );
+        }
+      } else if (post!.createdUserID != user.id) {
+        if (post!.status == "NEW" && _isJoin) {
+          return FloatingActionButton(
+            backgroundColor: Colors.green,
+            onPressed: () {
+              showJoinPost();
+            },
+            child: const Icon(Icons.add),
+          );
+        } else {
+          return FloatingActionButton(
+            onPressed: () {
+              pushChatDetailScreen();
+            },
+            child: const Icon(Icons.message),
+          );
+        }
       }
     }
     return null;
@@ -2031,7 +2092,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   void checkJoin(int seat) async {
     int countMember = 0;
-    bool isMember = false;
 
     List<PostMember>? tempDataPostmember =
         await PostMember.getPostMembersForCheckJoin(post!.id!);
