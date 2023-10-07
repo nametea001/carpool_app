@@ -111,6 +111,9 @@ class Chat {
               endName: c['posts']['name_end'],
             ),
             img: "non_img.png",
+            updatedAt: c['updated_at'] != null
+                ? DateTime.parse(c['updated_at'])
+                : null,
           );
           chats.add(chat);
         }
