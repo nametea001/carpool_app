@@ -240,7 +240,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             ],
                                           ))
                                     ]
-                                  : [],
+                                  : [
+                                      ElevatedButton(
+                                          onPressed: () {},
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.badge),
+                                              SizedBox(width: 8),
+                                              Text("ยืนยันการขับรถ"),
+                                            ],
+                                          ))
+                                    ],
                             )),
                         TextFormField(
                             focusNode: _focusNodeUsername,
