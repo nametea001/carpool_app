@@ -216,33 +216,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         Visibility(
-                            visible: true,
+                            visible: user.userRoleID! > 3,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                user.userRoleID == 5
-                                    ? ElevatedButton(
-                                        onPressed: () {},
-                                        child: const Row(
-                                          children: [
-                                            Icon(Icons.person),
-                                            SizedBox(width: 8),
-                                            Text("ยืนยันตัวตน"),
-                                          ],
-                                        ))
-                                    : const SizedBox(),
-                                user.userRoleID! > 4
-                                    ? ElevatedButton(
-                                        onPressed: () {},
-                                        child: const Row(
-                                          children: [
-                                            Icon(Icons.badge),
-                                            SizedBox(width: 8),
-                                            Text("ยืนยันการขับรถ"),
-                                          ],
-                                        ))
-                                    : const SizedBox()
-                              ],
+                              children: user.userRoleID == 5
+                                  ? [
+                                      ElevatedButton(
+                                          onPressed: () {},
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.person),
+                                              SizedBox(width: 8),
+                                              Text("ยืนยันตัวตน"),
+                                            ],
+                                          )),
+                                      ElevatedButton(
+                                          onPressed: () {},
+                                          child: const Row(
+                                            children: [
+                                              Icon(Icons.badge),
+                                              SizedBox(width: 8),
+                                              Text("ยืนยันการขับรถ"),
+                                            ],
+                                          ))
+                                    ]
+                                  : [],
                             )),
                         TextFormField(
                             focusNode: _focusNodeUsername,
