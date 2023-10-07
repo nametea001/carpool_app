@@ -2105,14 +2105,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
         marker2 = tempDataPost.endLatLng!;
         _seatController.text =
             "${tempDataPost.post!.countPostMember}/${tempDataPost.seat}";
-        checkJoin(tempDataPost.seat!);
       }
-      checkJoin(tempDataPost!.seat!);
       setState(() {
         _isLoading = false;
-        post!.status = tempDataPost.post!.status;
+        post!.status = tempDataPost!.post!.status;
       });
-
+      checkJoin(tempDataPost!.seat!);
       // await Future.delayed(const Duration(seconds: 2));
       await routeDraw(marker1, marker2);
       await updateCameraLocation(marker1, marker2, _mapController!);
