@@ -19,14 +19,52 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late User user;
-
+  final formKey = GlobalKey<FormState>();
+  User userData = User();
   File? _image;
   bool _isPickerImage = false;
+
+  final FocusNode _focusNodeUsername = FocusNode();
+  final FocusNode _focusNodePassword = FocusNode();
+  final FocusNode _focusNodeConfirmPassword = FocusNode();
+  final FocusNode _focusNodeEmail = FocusNode();
+  final FocusNode _focusNodeFirstName = FocusNode();
+  final FocusNode _focusNodeLastName = FocusNode();
+  final FocusNode _focusNodeUserRoleName = FocusNode();
+
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _userRoleNameController = TextEditingController();
+
+  String sex = "Male";
+
+  bool _isEdit = false;
 
   @override
   void initState() {
     super.initState();
     user = widget.user;
+    userInit();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _focusNodeUsername.dispose();
+    _focusNodePassword.dispose();
+    _focusNodeConfirmPassword.dispose();
+    _focusNodeEmail.dispose();
+    _focusNodeFirstName.dispose();
+    _focusNodeLastName.dispose();
+    _focusNodeUserRoleName.dispose();
+
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    _emailController.dispose();
+    _userRoleNameController.dispose();
   }
 
   Future<void> _pickImage(BuildContext context) async {
@@ -102,154 +140,374 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (croppedFile != null) {
-      setState(() {
-        _isPickerImage = true;
-        _image = File(croppedFile.path);
-      });
+      var tampImage = File(croppedFile.path);
+      String? tempData = await User.uploadProfileImage(tampImage);
+      if (tempData != null) {
+        setState(() {
+          _isPickerImage = true;
+          _image = tampImage;
+          user.img = tempData;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Profile"),
-        backgroundColor: Colors.pink,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    _pickImage(
-                        context); // Call the _pickImage function when tapped
-                  },
-                  child: CircleAvatar(
-                    radius: 100,
-                    child: ClipOval(
-                      child: _isPickerImage == false || _image == null
-                          ? Image.network(
-                              "${globals.protocol}${globals.serverIP}/profiles/${user.img!}",
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.error_outline);
-                              },
-                            )
-                          : Image.file(
-                              _image!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.error_outline);
-                              },
-                            ),
+    return GestureDetector(
+      onTap: () {
+        _focusNodeUsername.unfocus();
+        _focusNodePassword.unfocus();
+        _focusNodeConfirmPassword.unfocus();
+        _focusNodeEmail.unfocus();
+        _focusNodeFirstName.unfocus();
+        _focusNodeLastName.unfocus();
+        _focusNodeUserRoleName.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Profile"),
+          backgroundColor: Colors.pink,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context, user);
+            },
+            icon: const Icon(Icons.arrow_back),
+          ),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (user.userRoleID! < 5) {
+                        _pickImage(context);
+                      }
+                    },
+                    child: CircleAvatar(
+                      radius: 100,
+                      child: ClipOval(
+                        child: _isPickerImage == false || _image == null
+                            ? Image.network(
+                                "${globals.protocol}${globals.serverIP}/profiles/${user.img!}",
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.error_outline);
+                                },
+                              )
+                            : Image.file(
+                                _image!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const Icon(Icons.error_outline);
+                                },
+                              ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 20, left: 50, right: 50),
-                child: Column(
-                  children: [
-                    TextFormField(
-                        onChanged: (value) {},
-                        decoration: InputDecoration(
-                            labelText: "Username",
-                            filled: true,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              // borderSide: BorderSide.none,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.person,
-                              color: Colors.pink,
-                            ))),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      onChanged: (value) {},
-                      decoration: InputDecoration(
-                          labelText: "First name",
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            // borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.edit_note,
-                            color: Colors.pink,
-                          )),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      onChanged: (value) {},
-                      decoration: InputDecoration(
-                          labelText: "Last name",
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            // borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.edit_note,
-                            color: Colors.pink,
-                          )),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      onChanged: (value) {},
-                      decoration: InputDecoration(
-                          labelText: "Email",
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            // borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.mail,
-                            color: Colors.pink,
-                          )),
-                    ),
-                    const SizedBox(height: 15),
-                    TextFormField(
-                      onChanged: (value) {},
-                      decoration: InputDecoration(
-                          labelText: "User role",
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                            // borderSide: BorderSide.none,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.badge,
-                            color: Colors.pink,
-                          )),
-                    ),
-                    const SizedBox(height: 15),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.pink,
-                      ),
-                      onPressed: () {},
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 18),
-                        child: Text(
-                          "Save",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20, left: 50, right: 50),
+                  child: Form(
+                    key: formKey,
+                    child: Column(
+                      children: [
+                        Visibility(
+                            visible: true,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                user.userRoleID == 5
+                                    ? ElevatedButton(
+                                        onPressed: () {},
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.person),
+                                            SizedBox(width: 8),
+                                            Text("ยืนยันตัวตน"),
+                                          ],
+                                        ))
+                                    : const SizedBox(),
+                                user.userRoleID! > 4
+                                    ? ElevatedButton(
+                                        onPressed: () {},
+                                        child: const Row(
+                                          children: [
+                                            Icon(Icons.badge),
+                                            SizedBox(width: 8),
+                                            Text("ยืนยันการขับรถ"),
+                                          ],
+                                        ))
+                                    : const SizedBox()
+                              ],
+                            )),
+                        TextFormField(
+                            focusNode: _focusNodeUsername,
+                            readOnly: true,
+                            controller: _usernameController,
+                            onTap: () {
+                              _focusNodeUsername.unfocus();
+                            },
+                            decoration: InputDecoration(
+                                labelText: "Username",
+                                filled: true,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  // borderSide: BorderSide.none,
+                                ),
+                                prefixIcon: const Icon(
+                                  Icons.person,
+                                  color: Colors.pink,
+                                ))),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                          focusNode: _focusNodeFirstName,
+                          controller: _firstNameController,
+                          readOnly: !_isEdit,
+                          onSaved: (newValue) {
+                            userData.firstName = newValue;
+                          },
+                          onTap: () {
+                            if (_isEdit == false) {
+                              _focusNodeFirstName.unfocus();
+                            }
+                          },
+                          decoration: InputDecoration(
+                              labelText: "First name",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                // borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.edit_note,
+                                color: Colors.pink,
+                              )),
                         ),
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
+                        const SizedBox(height: 15),
+                        TextFormField(
+                          focusNode: _focusNodeLastName,
+                          controller: _lastNameController,
+                          readOnly: !_isEdit,
+                          onSaved: (newValue) {
+                            userData.lastName = newValue;
+                          },
+                          onTap: () {
+                            if (_isEdit == false) {
+                              _focusNodeLastName.unfocus();
+                            }
+                          },
+                          decoration: InputDecoration(
+                              labelText: "Last name",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                // borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.edit_note,
+                                color: Colors.pink,
+                              )),
+                        ),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                          focusNode: _focusNodeEmail,
+                          controller: _emailController,
+                          readOnly: !_isEdit,
+                          onSaved: (newValue) {
+                            userData.email = newValue;
+                          },
+                          onTap: () {
+                            if (_isEdit == false) {
+                              _focusNodeEmail.unfocus();
+                            }
+                          },
+                          decoration: InputDecoration(
+                              labelText: "Email",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                // borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.mail,
+                                color: Colors.pink,
+                              )),
+                        ),
+                        const SizedBox(height: 15),
+                        TextFormField(
+                          focusNode: _focusNodeUserRoleName,
+                          controller: _userRoleNameController,
+                          readOnly: true,
+                          onTap: () {
+                            _focusNodeUserRoleName.unfocus();
+                          },
+                          decoration: InputDecoration(
+                              labelText: "User role",
+                              filled: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                // borderSide: BorderSide.none,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.badge,
+                                color: Colors.pink,
+                              )),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Text("Sex"),
+                            const Icon(
+                              Icons.man,
+                              color: Colors.blue,
+                              size: 35,
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: RadioListTile(
+                                  value: "Male",
+                                  groupValue: sex,
+                                  onChanged: ((value) {
+                                    if (_isEdit) {
+                                      setState(() {
+                                        sex = value.toString();
+                                        userData.sex = sex;
+                                      });
+                                    }
+                                  })),
+                            ),
+                            const Text("Male"),
+                            SizedBox(
+                              width:
+                                  (MediaQuery.of(context).size.width / 2) - 140,
+                            ),
+                            const Icon(
+                              Icons.woman,
+                              color: Colors.pink,
+                              size: 35,
+                            ),
+                            SizedBox(
+                              width: 30,
+                              child: RadioListTile(
+                                  value: "Famale",
+                                  groupValue: sex,
+                                  onChanged: ((value) {
+                                    if (_isEdit) {
+                                      setState(() {
+                                        sex = value.toString();
+                                        userData.sex = sex;
+                                      });
+                                    }
+                                  })),
+                            ),
+                            const Text("Famale"),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: _isEdit
+                              ? [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                    ),
+                                    onPressed: () {},
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 15),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.check_circle_outline),
+                                          Text(
+                                            "Save",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 18),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isEdit = false;
+                                      });
+                                      sex = user.sex!;
+                                    },
+                                    child: const Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 3),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.cancel_outlined),
+                                          Text(
+                                            "Cancel",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ]
+                              : [
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.amber,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _isEdit = true;
+                                      });
+                                    },
+                                    child: const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 12),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.edit),
+                                          Text(
+                                            "Edit",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  void userInit() {
+    _usernameController.text = user.username!;
+    _firstNameController.text = user.firstName!;
+    _lastNameController.text = user.lastName!;
+    _emailController.text = user.email!;
+    _userRoleNameController.text = user.userRoleName!;
+    sex = user.sex!;
   }
 }

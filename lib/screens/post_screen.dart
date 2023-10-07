@@ -151,6 +151,8 @@ class _PostScreenState extends State<PostScreen> {
         updateChatNoti();
       } else if (data == "Update_Review") {
         updateReviewNoti();
+      } else if (data == "Update_User") {
+        updateUser();
       }
     });
     socket.on('server_post', (data) async {
@@ -202,11 +204,11 @@ class _PostScreenState extends State<PostScreen> {
             // stateDistrictsEnd.clear();
             if (datetimeSelected != null) {
               dateTimeController.text =
-                  globalData.dateTimeFormatForPost(datetimeSelected);
+                  globalData.dateTimeFormatForSearchPost(datetimeSelected);
             }
             if (datetimeBackSelected != null && _isBackSearch) {
               dateTimeBackController.text =
-                  globalData.dateTimeFormatForPost(datetimeBackSelected);
+                  globalData.dateTimeFormatForSearchPost(datetimeBackSelected);
             }
             await showDialog(
                 context: context,
@@ -900,22 +902,24 @@ class _PostScreenState extends State<PostScreen> {
               (_isLoading ? listLoader() : listView()),
             ],
           )),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PostDetailScreen(
-                          isAdd: true,
-                          user: user,
-                          post: Post(),
-                          reportReasons: reportReasons,
-                        )),
-              );
-            },
-            backgroundColor: Colors.pink,
-            child: const Icon(Icons.add),
-          )),
+          floatingActionButton: user.userRoleID! < 4
+              ? FloatingActionButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => PostDetailScreen(
+                                isAdd: true,
+                                user: user,
+                                post: Post(),
+                                reportReasons: reportReasons,
+                              )),
+                    );
+                  },
+                  backgroundColor: Colors.pink,
+                  child: const Icon(Icons.add),
+                )
+              : null),
     );
   }
 
@@ -1371,6 +1375,15 @@ class _PostScreenState extends State<PostScreen> {
       }
     } catch (err) {
       print(err);
+    }
+  }
+
+  void updateUser() async {
+    var tamp = await User.getUserForUpdate();
+    if (tamp != null) {
+      user = tamp;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('jwt', tamp[1]);
     }
   }
 

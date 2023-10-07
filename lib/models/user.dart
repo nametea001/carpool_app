@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:car_pool_project/services/networking.dart';
+import 'package:prefs/prefs.dart';
 
 class User {
   int? id;
@@ -11,7 +13,6 @@ class User {
   String? email;
   String? userRoleName;
   String? img;
-  String? jwt;
   String? sex;
   User({
     this.id,
@@ -22,7 +23,6 @@ class User {
     this.email,
     this.userRoleName,
     this.img,
-    this.jwt,
     this.sex,
   });
 
@@ -41,14 +41,14 @@ class User {
         userRoleID: u["user_role_id"],
         userRoleName: u["user_roles"]["user_role_name"],
         img: u['img_path'],
-        jwt: json['token'] ?? "",
+        sex: u['sex'],
       );
       return user;
     }
     return null;
   }
 
-  static Future<User?> checkLogin(String username, String password) async {
+  static Future<dynamic> checkLogin(String username, String password) async {
     NetworkHelper networkHelper = NetworkHelper('login', {});
     var json = await networkHelper.postData(
       jsonEncode(<String, dynamic>{
@@ -69,17 +69,15 @@ class User {
         userRoleID: u["user_role_id"],
         userRoleName: u["user_roles"]["user_role_name"],
         img: u['img_path'],
-        jwt: json['token'],
+        sex: u['sex'],
       );
-      return user;
+      return [user, json['token']];
     }
     return null;
   }
 
   static Future<User?> signUp(User user, String password) async {
-    NetworkHelper networkHelper = NetworkHelper('users/add_user', {
-      'device': "mobile",
-    });
+    NetworkHelper networkHelper = NetworkHelper('users/add_user', {});
     var json = await networkHelper.postData(
         jsonEncode(<String, dynamic>{
           'username': user.username,
@@ -102,6 +100,41 @@ class User {
         // sex: u["sex"],
       );
       return user;
+    }
+    return null;
+  }
+
+  static Future<dynamic> getUserForUpdate() async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper = NetworkHelper('login', {});
+    var json = await networkHelper.getData(token);
+
+    if (json != null && json['error'] == false && json['token'] != null) {
+      Map u = json['user'];
+      User user = User(
+        id: u["id"],
+        username: u["username"],
+        firstName: u["first_name"],
+        lastName: u["last_name"],
+        email: u["email"],
+        userRoleID: u["user_role_id"],
+        userRoleName: u["user_roles"]["user_role_name"],
+        img: u['img_path'],
+        sex: u['sex'],
+      );
+      return [user, json['token']];
+    }
+    return null;
+  }
+
+  static Future<String?> uploadProfileImage(File imageFile) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper = NetworkHelper('users/upload_image', {});
+    var json = await networkHelper.postUpload(token, imageFile);
+    if (json != null && json['error'] == false) {
+      return json['img_path'];
     }
     return null;
   }

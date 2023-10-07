@@ -735,7 +735,7 @@ class _LoginScreenState extends State<LoginScreen>
       _isSignIn = true;
     });
     // check login
-    User? u = await User.checkLogin(username, password);
+    var u = await User.checkLogin(username, password);
 
     setState(() {
       _isSignIn = false;
@@ -743,7 +743,7 @@ class _LoginScreenState extends State<LoginScreen>
     // if success
     if (u != null) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt', u.jwt.toString());
+      await prefs.setString('jwt', u[1]);
       await prefs.setInt(
           "start_province_id", prefs.getInt('start_province_id') ?? 35);
 
@@ -753,7 +753,7 @@ class _LoginScreenState extends State<LoginScreen>
         context,
         MaterialPageRoute(
             builder: (context) => PostScreen(
-                  user: u,
+                  user: u[0],
                 )),
       );
       // ignore: use_build_context_synchronously

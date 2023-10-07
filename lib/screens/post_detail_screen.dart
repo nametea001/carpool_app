@@ -2081,6 +2081,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             isBack: tempDataPost.post!.isBack,
             startName: tempDataPost.post!.startName,
             endName: tempDataPost.post!.endName,
+            createdUserID: tempDataPost.post!.createdUserID,
           );
           location1 = tempDataPost.post!.startName!;
           location2 = tempDataPost.post!.endName!;

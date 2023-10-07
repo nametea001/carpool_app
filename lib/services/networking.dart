@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:car_pool_project/global.dart' as globals;
-import 'package:path/path.dart';
 
 class NetworkHelper {
   String prefixUrl = globals.serverIP;
@@ -92,47 +91,27 @@ class NetworkHelper {
     }
   }
 
-  Future putDataWithImage(
-    String token,
-    // String jsonData,
-    File imageFile,
-  ) async {
+  Future postUpload(String token, File file) async {
     try {
-      // Create a multipart request
       var request = http.MultipartRequest(
-          'PUT', Uri.http(prefixUrl, apiPath + url, params));
-
-      // Add headers
-      request.headers.addAll({
-        "auth-token": token,
-      });
-
-      // Add JSON data as a field
-      // request.fields['data'] = jsonData;
-
-      // Add the image as a file (let the http package handle the length)
-      var multipartFile = await http.MultipartFile.fromPath(
-        'image',
-        imageFile.path,
-        filename: basename(imageFile.path),
+        'POST',
+        Uri.http(prefixUrl, apiPath + url, params),
       );
+      request.headers['auth-token'] = token;
+      var multipartFile = await http.MultipartFile.fromPath('file', file.path);
       request.files.add(multipartFile);
-
-      // Send the request
-      final response = await request.send();
-
-      // Check the response status
+      var response = await request.send();
       if (response.statusCode == 200) {
-        // final String data = await response.stream.bytesToString();
-        // return jsonDecode(data);
-        return true;
+        // print('File uploaded successfully');
+        String data = await response.stream.bytesToString();
+        return jsonDecode(data);
       } else {
-        // final String data = await response.stream.bytesToString();
-        // return jsonDecode(data);
-        return false;
+        return null;
+        // var responseBody = await response.stream.bytesToString();
+        // throw Exception('File upload failed: $responseBody');
       }
     } catch (e) {
-      print(e);
+      print('Error: $e');
     }
   }
 }

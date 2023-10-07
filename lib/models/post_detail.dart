@@ -104,6 +104,7 @@ class PostDetail {
             isBack: t['posts']['is_back'],
             startName: t['posts']['name_start'],
             endName: t['posts']['name_end'],
+            createdUserID: t['posts']['created_user_id'],
             user: User(
               firstName: t['posts']['users']['first_name'],
               lastName: t['posts']['users']['last_name'],
