@@ -1978,7 +1978,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   dynamic flotButton() {
-    if (!_isView) {
+    if (!_isView && user.userRoleID! < 5) {
       if (post!.createdUserID != user.id && post!.status == "NEW" && _isJoin) {
         return FloatingActionButton(
           onPressed: () {
