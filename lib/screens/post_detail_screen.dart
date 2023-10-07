@@ -2046,7 +2046,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 label: "Done",
                 child: const Icon(Icons.check_outlined),
                 onTap: () {
-                  showCancelPost();
+                  showDonePost();
                 },
               ),
               // cancel

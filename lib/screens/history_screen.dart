@@ -1148,9 +1148,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (status == "NEW") {
       return Colors.green;
     } else if (status == "IN_PROGRESS") {
-      return Colors.red;
+      return Colors.orangeAccent;
     } else if (status == "DONE") {
-      return Colors.red;
+      return Colors.green;
     } else {
       return Colors.red;
     }
