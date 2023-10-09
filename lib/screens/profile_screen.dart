@@ -79,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _userRoleNameController.dispose();
   }
 
-  Future<void> _pickImage(BuildContext context) async {
+  Future<void> _pickImage() async {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
@@ -196,7 +196,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: GestureDetector(
                     onTap: () {
                       if (user.userRoleID! < 5) {
-                        _pickImage(context);
+                        _pickImage();
                       }
                     },
                     child: CircleAvatar(
@@ -228,68 +228,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Column(
                       children: [
                         Visibility(
-                            visible: user.userRoleID! > 3,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: user.userRoleID == 5
-                                  ? [
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            showAddFileUser();
-                                          },
-                                          child: const Row(
-                                            children: [
-                                              Icon(Icons.person),
-                                              SizedBox(width: 8),
-                                              Text("ยืนยันตัวตน"),
-                                            ],
-                                          )),
-                                      ElevatedButton(
-                                          onPressed: () {},
-                                          child: const Row(
-                                            children: [
-                                              Icon(Icons.badge),
-                                              SizedBox(width: 8),
-                                              Text("ยืนยันการขับรถ"),
-                                            ],
-                                          ))
-                                    ]
-                                  : [
-                                      ElevatedButton(
-                                          onPressed: () {},
-                                          child: const Row(
-                                            children: [
-                                              Icon(Icons.badge),
-                                              SizedBox(width: 8),
-                                              Text("ยืนยันการขับรถ"),
-                                            ],
-                                          ))
-                                    ],
-                            )),
-                        Visibility(
-                            visible: verifyUser != null &&
-                                (verifyUser!.status == "NEW" ||
-                                    verifyUser!.status == "NOT_VERIFY" ||
-                                    verifyUser!.status == "USER"),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: verifyUser != null &&
-                                        verifyUser!.status == "NEW"
-                                    ? [
-                                        const Text(
-                                          "กำลังดำเนินการตรวจสอบ",
-                                          style: TextStyle(fontSize: 25),
-                                        ),
-                                      ]
-                                    : verifyUser != null
-                                        ? [
-                                            Text(
-                                              verifyUser!.description ?? "",
-                                              style:
-                                                  const TextStyle(fontSize: 25),
-                                            ),
-                                          ]
-                                        : [])),
+                            child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Visibility(
+                                visible: user.userRoleID! > 3,
+                                child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.teal),
+                                    onPressed: () {
+                                      pickerFile();
+                                    },
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.badge),
+                                        SizedBox(width: 8),
+                                        Text("การยืนยันตัวตน"),
+                                      ],
+                                    ))),
+                            const SizedBox(height: 10),
+                          ],
+                        )),
                         const SizedBox(height: 10),
                         TextFormField(
                             focusNode: _focusNodeUsername,
@@ -657,7 +617,196 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void showAddFileUser() async {
+  void showCheckStatusVerifyUser() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Verify Prgress'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                if (verifyUser != null && verifyUser!.status == "NEW") {
+                  return const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("กำลังดำเดินการตรวจสอบ"),
+                    ],
+                  );
+                } else if (verifyUser != null) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(verifyUser!.description ?? ""),
+                    ],
+                  );
+                }
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(""),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAddFileDriverUpload() async {
+    _isUploadFileDriver = false;
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('File Driver'),
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(mainAxisSize: MainAxisSize.min, children: [
+                  Visibility(
+                    visible: verifyUser != null &&
+                        verifyUser!.driverLicence != "" &&
+                        verifyUser!.driverLicence != null,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                        onPressed: () async {
+                          Uri url = Uri.http(
+                              "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=drivers/${verifyUser!.idCard}");
+                          if (!await launchUrl(url)) {
+                            throw Exception('Could not launch $url');
+                          }
+                        },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.link),
+                            SizedBox(width: 8),
+                            Text("My File"),
+                          ],
+                        )),
+                  ),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple),
+                      onPressed: () async {
+                        Uri url = Uri.parse(
+                            "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=example.pdf");
+                        if (!await launchUrl(url)) {
+                          throw Exception('Could not launch $url');
+                        }
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.newspaper_sharp),
+                          SizedBox(width: 8),
+                          Text("Example"),
+                        ],
+                      )),
+                  ElevatedButton(
+                      onPressed: () async {
+                        FilePickerResult? result =
+                            await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          fileUser = File(result.files.single.path!);
+                          setState(() {
+                            _isUploadFileDriver = true;
+                          });
+                        } else {
+                          setState(() {
+                            _isUploadFileDriver = false;
+                          });
+                          showAlerError();
+                        }
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.picture_as_pdf),
+                          SizedBox(width: 8),
+                          Text("Select File"),
+                        ],
+                      )),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _isUploadFileDriver
+                        ? [
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.amber),
+                                onPressed: () async {
+                                  setState(() {
+                                    _isUploadFileDriver = false;
+                                  });
+                                  VerifyUser? temp =
+                                      await VerifyUser.addVerifyUser(
+                                          "Driver", fileUser!);
+                                  if (temp != null) {
+                                    verifyUser = temp;
+                                    Navigator.pop(context);
+                                    showAlerSuccess();
+                                  } else {
+                                    Navigator.pop(context);
+                                    showAlerError();
+                                  }
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.upload),
+                                    SizedBox(width: 8),
+                                    Text("Upload"),
+                                  ],
+                                )),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red),
+                                onPressed: () async {
+                                  setState(() {
+                                    _isUploadFileDriver = false;
+                                  });
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.cancel_outlined),
+                                    SizedBox(width: 8),
+                                    Text("Cancel"),
+                                  ],
+                                )),
+                          ]
+                        : [],
+                  ),
+                ]);
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAddFileUserUpload() async {
+    _isUploadFileUser = false;
     await showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -668,6 +817,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   builder: (BuildContext context, StateSetter setState) {
                 // return Column(mainAxisSize: MainAxisSize.max, children: []);
                 return Column(mainAxisSize: MainAxisSize.min, children: [
+                  Visibility(
+                    visible: verifyUser != null &&
+                        verifyUser!.idCard != "" &&
+                        verifyUser!.idCard != null,
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                        onPressed: () async {
+                          Uri url = Uri.http(
+                              "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=users/${verifyUser!.idCard}");
+                          if (!await launchUrl(url)) {
+                            throw Exception('Could not launch $url');
+                          }
+                        },
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.link),
+                            SizedBox(width: 8),
+                            Text("My File"),
+                          ],
+                        )),
+                  ),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple),
@@ -754,36 +926,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.link),
+                                    Icon(Icons.cancel_outlined),
                                     SizedBox(width: 8),
                                     Text("Cancel"),
-                                  ],
-                                )),
-                          ]
-                        : [],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: verifyUser != null &&
-                            (verifyUser!.idCard != "" &&
-                                verifyUser!.idCard != null)
-                        ? [
-                            ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green),
-                                onPressed: () async {
-                                  Uri url = Uri.http(
-                                      "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=users/${verifyUser!.idCard}");
-                                  if (!await launchUrl(url)) {
-                                    throw Exception('Could not launch $url');
-                                  }
-                                },
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.link),
-                                    SizedBox(width: 8),
-                                    Text("My File"),
                                   ],
                                 )),
                           ]
@@ -805,27 +950,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ));
   }
 
-  Future<void> pickerFile(BuildContext context) async {
-    showModalBottomSheet<void>(
+  void pickerFile() async {
+    showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
+        List<ListTile> list = [
+          ListTile(
+            leading: const Icon(Icons.picture_as_pdf),
+            title: const Text('ตัวอย่าง'),
+            onTap: () async {
+              Navigator.pop(context);
+              Uri url = Uri.parse(
+                  "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=example.pdf");
+              if (!await launchUrl(url)) {
+                throw Exception('Could not launch $url');
+              }
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.medical_information),
+            title: const Text('ไฟล์ใบขับขี่'),
+            onTap: () async {
+              Navigator.pop(context);
+              showAddFileDriverUpload();
+            },
+          ),
+        ];
+        if (user.userRoleID! > 4) {
+          list.insert(
+              1,
+              ListTile(
+                leading: const Icon(Icons.badge),
+                title: const Text('ไฟล์บัตรประชาชน'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  showAddFileUserUpload();
+                },
+              ));
+        }
+        if (verifyUser != null) {
+          list.add(
+            ListTile(
+              leading: const Icon(Icons.sync),
+              title: const Text('ตรวจสอบการดำเนินการ'),
+              onTap: () async {
+                Navigator.pop(context);
+                updateUI();
+                User? temp = await User.getUserForUpdate();
+                if (temp != null) {
+                  setState(() {
+                    user = temp;
+                  });
+                }
+                showCheckStatusVerifyUser();
+              },
+            ),
+          );
+        }
         return Wrap(
-          children: <Widget>[
-            ListTile(
-              leading: const Icon(Icons.camera),
-              title: const Text('Exmaple'),
-              onTap: () async {
-                Navigator.pop(context); // Close the bottom sheet
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.image),
-              title: const Text('Gallery'),
-              onTap: () async {
-                Navigator.pop(context); // Close the bottom sheet
-              },
-            ),
-          ],
+          children: list,
         );
       },
     );

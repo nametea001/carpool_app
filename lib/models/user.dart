@@ -106,7 +106,7 @@ class User {
     return null;
   }
 
-  static Future<dynamic> getUserForUpdate() async {
+  static Future<User?> getUserForUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper = NetworkHelper('', {});
@@ -125,7 +125,8 @@ class User {
         img: u['img_path'],
         sex: u['sex'],
       );
-      return [user, json['token']];
+      await prefs.setString('jwt', json['token']);
+      return user;
     }
     return null;
   }

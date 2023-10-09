@@ -1390,8 +1390,6 @@ class _PostScreenState extends State<PostScreen> {
     var tamp = await User.getUserForUpdate();
     if (tamp != null) {
       user = tamp;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('jwt', tamp[1]);
     }
   }
 
