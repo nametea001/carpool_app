@@ -786,8 +786,8 @@ class _PostScreenState extends State<PostScreen> {
         //   children: [],
         // ),
         trailing: Text("${post.postDetail!.price}"),
-        onTap: () {
-          Navigator.push(
+        onTap: () async {
+          Post? tempPost = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => PostDetailScreen(
@@ -799,6 +799,11 @@ class _PostScreenState extends State<PostScreen> {
               ),
             ),
           );
+          if (tempPost != null && tempPost.countPostMember != null) {
+            setState(() {
+              post.countPostMember = tempPost.countPostMember;
+            });
+          }
         },
       );
       // i++;
@@ -905,7 +910,7 @@ class _PostScreenState extends State<PostScreen> {
           floatingActionButton: user.userRoleID! < 4
               ? FloatingActionButton(
                   onPressed: () async {
-                    int? postID = await Navigator.push(
+                    Post? tempPost = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => PostDetailScreen(
@@ -915,8 +920,8 @@ class _PostScreenState extends State<PostScreen> {
                                 reportReasons: reportReasons,
                               )),
                     );
-                    if (postID != null) {
-                      Post? temp = await Post.getPostByID(postID);
+                    if (tempPost != null && tempPost.id != null) {
+                      Post? temp = await Post.getPostByID(tempPost.id!);
                       if (temp != null) {
                         setState(() {
                           posts.insert(0, temp);

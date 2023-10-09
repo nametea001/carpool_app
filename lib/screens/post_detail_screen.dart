@@ -142,8 +142,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   bool _isJoin = false;
   bool isMember = false;
 
-  bool _isAddSuccess = false;
-
   MapsRoutes route = MapsRoutes();
   DistanceCalculator distanceCalculator = DistanceCalculator();
   String totalDistance = 'No route';
@@ -170,6 +168,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Report reportPostData = Report();
   Report reportUserData = Report();
   Report reportReviewData = Report();
+
+  Post? postForBackBt = null;
 
   late IO.Socket socket;
 
@@ -261,11 +261,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           backgroundColor: Colors.pink,
           leading: IconButton(
               onPressed: () {
-                if (!_isAddSuccess) {
-                  Navigator.pop(context);
-                } else {
-                  Navigator.pop(context, post!.id);
-                }
+                Navigator.pop(context, postForBackBt);
               },
               icon: const Icon(Icons.arrow_back)),
           actions: user.userRoleID! < 5
@@ -1759,10 +1755,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         setState(() {
                           _isAdd = false;
                           _isLoadingAdd = false;
-                          _isAddSuccess = true;
                         });
                         post = tempPostDetail;
                         postUser = tempPostDetail.user;
+                        postForBackBt = Post(id: post!.id);
                         showAlerSuccess();
                       } else {
                         showAlerError();
@@ -1867,6 +1863,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           _isJoin = false;
                         });
                         updateUI(post!.id!);
+                        postForBackBt =
+                            Post(countPostMember: post!.countPostMember);
                       }
                       Navigator.pop(context);
                     },

@@ -715,17 +715,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )),
                   ElevatedButton(
                       onPressed: () async {
-                        FilePickerResult? result =
-                            await FilePicker.platform.pickFiles();
-                        if (result != null) {
-                          fileUser = File(result.files.single.path!);
-                          setState(() {
-                            _isUploadFileDriver = true;
-                          });
-                        } else {
-                          setState(() {
-                            _isUploadFileDriver = false;
-                          });
+                        try {
+                          FilePickerResult? result =
+                              await FilePicker.platform.pickFiles();
+                          if (result != null) {
+                            fileUser = File(result.files.single.path!);
+                            setState(() {
+                              _isUploadFileDriver = true;
+                            });
+                          } else {
+                            setState(() {
+                              _isUploadFileDriver = false;
+                            });
+                          }
+                        } catch (err) {
                           showAlerError();
                         }
                       },
@@ -860,17 +863,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       )),
                   ElevatedButton(
                       onPressed: () async {
-                        FilePickerResult? result =
-                            await FilePicker.platform.pickFiles();
-                        if (result != null) {
-                          fileUser = File(result.files.single.path!);
-                          setState(() {
-                            _isUploadFileUser = true;
-                          });
-                        } else {
-                          setState(() {
-                            _isUploadFileUser = false;
-                          });
+                        try {
+                          FilePickerResult? result =
+                              await FilePicker.platform.pickFiles();
+                          if (result != null) {
+                            fileUser = File(result.files.single.path!);
+                            setState(() {
+                              _isUploadFileUser = true;
+                            });
+                          } else {
+                            setState(() {
+                              _isUploadFileUser = false;
+                            });
+                          }
+                        } catch (err) {
                           showAlerError();
                         }
                       },
