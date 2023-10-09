@@ -371,7 +371,21 @@ class _ReviewScreenState extends State<ReviewScreen>
                 Tab(
                     child: SizedBox(
                         width: MediaQuery.of(context).size.width / 2.4,
-                        child: const Center(child: Text("Review")))),
+                        child: Center(
+                            child: reviewUserLogs.isEmpty
+                                ? const Text("Review")
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text("Review"),
+                                      const SizedBox(width: 15),
+                                      CircleAvatar(
+                                        backgroundColor: Colors.red,
+                                        maxRadius: 10,
+                                        child: Text("${reviewUserLogs.length}"),
+                                      )
+                                    ],
+                                  )))),
                 Tab(
                     child: SizedBox(
                         width: MediaQuery.of(context).size.width / 2.4,

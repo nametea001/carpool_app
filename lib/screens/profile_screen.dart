@@ -1,6 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:io';
+import 'package:car_pool_project/models/verify_user.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/user.dart';
 import 'package:car_pool_project/global.dart' as globals;
 import 'package:image_picker/image_picker.dart';
@@ -20,6 +25,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late User user;
+  VerifyUser? verifyUser;
   final formKey = GlobalKey<FormState>();
   User userData = User();
   File? _image;
@@ -43,11 +49,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   bool _isEdit = false;
 
+  bool _isUploadFileUser = false;
+  bool _isUploadFileDriver = false;
+  File? fileUser;
+  File? fileDriver;
+
   @override
   void initState() {
     super.initState();
     user = widget.user;
-    userInit();
+    updateUI();
   }
 
   @override
@@ -223,7 +234,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               children: user.userRoleID == 5
                                   ? [
                                       ElevatedButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            showAddFileUser();
+                                          },
                                           child: const Row(
                                             children: [
                                               Icon(Icons.person),
@@ -253,6 +266,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ))
                                     ],
                             )),
+                        Visibility(
+                            visible: verifyUser != null &&
+                                (verifyUser!.status == "NEW" ||
+                                    verifyUser!.status == "NOT_VERIFY" ||
+                                    verifyUser!.status == "USER"),
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: verifyUser != null &&
+                                        verifyUser!.status == "NEW"
+                                    ? [
+                                        const Text(
+                                          "กำลังดำเนินการตรวจสอบ",
+                                          style: TextStyle(fontSize: 25),
+                                        ),
+                                      ]
+                                    : verifyUser != null
+                                        ? [
+                                            Text(
+                                              verifyUser!.description ?? "",
+                                              style:
+                                                  const TextStyle(fontSize: 25),
+                                            ),
+                                          ]
+                                        : [])),
+                        const SizedBox(height: 10),
                         TextFormField(
                             focusNode: _focusNodeUsername,
                             readOnly: true,
@@ -546,15 +584,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void userInit() {
-    _usernameController.text = user.username!;
-    _firstNameController.text = user.firstName!;
-    _lastNameController.text = user.lastName!;
-    _emailController.text = user.email!;
-    _userRoleNameController.text = user.userRoleName!;
-    sex = user.sex!;
-  }
-
   void showAlerError() {
     showDialog(
         context: context,
@@ -611,5 +640,194 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: const Text('Close')),
               ],
             ));
+  }
+
+  void updateUI() async {
+    _usernameController.text = user.username!;
+    _firstNameController.text = user.firstName!;
+    _lastNameController.text = user.lastName!;
+    _emailController.text = user.email!;
+    _userRoleNameController.text = user.userRoleName!;
+    sex = user.sex!;
+    VerifyUser? temp = await VerifyUser.getVerifyUsers();
+    if (temp != null) {
+      setState(() {
+        verifyUser = temp;
+      });
+    }
+  }
+
+  void showAddFileUser() async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('File User'),
+              insetPadding: const EdgeInsets.only(
+                  left: 20, right: 20, bottom: 30, top: 30),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Column(mainAxisSize: MainAxisSize.min, children: [
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple),
+                      onPressed: () async {
+                        Uri url = Uri.parse(
+                            "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=example.pdf");
+                        if (!await launchUrl(url)) {
+                          throw Exception('Could not launch $url');
+                        }
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.newspaper_sharp),
+                          SizedBox(width: 8),
+                          Text("Example"),
+                        ],
+                      )),
+                  ElevatedButton(
+                      onPressed: () async {
+                        FilePickerResult? result =
+                            await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          fileUser = File(result.files.single.path!);
+                          setState(() {
+                            _isUploadFileUser = true;
+                          });
+                        } else {
+                          setState(() {
+                            _isUploadFileUser = false;
+                          });
+                          showAlerError();
+                        }
+                      },
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.picture_as_pdf),
+                          SizedBox(width: 8),
+                          Text("Select File"),
+                        ],
+                      )),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _isUploadFileUser
+                        ? [
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.amber),
+                                onPressed: () async {
+                                  setState(() {
+                                    _isUploadFileUser = false;
+                                  });
+                                  VerifyUser? temp =
+                                      await VerifyUser.addVerifyUser(
+                                          "User", fileUser!);
+                                  if (temp != null) {
+                                    verifyUser = temp;
+                                    Navigator.pop(context);
+                                    showAlerSuccess();
+                                  } else {
+                                    Navigator.pop(context);
+                                    showAlerError();
+                                  }
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.upload),
+                                    SizedBox(width: 8),
+                                    Text("Upload"),
+                                  ],
+                                )),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.red),
+                                onPressed: () async {
+                                  setState(() {
+                                    _isUploadFileUser = false;
+                                  });
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.link),
+                                    SizedBox(width: 8),
+                                    Text("Cancel"),
+                                  ],
+                                )),
+                          ]
+                        : [],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: verifyUser != null &&
+                            (verifyUser!.idCard != "" &&
+                                verifyUser!.idCard != null)
+                        ? [
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green),
+                                onPressed: () async {
+                                  Uri url = Uri.http(
+                                      "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=users/${verifyUser!.idCard}");
+                                  if (!await launchUrl(url)) {
+                                    throw Exception('Could not launch $url');
+                                  }
+                                },
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.link),
+                                    SizedBox(width: 8),
+                                    Text("My File"),
+                                  ],
+                                )),
+                          ]
+                        : [],
+                  ),
+                ]);
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blueGrey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Close')),
+              ],
+            ));
+  }
+
+  Future<void> pickerFile(BuildContext context) async {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.camera),
+              title: const Text('Exmaple'),
+              onTap: () async {
+                Navigator.pop(context); // Close the bottom sheet
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('Gallery'),
+              onTap: () async {
+                Navigator.pop(context); // Close the bottom sheet
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }
