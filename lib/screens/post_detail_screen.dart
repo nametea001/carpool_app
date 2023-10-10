@@ -169,7 +169,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   Report reportUserData = Report();
   Report reportReviewData = Report();
 
-  Post? postForBackBt = null;
+  Post? postForBackBt;
 
   late IO.Socket socket;
 
@@ -2170,8 +2170,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       });
       checkJoin(tempDataPost!.seat!);
       // await Future.delayed(const Duration(seconds: 2));
-      await routeDraw(marker1, marker2);
-      await updateCameraLocation(marker1, marker2, _mapController!);
+      try {
+        await routeDraw(marker1, marker2);
+        await updateCameraLocation(marker1, marker2, _mapController!);
+      } catch (err) {}
     }
   }
 

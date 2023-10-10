@@ -706,7 +706,9 @@ class _PostScreenState extends State<PostScreen> {
                   var tempData = await Review.getReviews(post.createdUserID!);
                   setState(() {
                     reviews = tempData![0] ?? [];
-                    avgReview = globalData.avgDecimalPointFormat(tempData[1]);
+                    if (tempData[1] != null) {
+                      avgReview = globalData.avgDecimalPointFormat(tempData[1]);
+                    }
                   });
                   User? u = post.user;
                   u?.id = post.createdUserID;
