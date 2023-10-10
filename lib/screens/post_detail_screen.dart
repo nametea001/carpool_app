@@ -1758,7 +1758,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         });
                         post = tempPostDetail;
                         postUser = tempPostDetail.user;
-                        postForBackBt = Post(id: post!.id);
+                        postForBackBt =
+                            Post(id: post!.id, status: post!.status);
                         showAlerSuccess();
                       } else {
                         showAlerError();
@@ -1863,8 +1864,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                           _isJoin = false;
                         });
                         updateUI(post!.id!);
-                        postForBackBt =
-                            Post(countPostMember: post!.countPostMember);
+                        postForBackBt = Post(
+                            countPostMember: post!.countPostMember,
+                            status: post!.status);
                       }
                       Navigator.pop(context);
                     },

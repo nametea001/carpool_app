@@ -173,8 +173,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ],
           ),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            Post? temp = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PostDetailScreen(
@@ -187,6 +187,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
             );
+            if (temp != null && temp.status != null) {
+              setState(() {
+                post.status == temp.status;
+              });
+            }
           },
         );
         list.add(l);
