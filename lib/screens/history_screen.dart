@@ -187,9 +187,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
             );
-            if (temp != null && temp.status != null) {
+            if (temp != null &&
+                temp.status != null &&
+                temp.status != post.status) {
               setState(() {
-                post.status == temp.status;
+                post.status = temp.status;
               });
             }
           },
@@ -312,8 +314,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ],
           ),
           trailing: Text("${post.postDetail!.price}"),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            Post? tempPost = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PostDetailScreen(
@@ -326,6 +328,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 ),
               ),
             );
+            if (tempPost != null &&
+                tempPost.status != null &&
+                tempPost.status != post.status) {
+              setState(() {
+                post.status = tempPost.status;
+              });
+            }
           },
         );
         list.add(l);

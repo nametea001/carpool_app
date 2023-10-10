@@ -1758,8 +1758,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         });
                         post = tempPostDetail;
                         postUser = tempPostDetail.user;
-                        postForBackBt =
-                            Post(id: post!.id,);
+                        postForBackBt = Post(
+                          id: post!.id,
+                        );
                         showAlerSuccess();
                       } else {
                         showAlerError();
@@ -1867,8 +1868,11 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         postForBackBt = Post(
                             countPostMember: post!.countPostMember,
                             status: post!.status);
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pop(context);
+                        showAlerError();
                       }
-                      Navigator.pop(context);
                     },
                     child: const Text('Join')),
                 TextButton(
