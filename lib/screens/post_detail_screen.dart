@@ -1759,7 +1759,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         post = tempPostDetail;
                         postUser = tempPostDetail.user;
                         postForBackBt =
-                            Post(id: post!.id, status: post!.status);
+                            Post(id: post!.id,);
                         showAlerSuccess();
                       } else {
                         showAlerError();

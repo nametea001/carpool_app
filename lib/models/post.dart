@@ -105,7 +105,7 @@ class Post {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
     NetworkHelper networkHelper =
-        NetworkHelper('get_post_by_id', {"post_id": postID.toString()});
+        NetworkHelper('posts/get_post_by_id', {"post_id": postID.toString()});
     var json = await networkHelper.getData(token);
     if (json != null && json['error'] == false) {
       Map t = json['posts'];
