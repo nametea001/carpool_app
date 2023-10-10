@@ -983,6 +983,15 @@ class _PostScreenState extends State<PostScreen> {
                 ListTile(
                   leading: const Icon(Icons.person),
                   title: const Text("Profile"),
+                  trailing: user.userRoleID! > 3
+                      ? CircleAvatar(
+                          radius: 9.5,
+                          backgroundColor: Colors.red,
+                          child: Text(
+                            reviewNoti,
+                            style: const TextStyle(color: Colors.white),
+                          ))
+                      : null,
                   onTap: () async {
                     Navigator.pop(context);
                     User? u = await Navigator.push(

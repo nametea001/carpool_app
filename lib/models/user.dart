@@ -109,9 +109,8 @@ class User {
   static Future<User?> getUserForUpdate() async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
-    NetworkHelper networkHelper = NetworkHelper('', {});
+    NetworkHelper networkHelper = NetworkHelper('users/get_update', {});
     var json = await networkHelper.getData(token);
-
     if (json != null && json['error'] == false && json['token'] != null) {
       Map u = json['user'];
       User user = User(
