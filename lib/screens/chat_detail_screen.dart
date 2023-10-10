@@ -298,7 +298,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
 
     if (croppedFile != null) {
-      var tampImage = File(croppedFile.path);
+      // var tampImage = File(croppedFile.path);
     }
   }
 

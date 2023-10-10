@@ -38,19 +38,39 @@ class ChatDetail {
     if (json != null && json['error'] == false) {
       List<types.Message> chatDetails = [];
       for (Map t in json['chat_details']) {
-        types.Message chatDetail = types.TextMessage(
+        if (t['msg_type'] == "MSG") {
+          types.Message chatDetail = types.TextMessage(
             author: types.User(
                 id: t['created_user_id'].toString(),
                 firstName: t['users']['first_name'],
                 lastName: t['users']['first_name']),
             id: t['id'].toString(),
-            type: t['msg_type'] == "MSG"
-                ? types.MessageType.text
-                : types.MessageType.image,
+            type: types.MessageType.text,
             status: types.Status.seen,
             text: t['msg'],
-            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
-        chatDetails.add(chatDetail);
+            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+          );
+          chatDetails.add(chatDetail);
+        } else {
+          var imgDetail =
+              await networkHelper.getImageDetailsChatDeatil(t['msg']);
+          types.Message chatDetail = types.ImageMessage(
+            author: types.User(
+                id: t['created_user_id'].toString(),
+                firstName: t['users']['first_name'],
+                lastName: t['users']['first_name']),
+            id: t['id'].toString(),
+            name: imgDetail!.name,
+            size: imgDetail.sizeInKB,
+            uri: imgDetail.imageUrl,
+            height: imgDetail.height,
+            width: imgDetail.width,
+            type: types.MessageType.image,
+            status: types.Status.seen,
+            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+          );
+          chatDetails.add(chatDetail);
+        }
       }
       return chatDetails;
     }
@@ -218,4 +238,20 @@ class ChatDetail {
     }
     return null;
   }
+}
+
+class ImageDetails {
+  final String name;
+  final double sizeInKB;
+  final double width;
+  final double height;
+  final String imageUrl;
+
+  ImageDetails({
+    required this.name,
+    required this.sizeInKB,
+    required this.width,
+    required this.height,
+    required this.imageUrl,
+  });
 }
