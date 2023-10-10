@@ -2,6 +2,7 @@
 // ignore_for_file: depend_on_referenced_packages
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:car_pool_project/models/chat.dart';
 import 'package:car_pool_project/models/user.dart';
@@ -48,13 +49,15 @@ class ChatDetail {
             type: types.MessageType.text,
             status: types.Status.seen,
             text: t['msg'],
-            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+            createdAt: (DateTime.parse(t['created_at']))
+                .subtract(const Duration(hours: 7))
+                .millisecondsSinceEpoch,
           );
           chatDetails.add(chatDetail);
         } else {
           var imgDetail =
               await networkHelper.getImageDetailsChatDeatil(t['msg']);
-          types.Message chatDetail = types.ImageMessage(
+          types.ImageMessage chatDetail = types.ImageMessage(
             author: types.User(
                 id: t['created_user_id'].toString(),
                 firstName: t['users']['first_name'],
@@ -67,7 +70,9 @@ class ChatDetail {
             width: imgDetail.width,
             type: types.MessageType.image,
             status: types.Status.seen,
-            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+            createdAt: (DateTime.parse(t['created_at']))
+                .subtract(const Duration(hours: 7))
+                .millisecondsSinceEpoch,
           );
           chatDetails.add(chatDetail);
         }
@@ -91,17 +96,20 @@ class ChatDetail {
     if (json != null && json['error'] == false) {
       for (Map t in json['chat_details']) {
         types.Message chatDetail = types.TextMessage(
-            author: types.User(
-                id: t['created_user_id'].toString(),
-                firstName: t['users']['first_name'],
-                lastName: t['users']['first_name']),
-            id: t['id'].toString(),
-            type: t['msg_type'] == "MSG"
-                ? types.MessageType.text
-                : types.MessageType.image,
-            status: types.Status.seen,
-            text: t['msg'],
-            createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
+          author: types.User(
+              id: t['created_user_id'].toString(),
+              firstName: t['users']['first_name'],
+              lastName: t['users']['first_name']),
+          id: t['id'].toString(),
+          type: t['msg_type'] == "MSG"
+              ? types.MessageType.text
+              : types.MessageType.image,
+          status: types.Status.seen,
+          text: t['msg'],
+          createdAt: (DateTime.parse(t['created_at']))
+              .subtract(const Duration(hours: 7))
+              .millisecondsSinceEpoch,
+        );
         chatDetails.add(chatDetail);
       }
       Map c = json['chat'];
@@ -164,77 +172,100 @@ class ChatDetail {
     if (json != null && json['error'] == false) {
       Map t = json['chat_detail'];
       types.TextMessage chatDetail = types.TextMessage(
-          author: types.User(
-              id: t['created_user_id'].toString(),
-              firstName: t['users']['first_name'],
-              lastName: t['users']['first_name']),
-          id: t['id'].toString(),
-          type: t['msg_type'] == "MSG"
-              ? types.MessageType.text
-              : types.MessageType.image,
-          status: types.Status.seen,
-          text: t['msg'],
-          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
+        author: types.User(
+            id: t['created_user_id'].toString(),
+            firstName: t['users']['first_name'],
+            lastName: t['users']['first_name']),
+        id: t['id'].toString(),
+        type: t['msg_type'] == "MSG"
+            ? types.MessageType.text
+            : types.MessageType.image,
+        status: types.Status.seen,
+        text: t['msg'],
+        createdAt: (DateTime.parse(t['created_at']))
+            .subtract(const Duration(hours: 7))
+            .millisecondsSinceEpoch,
+      );
       return chatDetail;
     }
     return null;
   }
 
-  static Future<types.TextMessage?> sendFile(
-      ChatDetail chatDetail, Chat chat) async {
+  static Future<types.ImageMessage?> sendFile(
+      ChatDetail chatDetail, Chat chat, File file) async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";
-    NetworkHelper networkHelper =
-        NetworkHelper('chat_details/send_message', {});
-    var json = await networkHelper.postData(
-      jsonEncode(<String, dynamic>{
-        "chat_id": chatDetail.chatID,
-        "msg_type": chatDetail.msgType,
-        "msg": chatDetail.msg,
-        "chat_type": chat.chatType,
-        "send_user_id": chat.sendUserID,
-        "created_user_id": chat.createdUserID,
-        "send_post_id": chat.sendPostID,
-      }),
-      token,
-    );
+    NetworkHelper networkHelper = NetworkHelper('chat_details/send_image', {
+      "chat_id": chatDetail.chatID.toString(),
+      "msg_type": "IMG",
+      "chat_type": chat.chatType.toString(),
+      "send_user_id": chat.sendUserID.toString(),
+      "created_user_id": chat.createdUserID.toString(),
+      "send_post_id": chat.sendPostID.toString(),
+    });
+    var json = await networkHelper.postUpload(token, file);
     if (json != null && json['error'] == false) {
       Map t = json['chat_detail'];
-      types.TextMessage chatDetail = types.TextMessage(
-          author: types.User(
-              id: t['created_user_id'].toString(),
-              firstName: t['users']['first_name'],
-              lastName: t['users']['first_name']),
-          id: t['id'].toString(),
-          type: t['msg_type'] == "MSG"
-              ? types.MessageType.text
-              : types.MessageType.image,
-          status: types.Status.seen,
-          text: t['msg'],
-          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
+      var imgDetail = await networkHelper.getImageDetailsChatDeatil(t['msg']);
+      types.ImageMessage chatDetail = types.ImageMessage(
+        author: types.User(
+            id: t['created_user_id'].toString(),
+            firstName: t['users']['first_name'],
+            lastName: t['users']['first_name']),
+        id: t['id'].toString(),
+        name: imgDetail!.name,
+        size: imgDetail.sizeInKB,
+        uri: imgDetail.imageUrl,
+        height: imgDetail.height,
+        width: imgDetail.width,
+        type: types.MessageType.image,
+        status: types.Status.seen,
+        createdAt: (DateTime.parse(t['created_at']))
+            .subtract(const Duration(hours: 7))
+            .millisecondsSinceEpoch,
+      );
       return chatDetail;
     }
     return null;
   }
 
-  static Future<types.TextMessage?> acceptMessage(
-      int userID, String dataAccept) async {
+  static Future<dynamic> acceptMessage(int userID, String dataAccept) async {
     var json = jsonDecode(dataAccept);
     if (json['user_id'] != userID && json['error'] == false) {
       Map t = json['chat_detail'];
-      types.TextMessage chatDetail = types.TextMessage(
+      if (t['msg_type'] == "MSG") {
+        types.TextMessage chatDetail = types.TextMessage(
           author: types.User(
               id: t['created_user_id'].toString(),
               firstName: t['users']['first_name'],
               lastName: t['users']['first_name']),
           id: t['id'].toString(),
-          type: t['msg_type'] == "MSG"
-              ? types.MessageType.text
-              : types.MessageType.image,
+          type: types.MessageType.text,
           status: types.Status.seen,
           text: t['msg'],
-          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
-      return chatDetail;
+          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+        );
+        return chatDetail;
+      } else {
+        NetworkHelper networkHelper = NetworkHelper('', {});
+        var imgDetail = await networkHelper.getImageDetailsChatDeatil(t['msg']);
+        types.ImageMessage chatDetail = types.ImageMessage(
+          author: types.User(
+              id: t['created_user_id'].toString(),
+              firstName: t['users']['first_name'],
+              lastName: t['users']['first_name']),
+          id: t['id'].toString(),
+          name: imgDetail!.name,
+          size: imgDetail.sizeInKB,
+          uri: imgDetail.imageUrl,
+          height: imgDetail.height,
+          width: imgDetail.width,
+          type: types.MessageType.image,
+          status: types.Status.seen,
+          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch,
+        );
+        return chatDetail;
+      }
     }
     return null;
   }
