@@ -1526,8 +1526,11 @@ class _ReviewScreenState extends State<ReviewScreen>
                   Icons.edit,
                   color: Colors.lightBlue,
                 ),
-                Text(
-                  "  ${review.description}",
+                Flexible(
+                  child: Text(
+                    "  ${review.description}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

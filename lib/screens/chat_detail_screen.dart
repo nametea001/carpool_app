@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:image_picker/image_picker.dart';
 // import 'package:intl/date_symbol_data_local.dart';
 // import 'package:mime/mime.dart';
@@ -57,6 +59,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String img = "";
 
   bool showBackBt = false;
+
+  File? _image;
 
   late IO.Socket socket;
 
@@ -158,7 +162,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
       body: Chat(
         messages: _messages,
-        onAttachmentPressed: _handleAttachmentPressed,
+        onAttachmentPressed: _pickImage,
         onMessageTap: _handleMessageTap,
         onPreviewDataFetched: _handlePreviewDataFetched,
         onSendPressed: _handleSendPressed,
@@ -173,49 +177,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     setState(() {
       _messages.insert(0, message);
     });
-  }
-
-  void _handleAttachmentPressed() {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (BuildContext context) => SafeArea(
-        child: SizedBox(
-          height: 144,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // _handleImageSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Photo'),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  // _handleFileSelection();
-                },
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('File'),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Text('Cancel'),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   // void _handleFileSelection() async {
@@ -263,6 +224,83 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   //     _addMessage(message);
   //   }
   // }
+
+  Future<void> _pickImage() async {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.camera),
+              title: const Text('Camera'),
+              onTap: () async {
+                Navigator.pop(context); // Close the bottom sheet
+                final picker = ImagePicker();
+                final pickedFile =
+                    await picker.pickImage(source: ImageSource.camera);
+                if (pickedFile != null) {
+                  // Handle the picked image (e.g., save it or display it)
+                  _image = File(pickedFile.path);
+                  // Do something with imageFile...
+                  _cropImage();
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.image),
+              title: const Text('Gallery'),
+              onTap: () async {
+                Navigator.pop(context); // Close the bottom sheet
+                final picker = ImagePicker();
+                final pickedFile =
+                    await picker.pickImage(source: ImageSource.gallery);
+                if (pickedFile != null) {
+                  // Handle the picked image (e.g., save it or display it)
+                  _image = File(pickedFile.path);
+                  // Do something with imageFile...
+                  _cropImage();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _cropImage() async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      maxHeight: 1152,
+      maxWidth: 1152,
+      sourcePath: _image!.path,
+      aspectRatioPresets: [
+        CropAspectRatioPreset.square,
+        // CropAspectRatioPreset.ratio3x2,
+        // CropAspectRatioPreset.original,
+        // CropAspectRatioPreset.ratio4x3,
+        // CropAspectRatioPreset.ratio16x9
+      ],
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.deepOrange,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        // IOSUiSettings(
+        //   title: 'Cropper',
+        // ),
+        // WebUiSettings(
+        //   context: context,
+        // ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      var tampImage = File(croppedFile.path);
+    }
+  }
 
   void _handleMessageTap(BuildContext _, types.Message message) async {
     if (message is types.FileMessage) {

@@ -813,8 +813,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   Icons.edit,
                   color: Colors.lightBlue,
                 ),
-                Text(
-                  "  ${review.description}",
+                Flexible(
+                  child: Text(
+                    "  ${review.description}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

@@ -160,6 +160,43 @@ class ChatDetail {
     return null;
   }
 
+  static Future<types.TextMessage?> sendFile(
+      ChatDetail chatDetail, Chat chat) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper =
+        NetworkHelper('chat_details/send_message', {});
+    var json = await networkHelper.postData(
+      jsonEncode(<String, dynamic>{
+        "chat_id": chatDetail.chatID,
+        "msg_type": chatDetail.msgType,
+        "msg": chatDetail.msg,
+        "chat_type": chat.chatType,
+        "send_user_id": chat.sendUserID,
+        "created_user_id": chat.createdUserID,
+        "send_post_id": chat.sendPostID,
+      }),
+      token,
+    );
+    if (json != null && json['error'] == false) {
+      Map t = json['chat_detail'];
+      types.TextMessage chatDetail = types.TextMessage(
+          author: types.User(
+              id: t['created_user_id'].toString(),
+              firstName: t['users']['first_name'],
+              lastName: t['users']['first_name']),
+          id: t['id'].toString(),
+          type: t['msg_type'] == "MSG"
+              ? types.MessageType.text
+              : types.MessageType.image,
+          status: types.Status.seen,
+          text: t['msg'],
+          createdAt: DateTime.parse(t['created_at']).millisecondsSinceEpoch);
+      return chatDetail;
+    }
+    return null;
+  }
+
   static Future<types.TextMessage?> acceptMessage(
       int userID, String dataAccept) async {
     var json = jsonDecode(dataAccept);

@@ -1492,8 +1492,11 @@ class _PostScreenState extends State<PostScreen> {
                   Icons.edit,
                   color: Colors.lightBlue,
                 ),
-                Text(
-                  "  ${review.description}",
+                Flexible(
+                  child: Text(
+                    "  ${review.description}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
