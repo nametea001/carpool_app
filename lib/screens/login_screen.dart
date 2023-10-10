@@ -155,10 +155,10 @@ class _LoginScreenState extends State<LoginScreen>
                         unselectedLabelColor: Colors.black,
                         tabs: const [
                           Tab(
-                            text: 'Sign in',
+                            text: 'Sign In',
                           ),
                           Tab(
-                            text: 'Sing up',
+                            text: 'Register',
                           ),
                         ],
                       ),
@@ -267,7 +267,6 @@ class _LoginScreenState extends State<LoginScreen>
                                   ],
                                 )),
                           ),
-
                           // tap SignUp
                           Container(
                             padding: const EdgeInsets.all(20),
@@ -590,7 +589,7 @@ class _LoginScreenState extends State<LoginScreen>
                                               padding: EdgeInsets.symmetric(
                                                   vertical: 18),
                                               child: Text(
-                                                "Sign up",
+                                                "Register",
                                                 style: TextStyle(
                                                     color: Colors.white,
                                                     fontSize: 20,

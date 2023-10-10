@@ -2179,7 +2179,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       try {
         await routeDraw(marker1, marker2);
         await updateCameraLocation(marker1, marker2, _mapController!);
-      } catch (err) {}
+      } catch (err) {
+        print(err);
+      }
     }
   }
 

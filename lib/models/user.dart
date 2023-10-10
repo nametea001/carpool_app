@@ -162,6 +162,23 @@ class User {
     return null;
   }
 
+  static Future<bool?> changePassword(
+      String password, String confirmPassword) async {
+    final prefs = await SharedPreferences.getInstance();
+    String token = prefs.getString('jwt') ?? "";
+    NetworkHelper networkHelper = NetworkHelper('users/chang_password', {});
+    var json = await networkHelper.putData(
+        jsonEncode(<String, dynamic>{
+          "password": password,
+          "confirm_password": confirmPassword
+        }),
+        token);
+    if (json != null && json['error'] == false) {
+      return true;
+    }
+    return null;
+  }
+
   static Future<String?> uploadProfileImage(File imageFile) async {
     final prefs = await SharedPreferences.getInstance();
     String token = prefs.getString('jwt') ?? "";

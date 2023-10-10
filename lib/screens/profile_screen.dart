@@ -27,13 +27,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late User user;
   VerifyUser? verifyUser;
   final formKey = GlobalKey<FormState>();
+  final formChangePass = GlobalKey<FormState>();
   User userData = User();
   File? _image;
   bool _isPickerImage = false;
 
+  bool _isFocusPassword = false;
+  bool _isShowPassword = false;
+
+  bool _isFocusConfirmPassword = false;
+  bool _isShowConfirmPassword = false;
+
+  String password = "";
+  String confirmPassword = "";
+
   final FocusNode _focusNodeUsername = FocusNode();
-  final FocusNode _focusNodePassword = FocusNode();
-  final FocusNode _focusNodeConfirmPassword = FocusNode();
   final FocusNode _focusNodeEmail = FocusNode();
   final FocusNode _focusNodeFirstName = FocusNode();
   final FocusNode _focusNodeLastName = FocusNode();
@@ -65,8 +73,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void dispose() {
     super.dispose();
     _focusNodeUsername.dispose();
-    _focusNodePassword.dispose();
-    _focusNodeConfirmPassword.dispose();
     _focusNodeEmail.dispose();
     _focusNodeFirstName.dispose();
     _focusNodeLastName.dispose();
@@ -169,8 +175,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return GestureDetector(
       onTap: () {
         _focusNodeUsername.unfocus();
-        _focusNodePassword.unfocus();
-        _focusNodeConfirmPassword.unfocus();
         _focusNodeEmail.unfocus();
         _focusNodeFirstName.unfocus();
         _focusNodeLastName.unfocus();
@@ -186,6 +190,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
             icon: const Icon(Icons.arrow_back),
           ),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  showChangePass();
+                },
+                icon: const Icon(Icons.vpn_key))
+          ],
         ),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -542,6 +553,213 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  Widget visibility(bool check) {
+    if (check) {
+      return const Icon(Icons.visibility);
+    } else {
+      return const Icon(
+        Icons.visibility_off,
+        color: Colors.grey,
+      );
+    }
+  }
+
+  void showConfirmChangePassword() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Confirm'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("คุณต้องการจะเปลี่ยนรหัสผ่านหรือไม่"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      var temp =
+                          await User.changePassword(password, confirmPassword);
+                      Navigator.pop(context);
+                      if (temp != null) {
+                        showAlerSuccess();
+                      } else {
+                        showAlerError();
+                      }
+                    },
+                    child: const Text('Confirm')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
+  }
+
+  void showChangePass() {
+    password = "";
+    confirmPassword = "";
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Change Password'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return Form(
+                  key: formChangePass,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Focus(
+                        onFocusChange: (bool focus) {
+                          setState(() {
+                            _isFocusPassword = !_isFocusPassword;
+                            _isShowPassword = false;
+                          });
+                        },
+                        child: TextFormField(
+                          obscureText: !_isShowPassword,
+                          onSaved: (newValue) {
+                            password = newValue!.trim();
+                          },
+                          onChanged: (value) {
+                            password = value;
+                          },
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please Input Password";
+                            }
+                            if (password != confirmPassword) {
+                              return "Password and Confirm Password is not match";
+                            }
+                            return null;
+                          },
+                          decoration: InputDecoration(
+                            labelText: "Password",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              // borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.vpn_key,
+                              color: Colors.pink,
+                            ),
+                            suffixIcon: IconButton(
+                                onPressed: _isFocusPassword
+                                    ? () {
+                                        setState(() {
+                                          _isShowPassword = !_isShowPassword;
+                                        });
+                                      }
+                                    : null,
+                                icon: _isFocusPassword
+                                    ? visibility(_isShowPassword)
+                                    : const Icon(null)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Focus(
+                        onFocusChange: (bool focus) {
+                          setState(() {
+                            _isFocusConfirmPassword = !_isFocusConfirmPassword;
+                            _isShowConfirmPassword = false;
+                          });
+                        },
+                        child: TextFormField(
+                          obscureText: !_isShowConfirmPassword,
+                          onChanged: (value) {
+                            confirmPassword = value;
+                          },
+                          onSaved: ((newValue) {
+                            confirmPassword = newValue!.trim();
+                          }),
+                          validator: (String? str) {
+                            if (str!.isEmpty) {
+                              return "Please Input Confirm Password";
+                            }
+                            if (password != confirmPassword) {
+                              return "Password and Confirm Password is not match";
+                            }
+                            return null;
+                          },
+                          // validator: MultiValidator([
+                          //   RequiredValidator(
+                          //       errorText:
+                          //           "Please Input Confirm Password."),
+                          // ]),
+                          decoration: InputDecoration(
+                            labelText: "Confirm Password",
+                            filled: true,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              // borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.vpn_key,
+                              color: Colors.pink,
+                            ),
+                            suffixIcon: IconButton(
+                                onPressed: _isFocusConfirmPassword
+                                    ? () {
+                                        setState(() {
+                                          _isShowConfirmPassword =
+                                              !_isShowConfirmPassword;
+                                        });
+                                      }
+                                    : null,
+                                icon: _isFocusConfirmPassword
+                                    ? visibility(_isShowConfirmPassword)
+                                    : const Icon(null)),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
+                    ),
+                    onPressed: () async {
+                      if (formChangePass.currentState!.validate()) {
+                        formChangePass.currentState!.save();
+                        Navigator.pop(context);
+                        showConfirmChangePassword();
+                      }
+                    },
+                    child: const Text('Save')),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel')),
+              ],
+            ));
   }
 
   void showAlerError() {
