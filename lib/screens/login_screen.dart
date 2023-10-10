@@ -226,7 +226,9 @@ class _LoginScreenState extends State<LoginScreen>
                                             CrossAxisAlignment.end,
                                         children: [
                                           TextButton(
-                                              onPressed: () {},
+                                              onPressed: () {
+                                                showAlerRememberPasswpord();
+                                              },
                                               child: Text(
                                                 "Forget your password ?",
                                                 style: TextStyle(
@@ -839,6 +841,35 @@ class _LoginScreenState extends State<LoginScreen>
                       Navigator.pop(context);
                     },
                     child: const Text('Close')),
+              ],
+            ));
+  }
+
+  void showAlerRememberPasswpord() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: const Text('Remember IT !!'),
+              content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                return const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Pleace relax and try to remember your password. !!"),
+                  ],
+                );
+              }),
+              actions: [
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.grey,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Thanks!')),
               ],
             ));
   }

@@ -914,24 +914,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         )),
                   ),
                   ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple),
-                      onPressed: () async {
-                        Uri url = Uri.parse(
-                            "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=example.pdf");
-                        if (!await launchUrl(url)) {
-                          throw Exception('Could not launch $url');
-                        }
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.newspaper_sharp),
-                          SizedBox(width: 8),
-                          Text("Example"),
-                        ],
-                      )),
-                  ElevatedButton(
                       onPressed: () async {
                         try {
                           FilePickerResult? result =
@@ -1061,24 +1043,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         )),
                   ),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple),
-                      onPressed: () async {
-                        Uri url = Uri.parse(
-                            "${globals.protocol}${globals.serverIP}/api/verify_users/pdf_path?path=example.pdf");
-                        if (!await launchUrl(url)) {
-                          throw Exception('Could not launch $url');
-                        }
-                      },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.newspaper_sharp),
-                          SizedBox(width: 8),
-                          Text("Example"),
-                        ],
-                      )),
                   ElevatedButton(
                       onPressed: () async {
                         try {
