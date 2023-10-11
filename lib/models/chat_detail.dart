@@ -12,6 +12,7 @@ import '../services/networking.dart';
 import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 
 import 'post.dart';
+import 'package:car_pool_project/global.dart' as globals;
 
 class ChatDetail {
   int? id;
@@ -39,12 +40,21 @@ class ChatDetail {
     if (json != null && json['error'] == false) {
       List<types.Message> chatDetails = [];
       for (Map t in json['chat_details']) {
+        String? urlImage;
+        if (t['users']['img_path'] != "non_img.png") {
+          urlImage =
+              "${globals.protocol}${globals.serverIP}/profiles/${t['users']['img_path']}";
+        } else {
+          urlImage = null;
+        }
         if (t['msg_type'] == "MSG") {
           types.Message chatDetail = types.TextMessage(
             author: types.User(
-                id: t['created_user_id'].toString(),
-                firstName: t['users']['first_name'],
-                lastName: t['users']['first_name']),
+              id: t['created_user_id'].toString(),
+              firstName: t['users']['first_name'],
+              lastName: t['users']['first_name'],
+              imageUrl: urlImage,
+            ),
             id: t['id'].toString(),
             type: types.MessageType.text,
             status: types.Status.seen,
@@ -59,9 +69,11 @@ class ChatDetail {
               await networkHelper.getImageDetailsChatDeatil(t['msg']);
           types.ImageMessage chatDetail = types.ImageMessage(
             author: types.User(
-                id: t['created_user_id'].toString(),
-                firstName: t['users']['first_name'],
-                lastName: t['users']['first_name']),
+              id: t['created_user_id'].toString(),
+              firstName: t['users']['first_name'],
+              lastName: t['users']['first_name'],
+              imageUrl: urlImage,
+            ),
             id: t['id'].toString(),
             name: imgDetail!.name,
             size: imgDetail.sizeInKB,
@@ -95,11 +107,20 @@ class ChatDetail {
 
     if (json != null && json['error'] == false) {
       for (Map t in json['chat_details']) {
+        String? urlImage;
+        if (t['users']['img_path'] != "non_img.png") {
+          urlImage =
+              "${globals.protocol}${globals.serverIP}/profiles/${t['users']['img_path']}";
+        } else {
+          urlImage = null;
+        }
         types.Message chatDetail = types.TextMessage(
           author: types.User(
-              id: t['created_user_id'].toString(),
-              firstName: t['users']['first_name'],
-              lastName: t['users']['first_name']),
+            id: t['created_user_id'].toString(),
+            firstName: t['users']['first_name'],
+            lastName: t['users']['first_name'],
+            imageUrl: urlImage,
+          ),
           id: t['id'].toString(),
           type: t['msg_type'] == "MSG"
               ? types.MessageType.text
@@ -171,11 +192,20 @@ class ChatDetail {
     );
     if (json != null && json['error'] == false) {
       Map t = json['chat_detail'];
+      String? urlImage;
+      if (t['users']['img_path'] != "non_img.png") {
+        urlImage =
+            "${globals.protocol}${globals.serverIP}/profiles/${t['users']['img_path']}";
+      } else {
+        urlImage = null;
+      }
       types.TextMessage chatDetail = types.TextMessage(
         author: types.User(
-            id: t['created_user_id'].toString(),
-            firstName: t['users']['first_name'],
-            lastName: t['users']['first_name']),
+          id: t['created_user_id'].toString(),
+          firstName: t['users']['first_name'],
+          lastName: t['users']['first_name'],
+          imageUrl: urlImage,
+        ),
         id: t['id'].toString(),
         type: t['msg_type'] == "MSG"
             ? types.MessageType.text
@@ -206,12 +236,21 @@ class ChatDetail {
     var json = await networkHelper.postUpload(token, file);
     if (json != null && json['error'] == false) {
       Map t = json['chat_detail'];
+      String? urlImage;
+      if (t['users']['img_path'] != "non_img.png") {
+        urlImage =
+            "${globals.protocol}${globals.serverIP}/profiles/${t['users']['img_path']}";
+      } else {
+        urlImage = null;
+      }
       var imgDetail = await networkHelper.getImageDetailsChatDeatil(t['msg']);
       types.ImageMessage chatDetail = types.ImageMessage(
         author: types.User(
-            id: t['created_user_id'].toString(),
-            firstName: t['users']['first_name'],
-            lastName: t['users']['first_name']),
+          id: t['created_user_id'].toString(),
+          firstName: t['users']['first_name'],
+          lastName: t['users']['first_name'],
+          imageUrl: urlImage,
+        ),
         id: t['id'].toString(),
         name: imgDetail!.name,
         size: imgDetail.sizeInKB,
@@ -233,12 +272,21 @@ class ChatDetail {
     var json = jsonDecode(dataAccept);
     if (json['user_id'] != userID && json['error'] == false) {
       Map t = json['chat_detail'];
+      String? urlImage;
+      if (t['users']['img_path'] != "non_img.png") {
+        urlImage =
+            "${globals.protocol}${globals.serverIP}/profiles/${t['users']['img_path']}";
+      } else {
+        urlImage = null;
+      }
       if (t['msg_type'] == "MSG") {
         types.TextMessage chatDetail = types.TextMessage(
           author: types.User(
-              id: t['created_user_id'].toString(),
-              firstName: t['users']['first_name'],
-              lastName: t['users']['first_name']),
+            id: t['created_user_id'].toString(),
+            firstName: t['users']['first_name'],
+            lastName: t['users']['first_name'],
+            imageUrl: urlImage,
+          ),
           id: t['id'].toString(),
           type: types.MessageType.text,
           status: types.Status.seen,
@@ -251,9 +299,11 @@ class ChatDetail {
         var imgDetail = await networkHelper.getImageDetailsChatDeatil(t['msg']);
         types.ImageMessage chatDetail = types.ImageMessage(
           author: types.User(
-              id: t['created_user_id'].toString(),
-              firstName: t['users']['first_name'],
-              lastName: t['users']['first_name']),
+            id: t['created_user_id'].toString(),
+            firstName: t['users']['first_name'],
+            lastName: t['users']['first_name'],
+            imageUrl: urlImage,
+          ),
           id: t['id'].toString(),
           name: imgDetail!.name,
           size: imgDetail.sizeInKB,

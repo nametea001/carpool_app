@@ -1664,10 +1664,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                   MaterialPageRoute(
                                       builder: (context) => const CarScreen()));
 
-                              if (temp != null && temp.isNotEmpty) {
-                                setState(() {
-                                  cars = temp;
-                                });
+                              if (temp != null) {
+                                getCar();
                               }
                             },
                             icon: const Icon(Icons.add),

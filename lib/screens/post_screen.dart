@@ -985,8 +985,8 @@ class _PostScreenState extends State<PostScreen> {
                   title: const Text("Profile"),
                   trailing: user.userRoleID! > 3
                       ? CircleAvatar(
-                          radius: 9.5,
-                          backgroundColor: Colors.red,
+                          radius: 6,
+                          backgroundColor: Colors.blue,
                           child: Text(
                             reviewNoti,
                             style: const TextStyle(color: Colors.white),
@@ -1405,7 +1405,9 @@ class _PostScreenState extends State<PostScreen> {
   void updateUser() async {
     var tamp = await User.getUserForUpdate();
     if (tamp != null) {
-      user = tamp;
+      setState(() {
+        user = tamp;
+      });
     }
   }
 
