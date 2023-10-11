@@ -5,7 +5,10 @@ class GlobalData {
     return "AIzaSyCwp3of0o28LsZ6PiLtKkIM9tAo8xG8xh0";
   }
 
-  double avgDecimalPointFormat(int data) {
+  double avgDecimalPointFormat(int? data) {
+    if (data == null) {
+      data = 0;
+    }
     return double.parse(data.toStringAsFixed(2));
   }
 

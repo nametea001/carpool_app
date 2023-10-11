@@ -454,6 +454,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     onPressed: () async {
                                       if (formKey.currentState!.validate()) {
                                         formKey.currentState!.save();
+                                        userData.sex = sex;
                                         User? temp =
                                             await User.editProfile(userData);
                                         if (temp != null) {

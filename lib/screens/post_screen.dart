@@ -669,7 +669,7 @@ class _PostScreenState extends State<PostScreen> {
             ),
             badgeStyle: const badges.BadgeStyle(
               // shape: badges.BadgeShape.square,
-              // badgeColor: Colors.blue,
+              badgeColor: Colors.blue,
               // padding: const EdgeInsets.all(5),
               // borderRadius: BorderRadius.circular(4),
               borderSide: BorderSide(color: Colors.white, width: 1),
