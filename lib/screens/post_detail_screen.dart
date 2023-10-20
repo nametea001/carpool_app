@@ -171,6 +171,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
 
   Post? postForBackBt;
 
+  bool isSlectMarker1 = false;
+  bool isSlectMarker2 = false;
+
   late IO.Socket socket;
 
   @override
@@ -644,6 +647,12 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         postDetailData!.seat =
                                             int.parse(newValue!);
                                       },
+                                      onChanged: (value) {
+                                        if (value != "") {
+                                          postDetailData!.seat =
+                                              int.parse(value);
+                                        }
+                                      },
                                       validator: (String? value) {
                                         if (value!.isEmpty) {
                                           return "Please input seat";
@@ -661,7 +670,6 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                       focusNode: _focusNodeSeat,
                                       controller: _seatController,
                                       keyboardType: TextInputType.number,
-                                      onChanged: (value) {},
                                       onTap: () {
                                         if (!_isAdd) {
                                           _focusNodeSeat.unfocus();
@@ -715,17 +723,20 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                                         }
                                       },
                                       decoration: InputDecoration(
-                                          labelText: "ราคาต่อที่นั่ง",
-                                          filled: true,
-                                          border: OutlineInputBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(10.0),
-                                            // borderSide: BorderSide.none,
-                                          ),
-                                          prefixIcon: const Icon(
-                                            Icons.payment,
-                                            color: Colors.pink,
-                                          )),
+                                        labelText: "ราคาต่อที่นั่ง",
+                                        filled: true,
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          // borderSide: BorderSide.none,
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.payment,
+                                          color: Colors.pink,
+                                        ),
+                                        suffixIcon:
+                                            showButtonCheckMeterPerKilo(),
+                                      ),
                                     ),
                                   )
                                 ],
@@ -1076,6 +1087,117 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
+  IconButton? showButtonCheckMeterPerKilo() {
+    if ((isSlectMarker1 && isSlectMarker2) || !_isAdd) {
+      bool isShowDetai = false;
+      return IconButton(
+        color: Colors.green,
+        onPressed: () {
+          double distanceInMeter = Geolocator.distanceBetween(marker1.latitude,
+              marker1.longitude, marker2.latitude, marker2.longitude);
+          double distanceInKiloMeter =
+              double.parse((distanceInMeter / 1000).toStringAsFixed(2));
+          double pricePerKilo = 6.50;
+          if (distanceInKiloMeter > 20.0) {
+            pricePerKilo = 8.00;
+          } else if (distanceInKiloMeter > 10.0) {
+            pricePerKilo = 7.00;
+          }
+          double price = distanceInKiloMeter * pricePerKilo;
+          int seat = postDetailData!.seat ?? 1;
+          double pricePerPerson =
+              double.parse((price / seat).toStringAsFixed(2));
+          showDialog(
+              context: context,
+              builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Price average'),
+                    content: StatefulBuilder(
+                        builder: (BuildContext context, StateSetter setState) {
+                      // return Column(mainAxisSize: MainAxisSize.max, children: []);
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState((() {
+                                isShowDetai = !isShowDetai;
+                              }));
+                            },
+                            child: Column(
+                              children: isShowDetai
+                                  ? [
+                                      const Text("------"),
+                                      const Text(
+                                          "ระยะทาง 0 กิโลเมตรถึงกิโลเมตรที่ 10 กิโลเมตรละ 6.50 บาท"),
+                                      const Text(
+                                          "ระยะทางเกินกว่า 10 กิโลเมตรถึงกิโลเมตรที่ 20 กิโลเมตรละ 7.00 บาท"),
+                                      const Text(
+                                          "ระยะทางเกินกว่า 20 กิโลเมตรถึงกิโลเมตรที่ 40 กิโลเมตรละ 8.00 บาท"),
+                                      const Text(
+                                          "ราคาในที่นี้ขึ้นอยู่ที่คนขับจะคิดราคา"),
+                                      const Text("------"),
+                                    ]
+                                  : [const Text("คำอธิบายเพิ่มเติม..")],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const Text("ระยะทางโดยเฉลี่ย "),
+                              Text(
+                                "$distanceInKiloMeter ",
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              const Text("กิโลเมตร")
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Text("ค่าเดินทางโดยรวม "),
+                              Text(
+                                "$price ",
+                                style: const TextStyle(color: Colors.green),
+                              ),
+                              const Text("บาท")
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Text("ค่าเดินทาง "),
+                              Text(
+                                "$seat ",
+                                style: const TextStyle(color: Colors.red),
+                              ),
+                              const Text("คน "),
+                              Text(
+                                "$pricePerPerson ",
+                                style: const TextStyle(color: Colors.green),
+                              ),
+                              const Text("บาท")
+                            ],
+                          ),
+                        ],
+                      );
+                    }),
+                    actions: [
+                      TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor: Colors.grey,
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Close')),
+                    ],
+                  ));
+        },
+        icon: const Icon(Icons.price_change_outlined),
+      );
+    }
+    return null;
+  }
+
   List<Widget> searchMapButton() {
     void searchMap(int searchNumber) async {
       Prediction? place = await PlacesAutocomplete.show(
@@ -1147,6 +1269,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           setState(() {
             location1 = place.description.toString();
             marker1 = newlatlang;
+            isSlectMarker1 = true;
           });
         } else if (searchNumber == 2) {
           postData!.endDistrictID = tempDistrictID;
@@ -1155,6 +1278,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
           setState(() {
             location2 = place.description.toString();
             marker2 = newlatlang;
+            isSlectMarker2 = true;
           });
         }
         //move map camera to selected place with animation
@@ -2135,16 +2259,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       if (tempDataPost != null) {
         setState(() {
           postUser = tempDataPost.post!.user!;
-          post = Post(
-            id: tempDataPost.postID,
-            status: tempDataPost.post!.status,
-            dateTimeStart: tempDataPost.post!.dateTimeStart,
-            dateTimeBack: tempDataPost.post!.dateTimeBack,
-            isBack: tempDataPost.post!.isBack,
-            startName: tempDataPost.post!.startName,
-            endName: tempDataPost.post!.endName,
-            createdUserID: tempDataPost.post!.createdUserID,
-          );
+          postDetailData = tempDataPost;
+          // post = Post(
+          //   id: tempDataPost.postID,
+          //   status: tempDataPost.post!.status,
+          //   dateTimeStart: tempDataPost.post!.dateTimeStart,
+          //   dateTimeBack: tempDataPost.post!.dateTimeBack,
+          //   isBack: tempDataPost.post!.isBack,
+          //   startName: tempDataPost.post!.startName,
+          //   endName: tempDataPost.post!.endName,
+          //   createdUserID: tempDataPost.post!.createdUserID,
+          // );
+          post = tempDataPost.post!;
+          post!.id = tempDataPost.postID;
           location1 = tempDataPost.post!.startName!;
           location2 = tempDataPost.post!.endName!;
         });

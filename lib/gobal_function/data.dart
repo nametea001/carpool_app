@@ -6,9 +6,7 @@ class GlobalData {
   }
 
   double avgDecimalPointFormat(int? data) {
-    if (data == null) {
-      data = 0;
-    }
+    data ??= 0;
     return double.parse(data.toStringAsFixed(2));
   }
 
